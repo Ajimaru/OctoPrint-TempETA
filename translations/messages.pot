@@ -1,0 +1,46 @@
+# Translations template for OctoPrint-TempETA.
+# Copyright (C) 2026
+# This file is distributed under the same license as the OctoPrint-TempETA
+# project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
+"Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
+"Author: AjimaruGDR <ajimaru_gdr@pm.me>\n"
+"POT-Creation-Date: 2026-01-08 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Temperature ETA"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Enable Temperature ETA"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Heating threshold (°C)"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Start ETA when target is this many degrees away"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Algorithm"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Linear (fast, less accurate)"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2
+msgid "Exponential (slower, more accurate)"
+msgstr ""

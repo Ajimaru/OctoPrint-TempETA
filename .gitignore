@@ -1,0 +1,25 @@
+*.pyc
+*.pyo
+*.swp
+*.swo
+*~
+.DS_Store
+*.egg-info
+dist
+build
+venv
+.venv
+__pycache__
+.pytest_cache
+.coverage
+htmlcov
+*.log
+.idea
+.vscode
+*.bak
+
+# Development-only folders (not for GitHub)
+.development/
+.drafts/
+.local/
+.notes/
