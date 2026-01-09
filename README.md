@@ -31,11 +31,37 @@
 
 ## Screenshots
 
-| Heating ETA                                                                | Tab + Sidebar                                                              |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| ![Heating ETA](assets/img/Temperature_ETA_heating.png)                     | ![Tab and Sidebar ETA](assets/img/Temperature_ETA_Tab_SideBar.png)         |
-| Settings (1)                                                               | Settings (2)                                                               |
-| ![Temperature ETA settings (1)](assets/img/Temperature_ETA_settings_1.png) | ![Temperature ETA settings (2)](assets/img/Temperature_ETA_settings_2.png) |
+<!-- markdownlint-disable MD033 -->
+
+### Heating ETA
+
+<img src="assets/img/Temperature_ETA_heating.png" alt="Heating ETA" width="666" />
+
+### Tab + Sidebar
+
+<img
+  src="assets/img/Temperature_ETA_Tab_SideBar.png"
+  alt="Tab and Sidebar ETA"
+  width="666"
+/>
+
+### Settings (1)
+
+<img
+  src="assets/img/Temperature_ETA_settings_1.png"
+  alt="Temperature ETA settings (1)"
+  width="666"
+/>
+
+### Settings (2)
+
+<img
+  src="assets/img/Temperature_ETA_settings_2.png"
+  alt="Temperature ETA settings (2)"
+  width="666"
+/>
+
+<!-- markdownlint-enable MD033 -->
 
 ## Installation
 
