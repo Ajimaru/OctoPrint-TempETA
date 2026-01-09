@@ -8,6 +8,82 @@ log() {
   printf '[temp-eta post-commit] %s\n' "$*"
 }
 
+semver_is_lt() {
+  # Returns 0 if $1 < $2 for simple x.y.z (or x.y) versions, otherwise 1.
+  python3 -c '
+import sys
+
+def parse(v: str):
+    parts = v.strip().split(".")
+    nums = []
+    for p in parts:
+        try:
+            nums.append(int(p))
+        except ValueError:
+            # Non-numeric (e.g. prerelease) -> treat as 0 to keep it safe.
+            nums.append(0)
+    while len(nums) < 3:
+        nums.append(0)
+    return tuple(nums[:3])
+
+a = parse(sys.argv[1])
+b = parse(sys.argv[2])
+sys.exit(0 if a < b else 1)
+' "$1" "$2"
+}
+
+semver_is_gt() {
+  # Returns 0 if $1 > $2 for simple x.y.z (or x.y) versions, otherwise 1.
+  python3 -c '
+import sys
+
+def parse(v: str):
+    parts = v.strip().split(".")
+    nums = []
+    for p in parts:
+        try:
+            nums.append(int(p))
+        except ValueError:
+            nums.append(0)
+    while len(nums) < 3:
+        nums.append(0)
+    return tuple(nums[:3])
+
+a = parse(sys.argv[1])
+b = parse(sys.argv[2])
+sys.exit(0 if a > b else 1)
+' "$1" "$2"
+}
+
+get_previous_version_from_dist() {
+  local new_version="$1"
+
+  if [[ ! -d "dist" ]]; then
+    echo ""
+    return 0
+  fi
+
+  local best=""
+  local file version
+  for file in dist/octoprint_tempeta-*.tar.gz dist/octoprint_tempeta-*.whl dist/octoprint_tempeta-*.zip; do
+    [[ -e "$file" ]] || continue
+    version="$(basename "$file" | sed -nE 's/^octoprint_tempeta-([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')"
+    [[ -n "$version" ]] || continue
+
+    if [[ "$version" == "$new_version" ]]; then
+      continue
+    fi
+
+    if semver_is_lt "$version" "$new_version"; then
+      if [[ -z "$best" ]] || semver_is_gt "$version" "$best"; then
+        best="$version"
+      fi
+    fi
+  done
+
+  echo "$best"
+}
+
 get_version_from_pyproject() {
   local file_path="$1"
 
@@ -128,7 +204,15 @@ main() {
     exit 0
   fi
 
-  log "Detected version bump: ${old_version} -> ${new_version}"
+  # Prefer a "previous released" version from dist/ for display, if available.
+  # This avoids confusing output when the git baseline doesn't match what was built locally.
+  local display_old
+  display_old="$(get_previous_version_from_dist "$new_version")"
+  if [[ -z "$display_old" ]]; then
+    display_old="$old_version"
+  fi
+
+  log "Detected version bump: ${display_old} -> ${new_version}"
 
   if ! python3 -m build --help >/dev/null 2>&1; then
     log "python3 -m build not available; skipping dist build"
