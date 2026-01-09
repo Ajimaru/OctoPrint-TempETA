@@ -11,45 +11,46 @@ log() {
 get_version_from_pyproject() {
   local file_path="$1"
 
-  python3 - "$file_path" <<'PY'
+  python3 -c '
 import sys
 
 path = sys.argv[1]
-raw = open(path, 'rb').read()
+raw = open(path, "rb").read()
 
 try:
-    import tomllib  # py3.11+
-    data = tomllib.loads(raw.decode('utf-8'))
+  import tomllib  # py3.11+
+  data = tomllib.loads(raw.decode("utf-8"))
 except ModuleNotFoundError:
-    import tomli  # type: ignore
-    data = tomli.loads(raw.decode('utf-8'))
+  import tomli  # type: ignore
+  data = tomli.loads(raw.decode("utf-8"))
 
-version = data.get('project', {}).get('version')
+version = data.get("project", {}).get("version")
 if not version:
-    raise SystemExit('Unable to determine version from pyproject.toml')
+  raise SystemExit("Unable to determine version from pyproject.toml")
 
 print(version)
-PY
+' "$file_path"
 }
 
 get_version_from_pyproject_content() {
-  python3 - <<'PY'
+  python3 -c '
 import sys
 
 raw = sys.stdin.buffer.read()
 
 try:
-    import tomllib
-    data = tomllib.loads(raw.decode('utf-8'))
+  import tomllib  # py3.11+
+  data = tomllib.loads(raw.decode("utf-8"))
 except ModuleNotFoundError:
-    import tomli  # type: ignore
-    data = tomli.loads(raw.decode('utf-8'))
+  import tomli  # type: ignore
+  data = tomli.loads(raw.decode("utf-8"))
 
-version = data.get('project', {}).get('version')
+version = data.get("project", {}).get("version")
 if not version:
-    raise SystemExit(1)
+  raise SystemExit(1)
+
 print(version)
-PY
+'
 }
 
 create_zip_from_sdist() {
