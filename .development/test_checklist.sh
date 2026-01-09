@@ -41,9 +41,7 @@ echo ""
 # Step 6: Check Styling
 echo "6️⃣  Styling:"
 LESS_LINES=$(wc -l < octoprint_temp_eta/static/less/temp_eta.less)
-CSS_LINES=$(wc -l < octoprint_temp_eta/static/css/temp_eta.css)
 echo "   ✓ LESS: $LESS_LINES lines"
-echo "   ✓ CSS: $CSS_LINES lines"
 echo ""
 
 # Step 7: Check Translations
