@@ -1,9 +1,8 @@
 # OctoPrint Temperature ETA Plugin
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/releases)
 [![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
-[![OctoPrint](https://img.shields.io/badge/OctoPrint-1.4.0%2B-blue.svg)](https://octoprint.org)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
+[![OctoPrint](https://img.shields.io/badge/OctoPrint-1.12.0%2B-blue.svg)](https://octoprint.org)
 
 <table>
   <tr>
@@ -145,6 +144,7 @@ Contributions welcome! Please:
 2. Create a feature branch: `git checkout -b wip/my-feature`
 3. Write tests for new features
 4. Submit a pull request
+5. For local development scripts (setup, restart helper, post-commit build hook), see [.development/README.md](.development/README.md).
 
 ## License
 

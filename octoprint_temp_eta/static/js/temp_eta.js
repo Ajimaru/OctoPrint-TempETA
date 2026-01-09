@@ -150,6 +150,18 @@ $(function() {
     function TempETAViewModel(parameters) {
         var self = this;
 
+        function _gettext(msgid) {
+            if (typeof window !== "undefined" && typeof window.gettext === "function") {
+                return window.gettext(msgid);
+            }
+
+            if (typeof gettext === "function") {
+                return gettext(msgid);
+            }
+
+            return msgid;
+        }
+
         self.settingsViewModel = parameters[0];
         self._resolveSettingsRoot = function() {
             // OctoPrint versions can differ in how the settings model is nested.
@@ -710,14 +722,18 @@ $(function() {
          */
         self.getHeaterLabel = function(heaterName) {
             var labels = {
-                "bed": "Bed",
-                "chamber": "Chamber"
+                "bed": _gettext("Bed"),
+                "chamber": _gettext("Chamber")
             };
             if (labels[heaterName]) {
                 return labels[heaterName];
             }
             // Default for tool0, tool1, tool2, etc
             return heaterName.charAt(0).toUpperCase() + heaterName.slice(1);
+        };
+
+        self.getNotHeatingText = function() {
+            return _gettext("Not heating");
         };
 
         /**

@@ -252,13 +252,9 @@ msgstr "Restore defaults failed."
 msgid "Restore"
 msgstr "Restore"
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:179
-msgid ""
-"Resets only this plugin's settings. ETA history files are not deleted "
-"(use the history reset below)."
-msgstr ""
-"Resets only this plugin's settings. ETA history files are not deleted "
-"(use the history reset below)."
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:181
+msgid "Restores Temperature ETA settings to their default values."
+msgstr "Restores Temperature ETA settings to their default values."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:188
 msgid "How it works"
@@ -307,6 +303,18 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:7
 msgid "Configure algorithm and threshold in Settings → Temperature ETA"
 msgstr "Configure algorithm and threshold in Settings → Temperature ETA"
+
+#: octoprint_temp_eta/static/js/temp_eta.js
+msgid "Not heating"
+msgstr "Not heating"
+
+#: octoprint_temp_eta/static/js/temp_eta.js
+msgid "Bed"
+msgstr "Bed"
+
+#: octoprint_temp_eta/static/js/temp_eta.js
+msgid "Chamber"
+msgstr "Chamber"
 
 #~ msgid "Heating threshold (°C)"
 #~ msgstr "Heating threshold (°C)"

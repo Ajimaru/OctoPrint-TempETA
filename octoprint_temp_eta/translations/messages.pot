@@ -235,10 +235,8 @@ msgstr ""
 msgid "Restore"
 msgstr ""
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:179
-msgid ""
-"Resets only this plugin's settings. ETA history files are not deleted "
-"(use the history reset below)."
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:181
+msgid "Restores Temperature ETA settings to their default values."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:188
@@ -284,4 +282,3 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:7
 msgid "Configure algorithm and threshold in Settings → Temperature ETA"
 msgstr ""
-

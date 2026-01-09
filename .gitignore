@@ -19,7 +19,7 @@ htmlcov
 *.bak
 
 # Development-only folders (not for GitHub)
-.development/
 .drafts/
 .local/
 .notes/
+.ideas/

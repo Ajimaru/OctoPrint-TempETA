@@ -236,7 +236,7 @@ msgid ""
 "(stored in OctoPrint's plugin data folder)."
 msgstr ""
 "Löscht alle gespeicherten ETA-Historien (JSON) für alle Druckerprofile "
-"(im OctoPrint-Plugin-Datenordner)."
+"(gespeichert im OctoPrint-Plugin-Datenordner)."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:166
 msgid "Restore defaults"
@@ -254,13 +254,9 @@ msgstr "Wiederherstellen der Standardwerte fehlgeschlagen."
 msgid "Restore"
 msgstr "Wiederherstellen"
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:179
-msgid ""
-"Resets only this plugin's settings. ETA history files are not deleted "
-"(use the history reset below)."
-msgstr ""
-"Setzt nur die Einstellungen dieses Plugins zurück. ETA-Historien werden "
-"nicht gelöscht (dafür den Historie-Reset unten verwenden)."
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:181
+msgid "Restores Temperature ETA settings to their default values."
+msgstr "Stellt die Temperature-ETA-Einstellungen auf Standardwerte zurück."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:188
 msgid "How it works"
@@ -308,7 +304,19 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:7
 msgid "Configure algorithm and threshold in Settings → Temperature ETA"
-msgstr "Algorithmus und Schwellwert unter Einstellungen → Temperature ETA konfigurieren"
+msgstr "Algorithmus und Schwellwert unter Einstellungen → Temperatur-ETA konfigurieren"
+
+#: octoprint_temp_eta/static/js/temp_eta.js
+msgid "Not heating"
+msgstr "Heizt nicht"
+
+#: octoprint_temp_eta/static/js/temp_eta.js
+msgid "Bed"
+msgstr "Bett"
+
+#: octoprint_temp_eta/static/js/temp_eta.js
+msgid "Chamber"
+msgstr "Kammer"
 
 #~ msgid "Heating threshold (°C)"
 #~ msgstr "Heiz-Schwellenwert (°C)"
@@ -353,4 +361,3 @@ msgstr "Algorithmus und Schwellwert unter Einstellungen → Temperature ETA konf
 #~ "Exponential: Accounts for thermal asymptotic"
 #~ " behavior"
 #~ msgstr ""
-

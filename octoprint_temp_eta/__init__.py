@@ -675,11 +675,23 @@ class TempETAPlugin(
                 if heater not in self._temp_history:
                     self._temp_history[heater] = deque(maxlen=self._history_maxlen)
 
-                target = heater_data.get("target")
-                actual = heater_data.get("actual", 0)
+                # OctoPrint may include non-numeric or None values (e.g. during reconnect).
+                # Never allow exceptions to bubble out of the temperature callback.
+                target_raw = heater_data.get("target", 0)
+                actual_raw = heater_data.get("actual", 0)
+
+                try:
+                    target = float(target_raw or 0)
+                except Exception:
+                    target = 0.0
+
+                try:
+                    actual = float(actual_raw or 0)
+                except Exception:
+                    actual = 0.0
 
                 # Only calculate ETA if heating and within threshold
-                if target is None or target <= 0:
+                if target <= 0:
                     # No target set
                     eta = None
                 elif actual >= target:
