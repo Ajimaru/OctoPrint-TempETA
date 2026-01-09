@@ -8,11 +8,54 @@ import threading
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Protocol, Sequence, runtime_checkable
 
 import octoprint.plugin
 from flask import jsonify
 from flask_babel import gettext
+
+
+@runtime_checkable
+class LoggerLike(Protocol):
+    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+    def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+
+@runtime_checkable
+class SettingsLike(Protocol):
+    def get_boolean(self, path: Sequence[str]) -> bool: ...
+
+    def get_float(self, path: Sequence[str]) -> float: ...
+
+    def get_int(self, path: Sequence[str]) -> int: ...
+
+    def get(self, path: Sequence[str]) -> Any: ...
+
+    def set(self, path: Sequence[str], value: Any) -> None: ...
+
+    def save(self) -> None: ...
+
+
+@runtime_checkable
+class PluginManagerLike(Protocol):
+    def send_plugin_message(self, identifier: str, payload: Dict[str, Any]) -> None: ...
+
+
+@runtime_checkable
+class PrinterProfileManagerLike(Protocol):
+    def get_current_or_default(self) -> Dict[str, Any]: ...
+
+
+@runtime_checkable
+class PrinterLike(Protocol):
+    def register_callback(self, callback: Any) -> None: ...
+
+    def is_printing(self) -> bool: ...
+
+    def is_paused(self) -> bool: ...
+
+    def get_state_id(self) -> str: ...
 
 
 class TempETAPlugin(
@@ -28,6 +71,16 @@ class TempETAPlugin(
     Implements OctoPrint Issue #469: Show estimated time remaining
     for printer heating (bed, hotend, chamber).
     """
+
+    # OctoPrint injects these attributes at runtime. Define them explicitly so
+    # static type checkers (Pylance/Pyright) don't treat them as Optional/None.
+    _logger: LoggerLike
+    _settings: SettingsLike
+    _printer: PrinterLike
+    _printer_profile_manager: PrinterProfileManagerLike
+    _plugin_manager: PluginManagerLike
+    _identifier: str
+    _plugin_version: str
 
     def __init__(self):
         """Initialize plugin with temperature history tracking."""
@@ -47,7 +100,7 @@ class TempETAPlugin(
         # Persist history per printer profile (file per profile id).
         # Note: ETA uses only the most recent seconds of history, so we keep
         # persistence bounded by both maxlen and a max-age filter on load.
-        self._active_profile_id = None
+        self._active_profile_id: Optional[str] = None
         self._persist_interval = 10.0
         self._last_persist_time = 0.0
         self._persist_max_age_seconds = 180.0
@@ -329,12 +382,13 @@ class TempETAPlugin(
 
     def _persist_current_profile_history(self) -> None:
         """Persist current in-memory history to the active profile's file."""
-        if not getattr(self, "_active_profile_id", None):
+        profile_id = getattr(self, "_active_profile_id", None)
+        if not profile_id:
             return
         if not self._history_dirty:
             return
         try:
-            path = self._get_profile_history_path(self._active_profile_id)
+            path = self._get_profile_history_path(profile_id)
             with self._lock:
                 samples = {
                     heater: [[ts, actual, target] for (ts, actual, target) in history]
@@ -348,7 +402,7 @@ class TempETAPlugin(
             payload = {
                 "version": 1,
                 "saved_at": time.time(),
-                "profile_id": self._active_profile_id,
+                "profile_id": profile_id,
                 "history_size": self._history_maxlen,
                 "samples": samples,
             }
@@ -356,14 +410,14 @@ class TempETAPlugin(
             self._history_dirty = False
             self._debug_log(
                 "Persisted history profile=%s samples=%d path=%s",
-                self._active_profile_id,
+                profile_id,
                 total_samples,
                 str(path),
             )
         except Exception:
             self._logger.debug(
                 "Failed to persist history for profile '%s'",
-                self._active_profile_id,
+                str(profile_id),
                 exc_info=True,
             )
 
@@ -626,9 +680,13 @@ class TempETAPlugin(
                 # - target must be set
                 # - we must be below target
                 # - remaining must be >= configured threshold
+                target_raw = temps.get("target", 0)
+                actual_raw = temps.get("actual")
+                if actual_raw is None:
+                    continue
                 try:
-                    target = float(temps.get("target", 0) or 0)
-                    actual = float(temps.get("actual"))
+                    target = float(target_raw or 0)
+                    actual = float(actual_raw)
                 except Exception:
                     continue
 
@@ -951,7 +1009,7 @@ class TempETAPlugin(
         )
 
     # TemplatePlugin mixin
-    def is_template_autoescaped(self) -> bool:
+    def is_template_autoescaped(self) -> bool:  # pyright: ignore
         """Enable autoescaping for all plugin templates.
 
         Opt-in to OctoPrint's template autoescaping (OctoPrint 1.11+) to reduce
