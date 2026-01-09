@@ -17,7 +17,6 @@ from setuptools.command.sdist import sdist as _sdist
 
 
 def _sync_translations() -> None:
-
     """Sync top-level translations into the package directory.
 
     Wheels include package data, but do not include arbitrary top-level folders.
@@ -66,7 +65,6 @@ class sdist(_sdist):
 
 
 setup(
-
     cmdclass={
         "build_py": build_py,
         "sdist": sdist,

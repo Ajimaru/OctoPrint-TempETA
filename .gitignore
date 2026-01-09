@@ -18,6 +18,9 @@ htmlcov
 .vscode
 *.bak
 
+# pre-commit/prettier temporary install artifacts
+node_modules/
+
 # Development-only folders (not for GitHub)
 .drafts/
 .local/

@@ -37,7 +37,7 @@
 2. Navigate to **Settings** → **Plugin Manager**
 3. Click **Get More...**
 4. Click **Install from URL** and enter:
-  `https://github.com/Ajimaru/OctoPrint-TempETA/archive/refs/heads/main.zip`
+   `https://github.com/Ajimaru/OctoPrint-TempETA/archive/refs/heads/main.zip`
 5. Click **Install**
 6. Restart OctoPrint
 
@@ -82,20 +82,20 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 
 The following defaults apply to the user-editable plugin settings:
 
-| Setting                 | Key                       | Default      |
-| ----------------------- | ------------------------- | ------------ |
-| Enable Temperature ETA  | `enabled`                 | `true`       |
-| Hide ETA while printing | `suppress_while_printing` | `false`      |
-| Show in sidebar         | `show_in_sidebar`         | `true`       |
-| Show in navbar          | `show_in_navbar`          | `true`       |
-| Show in tab             | `show_in_tab`             | `true`       |
-| Temperature display     | `temp_display`            | `octoprint`  |
-| Heating threshold       | `threshold_start`         | `5.0 °C`     |
-| Threshold unit          | `threshold_unit`          | `octoprint`  |
-| Algorithm               | `algorithm`               | `linear`     |
-| Update Interval         | `update_interval`         | `1.0 s`      |
-| History Size            | `history_size`            | `60`         |
-| Enable debug logging    | `debug_logging`           | `false`      |
+| Setting                 | Key                       | Default     |
+| ----------------------- | ------------------------- | ----------- |
+| Enable Temperature ETA  | `enabled`                 | `true`      |
+| Hide ETA while printing | `suppress_while_printing` | `false`     |
+| Show in sidebar         | `show_in_sidebar`         | `true`      |
+| Show in navbar          | `show_in_navbar`          | `true`      |
+| Show in tab             | `show_in_tab`             | `true`      |
+| Temperature display     | `temp_display`            | `octoprint` |
+| Heating threshold       | `threshold_start`         | `5.0 °C`    |
+| Threshold unit          | `threshold_unit`          | `octoprint` |
+| Algorithm               | `algorithm`               | `linear`    |
+| Update Interval         | `update_interval`         | `1.0 s`     |
+| History Size            | `history_size`            | `60`        |
+| Enable debug logging    | `debug_logging`           | `false`     |
 
 ## How It Works
 

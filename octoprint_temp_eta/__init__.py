@@ -2,11 +2,11 @@
 from __future__ import absolute_import
 
 import json
+import math
 import re
 import threading
 import time
 from collections import deque
-import math
 from pathlib import Path
 from typing import Any, Dict
 
@@ -24,7 +24,7 @@ class TempETAPlugin(
     octoprint.plugin.SimpleApiPlugin,
 ):
     """Main plugin implementation for Temperature ETA.
-    
+
     Implements OctoPrint Issue #469: Show estimated time remaining
     for printer heating (bed, hotend, chamber).
     """
@@ -109,7 +109,9 @@ class TempETAPlugin(
             self._debug_logging_enabled = False
             return
         try:
-            self._debug_logging_enabled = bool(self._settings.get_boolean(["debug_logging"]))
+            self._debug_logging_enabled = bool(
+                self._settings.get_boolean(["debug_logging"])
+            )
         except Exception:
             self._debug_logging_enabled = False
 
@@ -123,7 +125,9 @@ class TempETAPlugin(
             # Never fail the callback/logging due to formatting issues.
             pass
 
-    def _debug_log_throttled(self, now: float, interval: float, message: str, *args: Any) -> None:
+    def _debug_log_throttled(
+        self, now: float, interval: float, message: str, *args: Any
+    ) -> None:
         """Throttled debug logging to avoid flooding the log."""
         if not self._debug_logging_enabled:
             return
@@ -182,7 +186,11 @@ class TempETAPlugin(
                 path.unlink()
                 deleted = True
         except Exception:
-            self._logger.debug("Failed to delete history file for profile '%s'", str(profile_id), exc_info=True)
+            self._logger.debug(
+                "Failed to delete history file for profile '%s'",
+                str(profile_id),
+                exc_info=True,
+            )
 
         with self._lock:
             heaters = list(self._temp_history.keys())
@@ -210,9 +218,13 @@ class TempETAPlugin(
                         path.unlink()
                         deleted_count += 1
                 except Exception:
-                    self._logger.debug("Failed to delete history file '%s'", str(path), exc_info=True)
+                    self._logger.debug(
+                        "Failed to delete history file '%s'", str(path), exc_info=True
+                    )
         except Exception:
-            self._logger.debug("Failed to enumerate history files in '%s'", str(folder), exc_info=True)
+            self._logger.debug(
+                "Failed to enumerate history files in '%s'", str(folder), exc_info=True
+            )
 
         with self._lock:
             heaters = list(self._temp_history.keys())
@@ -274,7 +286,11 @@ class TempETAPlugin(
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
-            self._logger.debug("Failed to read history file for profile '%s'", profile_id, exc_info=True)
+            self._logger.debug(
+                "Failed to read history file for profile '%s'",
+                profile_id,
+                exc_info=True,
+            )
             return {}
 
         samples = payload.get("samples") if isinstance(payload, dict) else None
@@ -305,7 +321,9 @@ class TempETAPlugin(
                 cleaned.append((ts, actual, target))
 
             if cleaned:
-                loaded[heater] = deque(cleaned[-self._history_maxlen :], maxlen=self._history_maxlen)
+                loaded[heater] = deque(
+                    cleaned[-self._history_maxlen :], maxlen=self._history_maxlen
+                )
 
         return loaded
 
@@ -336,9 +354,18 @@ class TempETAPlugin(
             }
             path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
             self._history_dirty = False
-            self._debug_log("Persisted history profile=%s samples=%d path=%s", self._active_profile_id, total_samples, str(path))
+            self._debug_log(
+                "Persisted history profile=%s samples=%d path=%s",
+                self._active_profile_id,
+                total_samples,
+                str(path),
+            )
         except Exception:
-            self._logger.debug("Failed to persist history for profile '%s'", self._active_profile_id, exc_info=True)
+            self._logger.debug(
+                "Failed to persist history for profile '%s'",
+                self._active_profile_id,
+                exc_info=True,
+            )
 
     def _maybe_persist_history(self, now: float) -> None:
         """Persist history occasionally to avoid frequent disk writes."""
@@ -382,7 +409,11 @@ class TempETAPlugin(
                     profile_name = profile.get("name", "unknown")
                     heated_bed = bool(profile.get("heatedBed", False))
                     heated_chamber = bool(profile.get("heatedChamber", False))
-                    extruder_data = profile.get("extruder", {}) if isinstance(profile.get("extruder", {}), dict) else {}
+                    extruder_data = (
+                        profile.get("extruder", {})
+                        if isinstance(profile.get("extruder", {}), dict)
+                        else {}
+                    )
                     extruder_count = int(extruder_data.get("count", 0) or 0)
                     self._debug_log(
                         "Profile summary id=%s name=%s extruders=%d heatedBed=%s heatedChamber=%s",
@@ -408,7 +439,9 @@ class TempETAPlugin(
         self._history_dirty = False
 
         if not force:
-            self._debug_log("Cleared live (RAM) history for new profile=%s", str(profile_id))
+            self._debug_log(
+                "Cleared live (RAM) history for new profile=%s", str(profile_id)
+            )
 
         # Reset cached heater support decisions for the new profile.
         self._last_heater_support_decision = {}
@@ -471,6 +504,7 @@ class TempETAPlugin(
         Returns:
             bool: True if heater is supported by current profile
         """
+
         def _log_support_if_changed(supported: bool, details: str) -> None:
             if not self._debug_logging_enabled:
                 return
@@ -478,7 +512,12 @@ class TempETAPlugin(
             prev = self._last_heater_support_decision.get(key)
             if prev is None or bool(prev) != bool(supported):
                 self._last_heater_support_decision[key] = bool(supported)
-                self._debug_log("Heater support heater=%s supported=%s %s", str(heater_name), str(bool(supported)), details)
+                self._debug_log(
+                    "Heater support heater=%s supported=%s %s",
+                    str(heater_name),
+                    str(bool(supported)),
+                    details,
+                )
 
         try:
             profile = self._printer_profile_manager.get_current_or_default()
@@ -489,28 +528,41 @@ class TempETAPlugin(
             profile_name = profile.get("name", "unknown")
             heated_bed = bool(profile.get("heatedBed", False))
             heated_chamber = bool(profile.get("heatedChamber", False))
-            extruder_data = profile.get("extruder", {}) if isinstance(profile.get("extruder", {}), dict) else {}
+            extruder_data = (
+                profile.get("extruder", {})
+                if isinstance(profile.get("extruder", {}), dict)
+                else {}
+            )
             extruder_count = int(extruder_data.get("count", 0) or 0)
 
             if heater_name == "bed":
                 supported = heated_bed
-                _log_support_if_changed(supported, f"profile={profile_name} heatedBed={heated_bed}")
+                _log_support_if_changed(
+                    supported, f"profile={profile_name} heatedBed={heated_bed}"
+                )
                 return supported
 
             if heater_name == "chamber":
                 supported = heated_chamber
-                _log_support_if_changed(supported, f"profile={profile_name} heatedChamber={heated_chamber}")
+                _log_support_if_changed(
+                    supported, f"profile={profile_name} heatedChamber={heated_chamber}"
+                )
                 return supported
 
             if isinstance(heater_name, str) and heater_name.startswith("tool"):
                 try:
                     tool_idx = int(heater_name.replace("tool", ""))
                 except (ValueError, TypeError):
-                    _log_support_if_changed(False, f"profile={profile_name} invalid_tool_index")
+                    _log_support_if_changed(
+                        False, f"profile={profile_name} invalid_tool_index"
+                    )
                     return False
 
                 supported = tool_idx < extruder_count
-                _log_support_if_changed(supported, f"profile={profile_name} tool_idx={tool_idx} extruder_count={extruder_count}")
+                _log_support_if_changed(
+                    supported,
+                    f"profile={profile_name} tool_idx={tool_idx} extruder_count={extruder_count}",
+                )
                 return supported
 
             _log_support_if_changed(False, f"profile={profile_name} unknown_heater")
@@ -556,7 +608,9 @@ class TempETAPlugin(
         # Log all heaters received from OctoPrint
         heaters_in_data = [k for k, v in data.items() if isinstance(v, dict)]
         if heaters_in_data:
-            self._logger.debug(f"Received temperature data for heaters: {heaters_in_data}")
+            self._logger.debug(
+                f"Received temperature data for heaters: {heaters_in_data}"
+            )
 
         epsilon_hold = 0.2
 
@@ -611,7 +665,9 @@ class TempETAPlugin(
         )
 
         # Update frontend at configurable interval (default 1Hz)
-        if current_time - self._last_update_time >= self._settings.get_float(["update_interval"]):
+        if current_time - self._last_update_time >= self._settings.get_float(
+            ["update_interval"]
+        ):
             self._last_update_time = current_time
             self._calculate_and_broadcast_eta(data)
             self._maybe_persist_history(current_time)
@@ -635,7 +691,11 @@ class TempETAPlugin(
             event (str): OctoPrint event name
             payload (dict): Event payload
         """
-        if event in ("Disconnected", "Error", "Shutdown"):  # clear UI on connection loss
+        if event in (
+            "Disconnected",
+            "Error",
+            "Shutdown",
+        ):  # clear UI on connection loss
             # Persist what we have before clearing.
             self._persist_current_profile_history()
             with self._lock:
@@ -646,7 +706,13 @@ class TempETAPlugin(
             self._send_clear_messages(heaters)
 
         # Reset suppression flag on job lifecycle changes; actual suppression is decided in the temperature callback.
-        if event in ("PrintStarted", "PrintResumed", "PrintDone", "PrintFailed", "PrintCancelled"):
+        if event in (
+            "PrintStarted",
+            "PrintResumed",
+            "PrintDone",
+            "PrintFailed",
+            "PrintCancelled",
+        ):
             self._suppressing_due_to_print = False
 
     def _calculate_and_broadcast_eta(self, data):
@@ -904,7 +970,12 @@ class TempETAPlugin(
         """
         return [
             dict(type="navbar", custom_bindings=True),
-            dict(type="sidebar", custom_bindings=False, name=gettext("Temperature ETA"), icon="fa fa-clock"),
+            dict(
+                type="sidebar",
+                custom_bindings=False,
+                name=gettext("Temperature ETA"),
+                icon="fa fa-clock",
+            ),
             # Use OctoPrint's default settingsViewModel binding for settings UI.
             dict(type="settings", custom_bindings=True),
             dict(type="tab", custom_bindings=False),
@@ -931,7 +1002,10 @@ class TempETAPlugin(
 
         self._refresh_debug_logging_flag()
         if old_debug != bool(self._debug_logging_enabled):
-            self._logger.info("Debug logging %s", "enabled" if self._debug_logging_enabled else "disabled")
+            self._logger.info(
+                "Debug logging %s",
+                "enabled" if self._debug_logging_enabled else "disabled",
+            )
 
         new_history_maxlen = self._read_history_maxlen_setting()
         if new_history_maxlen != old_history_maxlen:
@@ -1015,7 +1089,13 @@ class TempETAPlugin(
                     str(profile_id),
                     int(deleted_count),
                 )
-            return jsonify({"success": True, "profile_id": profile_id, "deleted_files": deleted_count})
+            return jsonify(
+                {
+                    "success": True,
+                    "profile_id": profile_id,
+                    "deleted_files": deleted_count,
+                }
+            )
 
         if command == "reset_settings_defaults":
             self._reset_user_settings_to_defaults()
@@ -1026,7 +1106,9 @@ class TempETAPlugin(
             # Notify all connected clients so the settings UI can refresh via requestData().
             if getattr(self, "_plugin_manager", None):
                 try:
-                    self._plugin_manager.send_plugin_message(self._identifier, {"type": "settings_reset"})
+                    self._plugin_manager.send_plugin_message(
+                        self._identifier, {"type": "settings_reset"}
+                    )
                 except Exception:
                     pass
 
@@ -1045,13 +1127,11 @@ class TempETAPlugin(
             temp_eta=dict(
                 displayName="Temperature ETA Plugin",
                 displayVersion=self._plugin_version,
-
                 # version check: github repository
                 type="github_release",
                 user="Ajimaru",
                 repo="OctoPrint-TempETA",
                 current=self._plugin_version,
-
                 # update method: pip
                 pip="https://github.com/Ajimaru/OctoPrint-TempETA/archive/{target_version}.zip",
             )

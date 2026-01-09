@@ -6,9 +6,9 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
-        
+
         **Before you continue:** Have you checked if this issue already exists?
-        
+
   - type: textarea
     id: what-happened
     attributes:
@@ -17,7 +17,7 @@ body:
       placeholder: Tell us what went wrong!
     validations:
       required: true
-      
+
   - type: textarea
     id: expected
     attributes:
@@ -25,7 +25,7 @@ body:
       description: What was the expected behavior?
     validations:
       required: true
-      
+
   - type: textarea
     id: reproduction
     attributes:
@@ -37,7 +37,7 @@ body:
         3. See error...
     validations:
       required: true
-      
+
   - type: input
     id: version
     attributes:
@@ -46,7 +46,7 @@ body:
       placeholder: e.g., 0.1.0
     validations:
       required: true
-      
+
   - type: input
     id: octoprint-version
     attributes:
@@ -55,14 +55,14 @@ body:
       placeholder: e.g., 1.9.3
     validations:
       required: true
-      
+
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output.
       render: shell
-      
+
   - type: checkboxes
     id: checklist
     attributes:
