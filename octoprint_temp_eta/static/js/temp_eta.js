@@ -163,6 +163,17 @@ $(function() {
         }
 
         self.settingsViewModel = parameters[0];
+        self.loginState = parameters[3] || null;
+        self.isAdmin = ko.pureComputed(function() {
+            try {
+                if (self.loginState && typeof self.loginState.isAdmin === "function") {
+                    return !!self.loginState.isAdmin();
+                }
+            } catch (e) {
+                // ignore
+            }
+            return false;
+        });
         self._resolveSettingsRoot = function() {
             // OctoPrint versions can differ in how the settings model is nested.
             // We want an object where `plugins.temp_eta.*` and `appearance.*` exist.
@@ -883,7 +894,7 @@ $(function() {
     // This is how our plugin registers itself with the application
     OCTOPRINT_VIEWMODELS.push({
         construct: TempETAViewModel,
-        dependencies: ["settingsViewModel", "printerStateViewModel", "printerProfilesViewModel"],
+        dependencies: ["settingsViewModel", "printerStateViewModel", "printerProfilesViewModel", "loginStateViewModel"],
         elements: ["#tab_plugin_temp_eta", "#navbar_plugin_temp_eta", "#sidebar_plugin_temp_eta"]
     });
 });

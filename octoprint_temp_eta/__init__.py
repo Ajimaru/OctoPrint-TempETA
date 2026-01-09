@@ -904,7 +904,7 @@ class TempETAPlugin(
         """
         return [
             dict(type="navbar", custom_bindings=True),
-            dict(type="sidebar", custom_bindings=False, name=gettext("Temperature ETA"), icon="fas fa-clock"),
+            dict(type="sidebar", custom_bindings=False, name=gettext("Temperature ETA"), icon="fa fa-clock"),
             # Use OctoPrint's default settingsViewModel binding for settings UI.
             dict(type="settings", custom_bindings=True),
             dict(type="tab", custom_bindings=False),
@@ -980,7 +980,6 @@ class TempETAPlugin(
         """
         return dict(
             js=["js/temp_eta.js"],
-            css=["css/temp_eta.css"],
             less=["less/temp_eta.less"],
         )
 
@@ -995,7 +994,7 @@ class TempETAPlugin(
 
     def is_api_adminonly(self) -> bool:  # type: ignore[override]
         """Whether the Simple API is restricted to admin users."""
-        return False
+        return True
 
     def get_api_commands(self) -> Dict[str, list]:  # type: ignore[override]
         """Return supported Simple API commands for the plugin."""

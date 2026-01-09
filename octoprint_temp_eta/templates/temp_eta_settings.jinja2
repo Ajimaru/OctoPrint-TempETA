@@ -142,7 +142,7 @@
         <div class="control-group">
             <label class="control-label" for="temp_eta_reset_profile_history">{{ _('Reset profile history') }}</label>
             <div class="controls">
-                <button type="button" class="btn btn-danger" id="temp_eta_reset_profile_history"
+                <button type="button" class="btn btn-danger" id="temp_eta_reset_profile_history" data-bind="enable: isAdmin"
                         data-notify-title="{{ _('Temperature ETA') }}"
                         data-confirm-title="{{ _('Confirm reset') }}"
                         data-confirm-text="{{ _('Really delete all persisted ETA history JSON files for all printer profiles?') }}"
@@ -165,7 +165,7 @@
         <div class="control-group">
             <label class="control-label" for="temp_eta_restore_defaults">{{ _('Restore defaults') }}</label>
             <div class="controls">
-                <button type="button" class="btn btn-warning" id="temp_eta_restore_defaults"
+                <button type="button" class="btn btn-warning" id="temp_eta_restore_defaults" data-bind="enable: isAdmin"
                         data-notify-title="{{ _('Temperature ETA') }}"
                         data-confirm-title="{{ _('Confirm reset') }}"
                         data-confirm-text="{{ _('Restore all Temperature ETA settings to their default values?') }}"
