@@ -29,6 +29,14 @@
 - 🌍 **Internationalization**: English and German included, easily extensible
 - 🚀 **Lightweight**: Minimal performance impact (~2Hz monitoring)
 
+## Screenshots
+
+| Heating ETA                                                                | Tab + Sidebar                                                              |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| ![Heating ETA](assets/img/Temperature_ETA_heating.png)                     | ![Tab and Sidebar ETA](assets/img/Temperature_ETA_Tab_SideBar.png)         |
+| Settings (1)                                                               | Settings (2)                                                               |
+| ![Temperature ETA settings (1)](assets/img/Temperature_ETA_settings_1.png) | ![Temperature ETA settings (2)](assets/img/Temperature_ETA_settings_2.png) |
+
 ## Installation
 
 ### Via Plugin Manager (Recommended)
