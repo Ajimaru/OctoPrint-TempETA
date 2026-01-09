@@ -2,12 +2,9 @@
 
 Thanks for your interest in contributing to OctoPrint Temperature ETA.
 
-This repository follows OctoPrint-style contribution expectations: focused changes, clean history, tested code, and consistent style.
-
 ## Before you start
 
 - Please keep issues and pull requests focused: **one bug/feature per PR**.
-- For support questions, consider the OctoPrint Community Forum first: <https://community.octoprint.org/>
 - If your change affects user-facing behavior, please describe how you tested it.
 
 ## Bug reports
@@ -18,7 +15,7 @@ When reporting a bug, please include:
 - Plugin version
 - Steps to reproduce (as minimal as possible)
 - Relevant log excerpts
-- Whether the issue reproduces with other third-party plugins disabled (OctoPrint Safe Mode)
+- Screenshots if applicable
 
 ## Development setup
 
@@ -85,10 +82,4 @@ Do not commit generated or environment-specific files such as:
 - `dist/`, `build/`, `*.egg-info/`
 - `__pycache__/`, `.pytest_cache/`, `.coverage/`, `htmlcov/`
 - local virtual environments (`venv/`, `.venv/`)
-
-## AI usage disclosure
-
-OctoPrint asks contributors to disclose the use of generative AI tools.
-
-- If you used any AI tool (including GitHub Copilot) while preparing a PR, please mention it in the PR description.
-- Contributions must still meet normal quality standards: you should understand the changes and be able to explain them.
+- IDE/editor configs (`.idea/`, `.vscode/`)

@@ -145,6 +145,8 @@ Contributions welcome! Please:
 3. Write tests for new features
 4. Submit a pull request
 5. For local development scripts (setup, restart helper, post-commit build hook), see [.development/README.md](.development/README.md).
+6. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+7. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
