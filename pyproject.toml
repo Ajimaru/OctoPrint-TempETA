@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-TempETA"
-version = "0.2.1"
+version = "0.2.2"
 description = "OctoPrint plugin to show estimated time remaining for printer heating (implements Issue #469)"
 authors = [
     {name = "AjimaruGDR", email = "ajimaru_gdr@pm.me"}

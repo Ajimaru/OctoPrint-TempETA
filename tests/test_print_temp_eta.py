@@ -10,7 +10,7 @@ These tests follow the guidance in tests/README.md:
 from __future__ import annotations
 
 from collections import deque
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import pytest
 
@@ -42,10 +42,16 @@ class DummySettings:
         return bool(self._values.get(path[0]))
 
     def get_float(self, path: List[str]) -> float:
-        return float(self._values.get(path[0]))
+        value = self._values.get(path[0])
+        if value is None:
+            return 0.0
+        return float(value)
 
     def get_int(self, path: List[str]) -> int:
-        return int(self._values.get(path[0]))
+        value = self._values.get(path[0])
+        if value is None:
+            return 0
+        return int(value)
 
     def get(self, path: List[str]) -> Any:
         return self._values.get(path[0])
@@ -77,11 +83,12 @@ class DummyPrinter:
 def plugin() -> TempETAPlugin:
     """Create a plugin instance with mocked OctoPrint dependencies."""
     p = TempETAPlugin()
-    p._identifier = "temp_eta"  # type: ignore[attr-defined]
-    p._logger = DummyLogger()  # type: ignore[attr-defined]
-    p._plugin_manager = DummyPluginManager()  # type: ignore[attr-defined]
-    p._printer = DummyPrinter(printing=False)  # type: ignore[attr-defined]
-    p._printer_profile_manager = DummyPrinterProfileManager(
+    p_any = cast(Any, p)
+    p_any._identifier = "temp_eta"
+    p_any._logger = DummyLogger()
+    p_any._plugin_manager = DummyPluginManager()
+    p_any._printer = DummyPrinter(printing=False)
+    p_any._printer_profile_manager = DummyPrinterProfileManager(
         {
             "id": "default",
             "name": "Default",
@@ -89,8 +96,8 @@ def plugin() -> TempETAPlugin:
             "heatedChamber": False,
             "extruder": {"count": 1},
         }
-    )  # type: ignore[attr-defined]
-    p._settings = DummySettings(
+    )
+    p_any._settings = DummySettings(
         {
             "enabled": True,
             "suppress_while_printing": False,
@@ -100,10 +107,10 @@ def plugin() -> TempETAPlugin:
             "history_size": 60,
             "debug_logging": False,
         }
-    )  # type: ignore[attr-defined]
+    )
 
     # Avoid implicit profile switching side effects unless a test wants them.
-    p._active_profile_id = "default"  # type: ignore[attr-defined]
+    p_any._active_profile_id = "default"
     return p
 
 
@@ -202,8 +209,9 @@ def test_temperature_callback_records_only_when_target_set_and_far_enough(
 def test_suppress_while_printing_clears_once_and_stops_updates(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
-    plugin._settings.set(["suppress_while_printing"], True)
-    plugin._printer = DummyPrinter(printing=True)  # type: ignore[attr-defined]
+    settings = cast(DummySettings, cast(Any, plugin)._settings)
+    settings.set(["suppress_while_printing"], True)
+    cast(Any, plugin)._printer = DummyPrinter(printing=True)
 
     # Ensure we don't trigger profile-switch clear noise.
     plugin._active_profile_id = "default"  # type: ignore[attr-defined]
