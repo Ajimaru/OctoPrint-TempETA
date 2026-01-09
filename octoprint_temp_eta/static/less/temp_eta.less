@@ -1,1 +1,287 @@
-/* TODO: Add your plugin's LESS here */
+/* Temperature ETA Plugin Styles */
+/* Author: AjimaruGDR */
+/* License: AGPLv3 */
+
+#navbar_plugin_temp_eta {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+    padding: 0 10px;
+    margin-left: 10px;
+}
+
+#sidebar_plugin_temp_eta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#navbar_plugin_temp_eta .temp-eta-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.hidden {
+    display: none;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.hidden {
+    display: none;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i {
+    color: #d9534f;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i {
+    color: #d9534f;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value {
+    color: #5bc0de;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value {
+    color: #5bc0de;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i {
+    color: #5bc0de;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i {
+    color: #5bc0de;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
+    color: #5cb85c;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
+    color: #5cb85c;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i {
+    color: #5cb85c;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i {
+    color: #5cb85c;
+}
+
+#navbar_plugin_temp_eta .temp-eta-label {
+    width: 18px;
+    text-align: center;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-label {
+    width: 18px;
+    text-align: center;
+}
+
+#navbar_plugin_temp_eta .temp-eta-label i {
+    font-size: 14px;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-label i {
+    font-size: 14px;
+}
+
+#navbar_plugin_temp_eta .temp-eta-name {
+    font-size: 11px;
+    opacity: 0.85;
+    margin-right: 2px;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-name {
+    font-size: 11px;
+    opacity: 0.85;
+    margin-right: 2px;
+}
+
+#navbar_plugin_temp_eta .temp-eta-metrics {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-metrics {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-left: auto;
+}
+
+#navbar_plugin_temp_eta .temp-eta-value,
+#navbar_plugin_temp_eta .temp-eta-temp {
+    min-width: 48px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-value,
+#sidebar_plugin_temp_eta .temp-eta-temp {
+    min-width: 48px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+#navbar_plugin_temp_eta .temp-eta-temp {
+    font-size: 10px;
+    opacity: 0.75;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-temp {
+    font-size: 10px;
+    opacity: 0.75;
+}
+
+#temp_eta_content .panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-left: 0;
+    text-align: center;
+}
+
+#temp_eta_content .panel-title i {
+    margin: 0;
+}
+
+#temp_eta_content .eta-display {
+    font-family: "Courier New", monospace;
+    margin: 5px 0 10px;
+}
+
+#temp_eta_content .eta-display.eta-warning {
+    color: #d9534f;
+}
+
+#temp_eta_content .eta-display.eta-info {
+    color: #5bc0de;
+}
+
+#temp_eta_content .eta-display.eta-normal {
+    color: #5cb85c;
+}
+
+#temp_eta_content .panel-body {
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 10px 8px 14px;
+}
+
+#temp_eta_content .panel + .panel {
+    margin-top: 12px;
+}
+
+#temp_eta_content .panel-body .temp-eta-inline {
+    margin-top: 4px;
+    margin-bottom: 0;
+    font-size: 13px;
+}
+
+#temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+#temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-logo {
+    flex: 0 0 auto;
+}
+
+#temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-logo-img {
+    width: 56px;
+    height: auto;
+    display: block;
+}
+
+#temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text {
+    flex: 1 1 auto;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+}
+
+#temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+#temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+    #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-inner {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text {
+        text-align: left;
+    }
+}
+
+/* Settings form styling */
+.temp-eta-settings .temp-eta-settings-group {
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+
+.temp-eta-settings .temp-eta-settings-group:first-of-type {
+    margin-top: 0;
+}
+
+.temp-eta-settings .temp-eta-settings-divider {
+    margin: 12px 0 14px;
+}
+
+.temp-eta-settings .help-block {
+    display: block;
+    margin: 5px 0 0 0;
+    padding: 0;
+    color: #666;
+}
+
+.temp-eta-settings input[type="number"] {
+    width: 120px;
+}
+
+.temp-eta-settings select {
+    width: 280px;
+}

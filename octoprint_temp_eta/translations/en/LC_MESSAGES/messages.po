@@ -335,3 +335,4 @@ msgstr "Configure algorithm and threshold in Settings → Temperature ETA"
 #~ "Exponential: Accounts for thermal asymptotic"
 #~ " behavior"
 #~ msgstr ""
+

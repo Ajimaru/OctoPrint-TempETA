@@ -18,6 +18,8 @@
 
 **Docs**: https://docs.octoprint.org/en/main/plugins/index.html | Contributing: https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md
 
+**Template Autoescape**: [How do I improve my plugin's security by enabling autoescape?](https://faq.octoprint.org/plugin-autoescape)
+
 ### File Structure & Plugin Class
 ```
 octoprint_temp_eta/__init__.py       # Main plugin
@@ -46,6 +48,8 @@ class TempETAPlugin(
 - **Line length**: 120 chars max (black)
 - **No dead code**: Remove all commented-out experiments
 - **Import order**: stdlib → third-party → octoprint → local
+
+**When generating code**: Follow OctoPrint standards, use English, include docstrings, test edge cases, ensure thread safety, keep performance in mind.
 
 ```python
 import threading
@@ -238,7 +242,3 @@ message = gettext("Heating to {target}°C, ETA: {eta}").format(target=X, eta=Y)
 - Mixins: https://docs.octoprint.org/en/main/plugins/mixins.html
 - Contributing: https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md
 - Knockout.js: https://knockoutjs.com/documentation/introduction.html
-
----
-
-**When generating code**: Follow OctoPrint standards, use English, include docstrings, test edge cases, ensure thread safety, keep performance in mind.

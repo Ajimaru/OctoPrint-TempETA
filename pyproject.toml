@@ -20,6 +20,13 @@ dependencies = []
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.package-data]
+octoprint_temp_eta = [
+    "translations/**/*.po",
+    "translations/**/*.mo",
+    "translations/**/*.pot",
+]
+
 [tool.setuptools.packages.find]
 include = [
     "octoprint_temp_eta",

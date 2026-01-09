@@ -1,5 +1,8 @@
 include README.md
 include requirements.txt
+include babel.cfg
+include translations/messages.pot
 recursive-include octoprint_temp_eta/templates *
 recursive-include octoprint_temp_eta/static *
-recursive-include octoprint_temp_eta/translations *
+recursive-include octoprint_temp_eta/translations *.po *.mo *.pot
+recursive-include translations *.po *.mo

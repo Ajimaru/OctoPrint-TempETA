@@ -1,3 +1,18 @@
-<a href="#" data-bind="attr: {title: 'Temperature ETA'}">
-    <i class="fa fa-clock-o"></i> ETA
-</a>
+<div id="navbar_plugin_temp_eta" class="nav-item" data-bind="visible: showETA()">
+    <!-- ko foreach: heaterColumns() -->
+    <div class="temp-eta-column">
+        <!-- ko foreach: $data -->
+        <div class="temp-eta-item" data-bind="css: $root.getETAClass($data)">
+            <span class="temp-eta-label">
+                <i class="fa" data-bind="css: $root.getHeaterIcon(name)"></i>
+            </span>
+            <span class="temp-eta-name" data-bind="text: $root.getHeaterLabel(name)"></span>
+            <span class="temp-eta-metrics">
+                <span class="temp-eta-value" data-bind="text: $root.formatETA(eta())"></span>
+                <span class="temp-eta-temp" data-bind="text: $root.formatTempDisplay(actual()) + '/' + $root.formatTempDisplay(target())"></span>
+            </span>
+        </div>
+        <!-- /ko -->
+    </div>
+    <!-- /ko -->
+</div>

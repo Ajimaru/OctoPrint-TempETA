@@ -1,5 +1,49 @@
-<div id="temp_eta_content">
-    <h3>Temperature ETA</h3>
-    <p>Plugin content goes here.</p>
-    <!-- TODO: Add your plugin's tab content here -->
+<div id="temp_eta_content" data-bind="visible: isComponentEnabled('tab')">
+    <h3>{{ _('Temperature ETA Monitor') }}</h3>
+
+    <div class="alert alert-info temp-eta-tab-info">
+        <div class="temp-eta-tab-info-inner">
+            <div class="temp-eta-tab-info-logo">
+                <img class="temp-eta-tab-info-logo-img"
+                     src="{{ url_for('plugin.temp_eta.static', filename='img/temp_eta.svg') }}"
+                     alt="{{ _('Temperature ETA') }}">
+            </div>
+            <div class="temp-eta-tab-info-text">
+                <strong>{{ _('Real-time Heating Countdown') }}</strong>
+                <p>{{ _('Watch the estimated time remaining for your printer to heat up the bed, hotend, or chamber.') }}</p>
+                <p>{{ _('Configure algorithm and threshold in Settings → Temperature ETA') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Dynamically generated Heater Cards -->
+        <!-- ko foreach: displayHeaters -->
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <i class="fa" data-bind="css: $parent.getHeaterIcon(name)"></i>
+                        <span data-bind="text: $parent.getHeaterLabel(name)"></span>
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    <div class="text-center" data-bind="if: $parent.isETAVisible(eta())">
+                        <h2 class="eta-display" data-bind="text: $parent.formatETA(eta()), css: $parent.getETAClass($data)">
+                            --:--
+                        </h2>
+                        <p class="temp-eta-inline">
+                            <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
+                            <span data-bind="text: $parent.formatTempDisplay(target())"></span>
+                        </p>
+                    </div>
+                    <div class="text-center" data-bind="ifnot: $parent.isETAVisible(eta())">
+                        <p class="text-muted" data-bind="text: $parent.getHeaterLabel(name) + ' not heating'"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+    </div>
+
 </div>

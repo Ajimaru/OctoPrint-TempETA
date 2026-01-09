@@ -1,4 +1,202 @@
-<form class="form-horizontal">
-    <h4>Temperature ETA Settings</h4>
-    <!-- TODO: Add your plugin's settings here -->
+<form id="settings_plugin_temp_eta" class="form-horizontal temp-eta-settings">
+    <fieldset>
+        <legend>{{ _('Temperature ETA Settings') }}</legend>
+
+        <h4 class="temp-eta-settings-group">{{ _('Basic Settings') }}</h4>
+
+        <!-- Enable/Disable Plugin -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_enabled">{{ _('Enable Temperature ETA') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_enabled" data-bind="checked: settings.plugins.temp_eta.enabled">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_suppress_while_printing">{{ _('Hide ETA while printing') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_suppress_while_printing"
+                       data-bind="checked: settings.plugins.temp_eta.suppress_while_printing, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('If disabled: ETA is shown when the temperature difference to the target is at least the heating threshold. If enabled: ETA is only shown when no print job is active.') }}</p>
+            </div>
+        </div>
+
+        <!-- Heating Threshold -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_threshold">
+                {{ _('Heating threshold') }} <span data-bind="text: thresholdUnitLabel"></span>
+            </label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_threshold"
+                       data-bind="value: thresholdStartDisplay, enable: settings.plugins.temp_eta.enabled"
+                       min="1" max="50" step="0.5">
+                <p class="help-block">{{ _('Start ETA when target is this many degrees away') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_threshold_unit">{{ _('Threshold unit') }}</label>
+            <div class="controls">
+                <select class="input-xlarge" id="temp_eta_threshold_unit"
+                        data-bind="value: settings.plugins.temp_eta.threshold_unit, enable: settings.plugins.temp_eta.enabled">
+                    <option value="c">{{ _('Celsius (°C)') }}</option>
+                    <option value="f">{{ _('Fahrenheit (°F)') }}</option>
+                    <option value="octoprint">{{ _('Follow temperature display') }}</option>
+                </select>
+                <p class="help-block">{{ _('Internally, the calculation uses °C. If you choose °F here, the value will be converted automatically.') }}</p>
+            </div>
+        </div>
+
+        <!-- Algorithm Selection -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_algorithm">{{ _('Calculation Algorithm') }}</label>
+            <div class="controls">
+                <select class="input-xlarge" id="temp_eta_algorithm" data-bind="value: settings.plugins.temp_eta.algorithm">
+                    <option value="linear">{{ _('Linear (default)') }}</option>
+                    <option value="exponential">{{ _('Exponential') }}</option>
+                </select>
+                <p class="help-block">
+                    {{ _('Linear: Assumes constant heating rate, simple and fast. Exponential: Accounts for thermal asymptotic behavior, more accurate.') }}
+                </p>
+            </div>
+        </div>
+
+        <hr class="temp-eta-settings-divider">
+        <h4 class="temp-eta-settings-group">{{ _('Display') }}</h4>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_show_in_sidebar">{{ _('Show in sidebar') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_in_sidebar"
+                       data-bind="checked: settings.plugins.temp_eta.show_in_sidebar, enable: settings.plugins.temp_eta.enabled">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_show_in_navbar">{{ _('Show in navbar') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_in_navbar"
+                       data-bind="checked: settings.plugins.temp_eta.show_in_navbar, enable: settings.plugins.temp_eta.enabled">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_show_in_tab">{{ _('Show in tab') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_in_tab"
+                       data-bind="checked: settings.plugins.temp_eta.show_in_tab, enable: settings.plugins.temp_eta.enabled">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_temp_display">{{ _('Temperature display') }}</label>
+            <div class="controls">
+                <select class="input-xlarge" id="temp_eta_temp_display"
+                        data-bind="value: settings.plugins.temp_eta.temp_display, enable: settings.plugins.temp_eta.enabled">
+                    <option value="octoprint">{{ _('Use OctoPrint appearance setting') }}</option>
+                    <option value="c">{{ _('Celsius (°C)') }}</option>
+                    <option value="cf">{{ _('Celsius + Fahrenheit (°C/°F)') }}</option>
+                </select>
+                <p class="help-block">{{ _('Tip: In OctoPrint Settings → Appearance you can enable “Show temperatures in Fahrenheit as well as Celsius”. This plugin can also override that via the dropdown above.') }}</p>
+            </div>
+        </div>
+
+        <hr class="temp-eta-settings-divider">
+        <h4 class="temp-eta-settings-group">{{ _('Advanced Settings') }}</h4>
+
+        <!-- Update Interval -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_update_interval">{{ _('Update Interval (seconds)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_update_interval"
+                       data-bind="value: settings.plugins.temp_eta.update_interval"
+                       min="0.1" max="5" step="0.1">
+                <p class="help-block">{{ _('How often to update ETA display (lower = more responsive, higher = less CPU)') }}</p>
+            </div>
+        </div>
+
+        <!-- History Size -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_history_size">{{ _('Temperature History Size') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_history_size"
+                       data-bind="value: settings.plugins.temp_eta.history_size"
+                       min="10" max="300" step="10">
+                <p class="help-block">{{ _('Number of temperature samples to keep in history') }}</p>
+            </div>
+        </div>
+
+        <!-- Debug Logging -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_debug_logging">{{ _('Enable debug logging') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_debug_logging" data-bind="checked: settings.plugins.temp_eta.debug_logging">
+                <p class="help-block">{{ _('Write additional debug information to the OctoPrint log (may be noisy)') }}</p>
+            </div>
+        </div>
+
+        <hr class="temp-eta-settings-divider">
+        <h4 class="temp-eta-settings-group">{{ _('Maintenance') }}</h4>
+
+        <!-- Reset Profile History -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_reset_profile_history">{{ _('Reset profile history') }}</label>
+            <div class="controls">
+                <button type="button" class="btn btn-danger" id="temp_eta_reset_profile_history"
+                        data-notify-title="{{ _('Temperature ETA') }}"
+                        data-confirm-title="{{ _('Confirm reset') }}"
+                        data-confirm-text="{{ _('Really delete all persisted ETA history JSON files for all printer profiles?') }}"
+                        data-success-title="{{ _('Temperature ETA') }}"
+                        data-success-text-generic="{{ _('History reset completed.') }}"
+                        data-success-text-with-count="{{ _('Deleted persisted history for all profiles ({count} file(s)).') }}"
+                        data-success-text-none="{{ _('No persisted history files found.') }}"
+                        data-error-title="{{ _('Temperature ETA') }}"
+                        data-error-text="{{ _('Reset failed.') }}"
+                        data-error-no-api="{{ _('OctoPrint API not available.') }}">
+                    {{ _('Reset') }}
+                </button>
+                <p class="help-block">
+                    {{ _("Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder).") }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Restore Defaults -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_restore_defaults">{{ _('Restore defaults') }}</label>
+            <div class="controls">
+                <button type="button" class="btn btn-warning" id="temp_eta_restore_defaults"
+                        data-notify-title="{{ _('Temperature ETA') }}"
+                        data-confirm-title="{{ _('Confirm reset') }}"
+                        data-confirm-text="{{ _('Restore all Temperature ETA settings to their default values?') }}"
+                        data-success-title="{{ _('Temperature ETA') }}"
+                        data-success-text="{{ _('Defaults restored.') }}"
+                        data-error-title="{{ _('Temperature ETA') }}"
+                        data-error-text="{{ _('Restore defaults failed.') }}"
+                        data-error-no-api="{{ _('OctoPrint API not available.') }}">
+                    {{ _('Restore') }}
+                </button>
+                <p class="help-block">{{ _('Resets only this plugin\'s settings. ETA history files are not deleted (use the history reset below).') }}</p>
+            </div>
+        </div>
+    </fieldset>
 </form>
+
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            <i class="fa fa-info-circle"></i> {{ _('How it works') }}
+        </h4>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li>{{ _('Monitors temperature changes in real-time') }}</li>
+            <li>{{ _('Calculates heating rate (°C/second)') }}</li>
+            <li>{{ _('Estimates time to reach target temperature') }}</li>
+            <li>{{ _('Displays countdown in MM:SS format') }}</li>
+        </ul>
+        <p>
+            <small>{{ _('Adjust the algorithm, threshold, and polling interval above to tune the ETA calculation for your printer.') }}</small>
+        </p>
+    </div>
+</div>

@@ -5,20 +5,30 @@
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.4.0%2B-blue.svg)](https://octoprint.org)
 
-**Implements [OctoPrint Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469)**: Show estimated time remaining for printer heating.
-
-Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up. No more guessing how long until your print starts!
+<table>
+  <tr>
+    <td width="120" valign="top">
+      <img src="octoprint_temp_eta/static/img/temp_eta.svg" alt="Temperature ETA Logo" width="96" />
+    </td>
+    <td valign="middle">
+      <strong>
+        Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up.<br />
+        No more guessing how long until your print starts!
+      </strong>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
-- ⏱️ **Real-time ETA countdown** for bed and hotend heating
+- ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating
 - 🌡️ **Smart calculation algorithms**: Linear (default) and exponential models
-- 📊 **Flexible display**: Show ETA in navbar, sidebar, or both
-- 🎛️ **Configurable thresholds**: Start countdown when X°C below target
+- 📊 **Flexible display**: Show ETA in navbar, sidebar, and/or a dedicated tab
+- 🎛️ **Configurable thresholds**: Start countdown when within a configurable delta to target
+- 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
+- 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
 - 🌍 **Internationalization**: English and German included, easily extensible
 - 🚀 **Lightweight**: Minimal performance impact (~2Hz monitoring)
-- 🔧 **Per-heater configuration**: Enable/disable for tool0, bed, chamber
-- 📱 **Responsive design**: Works on desktop and mobile
 
 ## Installation
 
@@ -27,17 +37,15 @@ Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber i
 1. Open OctoPrint web interface
 2. Navigate to **Settings** → **Plugin Manager**
 3. Click **Get More...**
-4. Search for "Temperature ETA" or use this URL:
-   ```
-   https://github.com/yourusername/OctoPrint-TempETA/archive/main.zip
-   ```
+4. Click **Install from URL** and enter:
+  `https://github.com/Ajimaru/OctoPrint-TempETA/archive/refs/heads/main.zip`
 5. Click **Install**
 6. Restart OctoPrint
 
 ### Manual Installation
 
 ```bash
-pip install https://github.com/yourusername/OctoPrint-TempETA/archive/main.zip
+pip install https://github.com/Ajimaru/OctoPrint-TempETA/archive/refs/heads/main.zip
 ```
 
 ## Configuration
@@ -47,24 +55,48 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 ### Basic Settings
 
 - **Enable Plugin**: Toggle ETA calculation on/off
-- **Start Threshold**: Begin countdown when temperature is X°C below target (default: 10°C)
+- **Heating threshold**: Begin countdown when temperature is within this delta to target (default: 5.0°C)
+- **Threshold unit**: Celsius / Fahrenheit / Follow temperature display (default: Follow temperature display)
 - **Calculation Algorithm**:
   - **Linear** (default): Assumes constant heating rate, simple and fast
   - **Exponential**: Accounts for thermal asymptotic behavior, more accurate
-- **Display Location**: Show ETA in navbar, sidebar, or both
 
-### Heater Configuration
+### Display
 
-Enable/disable and customize display names for:
-
-- **Tool 0** (Hotend): Default enabled as "Hotend"
-- **Bed**: Default enabled as "Bed"
-- **Chamber**: Default disabled
+- **Show in sidebar / navbar / tab**: Independently toggle UI placement
+- **Temperature display**:
+  - **Use OctoPrint appearance setting** (default)
+  - **Celsius (°C)**
+  - **Celsius + Fahrenheit (°C/°F)**
 
 ### Advanced Settings
 
 - **Update Interval**: Frontend refresh rate (default: 1 second)
-- **History Size**: Number of temperature readings to keep (default: 100)
+- **History Size**: Number of temperature readings to keep (default: 60)
+
+### Maintenance
+
+- **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder).
+- **Restore defaults**: Resets only this plugin's settings back to defaults (does not delete history files).
+
+### Settings Defaults
+
+The following defaults apply to the user-editable plugin settings:
+
+| Setting                 | Key                       | Default      |
+| ----------------------- | ------------------------- | ------------ |
+| Enable Temperature ETA  | `enabled`                 | `true`       |
+| Hide ETA while printing | `suppress_while_printing` | `false`      |
+| Show in sidebar         | `show_in_sidebar`         | `true`       |
+| Show in navbar          | `show_in_navbar`          | `true`       |
+| Show in tab             | `show_in_tab`             | `true`       |
+| Temperature display     | `temp_display`            | `octoprint`  |
+| Heating threshold       | `threshold_start`         | `5.0 °C`     |
+| Threshold unit          | `threshold_unit`          | `octoprint`  |
+| Algorithm               | `algorithm`               | `linear`     |
+| Update Interval         | `update_interval`         | `1.0 s`      |
+| History Size            | `history_size`            | `60`         |
+| Enable debug logging    | `debug_logging`           | `false`      |
 
 ## How It Works
 
@@ -88,49 +120,22 @@ Enable/disable and customize display names for:
 - More accurate for extended heating
 - Best for: High-temperature targets, variable environments
 
-## Development
-
-This plugin follows the [OctoPrint Contributing Guidelines](https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md).
-
-### Quick Start
-
-```bash
-# Clone and setup
-git clone https://github.com/yourusername/OctoPrint-TempETA.git
-cd OctoPrint-TempETA
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -e ".[develop]"
-pre-commit install
-
-# Test and check
-pytest
-pre-commit run --all-files
-```
-
-### Key Files
-
-- `octoprint_temp_eta/__init__.py` - Main plugin logic
-- `octoprint_temp_eta/static/js/temp_eta.js` - Frontend ViewModel
-- `octoprint_temp_eta/templates/*.jinja2` - UI templates
-- `.github/copilot-instructions.md` - AI coding guidelines
-- `tests/` - Unit and integration tests
-
-**See [.github/copilot-instructions.md](.github/copilot-instructions.md) for detailed development guidelines.**
-
 ## FAQ
 
-**Q: Why does the ETA jump around?**  
+**Q: Why does the ETA jump around?**
 A: Temperature changes aren't perfectly linear. The plugin uses recent data to calculate rate. Longer threshold values provide more stable estimates.
 
-**Q: Can I use this with multiple hotends?**  
-A: Currently supports tool0. Multi-tool support is planned for future releases.
+**Q: Can I use this with multiple hotends?**
+A: Yes. The UI registers heaters dynamically as OctoPrint reports them (e.g. tool0, tool1, ...).
 
-**Q: Does this work with chamber heaters?**  
+**Q: Does this work with chamber heaters?**
 A: Yes! Enable chamber in settings if your printer has a chamber heater.
 
-**Q: Will this slow down my prints?**  
+**Q: Will this slow down my prints?**
 A: No. The plugin uses efficient algorithms and runs in a separate thread. Impact is negligible.
+
+**Q: Can I hide the ETA during an active print?**
+A: Yes. If you enable "Hide ETA while printing", the plugin will only show ETA when no print job is active. If the option is disabled (default), ETA is shown whenever the target temperature is at least the configured heating threshold above the current temperature.
 
 ## Contributing
 
@@ -138,9 +143,8 @@ Contributions welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b wip/my-feature`
-3. Follow coding standards (see `.github/copilot-instructions.md`)
-4. Write tests for new features
-5. Submit a pull request
+3. Write tests for new features
+4. Submit a pull request
 
 ## License
 
@@ -148,9 +152,10 @@ AGPLv3 - See [LICENSE](LICENSE) for details.
 
 ## Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/OctoPrint-TempETA/issues)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
 - 💬 **Discussion**: [OctoPrint Community Forum](https://community.octoprint.org/)
-- 📧 **Email**: your.email@example.com
+
+For logs and troubleshooting, enable "debug logging" in the plugin settings.
 
 ## Credits
 
