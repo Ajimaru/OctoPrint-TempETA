@@ -55,37 +55,43 @@ jobs:
             exit 1
           fi
 
-          python - "$sdist" "$zip_versioned" <<'PY'
-          import sys
-          import tarfile
-          import zipfile
-          from pathlib import Path, PurePosixPath
+              python - "$sdist" "$zip_versioned" <<'PY'
+              import sys
+              import tarfile
+              import zipfile
+              from pathlib import Path, PurePosixPath
 
-          tar_path = Path(sys.argv[1])
-          zip_path = Path(sys.argv[2])
-          zip_path.parent.mkdir(parents=True, exist_ok=True)
+              tar_path = Path(sys.argv[1])
+              zip_path = Path(sys.argv[2])
+              zip_path.parent.mkdir(parents=True, exist_ok=True)
 
-          with tarfile.open(tar_path, "r:gz") as tf, zipfile.ZipFile(
-              zip_path, "w", compression=zipfile.ZIP_DEFLATED
-          ) as zf:
-              for member in tf.getmembers():
+              with tarfile.open(tar_path, "r:gz") as tf, zipfile.ZipFile(
+                zip_path, "w", compression=zipfile.ZIP_DEFLATED
+              ) as zf:
+                for member in tf.getmembers():
                   if not member.isfile():
-                      continue
+                    continue
 
-                # Defensive: ensure tar member paths cannot become path traversal entries in the zip.
-                # Tar archives always use POSIX-style paths.
-                member_path = PurePosixPath(member.name)
-                if member_path.is_absolute() or ".." in member_path.parts or ":" in member.name or member.name.startswith("\\"):
-                  continue
+                  # Defensive: ensure tar member paths cannot become path traversal entries in the zip.
+                  # Tar archives always use POSIX-style paths.
+                  member_path = PurePosixPath(member.name)
+                  if (
+                    member_path.is_absolute()
+                    or ".." in member_path.parts
+                    or ":" in member.name
+                    or member.name.startswith("\\")
+                  ):
+                    continue
 
                   extracted = tf.extractfile(member)
                   if extracted is None:
-                      continue
+                    continue
                   data = extracted.read()
-                zi = zipfile.ZipInfo(str(member_path))
+
+                  zi = zipfile.ZipInfo(str(member_path))
                   zi.external_attr = (member.mode & 0o777) << 16
                   zf.writestr(zi, data)
-          PY
+              PY
 
           cp -f "$zip_versioned" "$zip_latest"
 
