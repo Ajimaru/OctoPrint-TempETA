@@ -97,13 +97,6 @@
                             </h4>
                         </div>
                         <div class="panel-body">
-                            <div class="text-center">
-                                <p class="temp-eta-inline">
-                                    <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
-                                    <span data-bind="text: $parent.formatTempDisplay(target())"></span>
-                                </p>
-                            </div>
-
                             <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
                                 <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
                                      data-bind="attr: { id: 'temp_eta_graph_' + name }">
