@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-TempETA"
-version = "0.3.0"
-description = "OctoPrint plugin to show estimated time remaining for printer heating (implements Issue #469)"
+version = "0.3.1rc26"
+description = "OctoPrint plugin to show estimated time remaining for printer heating"
 authors = [
-    {name = "AjimaruGDR", email = "ajimaru_gdr@pm.me"}
+    {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
-license = {file = "LICENSE"}
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
 
 requires-python = ">=3.7, <4"
 
