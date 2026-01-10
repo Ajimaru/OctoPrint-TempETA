@@ -78,5 +78,6 @@ setup(
     cmdclass={
         "build_py": build_py,
         "sdist": sdist,
-    }
+    },
+    license_files=["LICENSE"],
 )

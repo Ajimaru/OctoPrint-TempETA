@@ -11,7 +11,6 @@ authors = [
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "AGPL-3.0-only"
-license-files = ["LICENSE"]
 
 requires-python = ">=3.7, <4"
 
