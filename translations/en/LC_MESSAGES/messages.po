@@ -240,6 +240,12 @@ msgstr "Show in sidebar"
 msgid "Show in tab"
 msgstr "Show in tab"
 
+msgid "Show progress bars"
+msgstr "Show progress bars"
+
+msgid "Show heating progress bars in the sidebar and tab views."
+msgstr "Show heating progress bars in the sidebar and tab views."
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:33
 msgid "Start ETA when target is this many degrees away"
 msgstr "Start ETA when target is this many degrees away"

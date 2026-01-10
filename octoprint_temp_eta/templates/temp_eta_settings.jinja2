@@ -89,6 +89,15 @@
         </div>
 
         <div class="control-group">
+            <label class="control-label" for="temp_eta_show_progress_bars">{{ _('Show progress bars') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_progress_bars"
+                       data-bind="checked: settings.plugins.temp_eta.show_progress_bars, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show heating progress bars in the sidebar and tab views.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
             <label class="control-label" for="temp_eta_temp_display">{{ _('Temperature display') }}</label>
             <div class="controls">
                 <select class="input-xlarge" id="temp_eta_temp_display"

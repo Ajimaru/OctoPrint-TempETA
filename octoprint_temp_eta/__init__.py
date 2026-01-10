@@ -1046,6 +1046,7 @@ class TempETAPlugin(
             show_in_sidebar=True,
             show_in_navbar=True,
             show_in_tab=True,
+            show_progress_bars=True,
             temp_display="octoprint",
             threshold_unit="octoprint",
             debug_logging=False,

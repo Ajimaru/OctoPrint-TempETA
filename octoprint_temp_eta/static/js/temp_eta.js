@@ -480,6 +480,20 @@ $(function () {
       return true;
     };
 
+    self.isProgressBarsEnabled = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return true;
+      }
+
+      var pluginEnabled = readKoBool(ps.enabled, true);
+      if (!pluginEnabled) {
+        return false;
+      }
+
+      return readKoBool(ps.show_progress_bars, true);
+    };
+
     /**
      * Format seconds to MM:SS format
      * @param {number} seconds - Seconds to format
@@ -830,6 +844,10 @@ $(function () {
      * backend payload small and robust across profiles/heaters.
      */
     self.isProgressVisible = function (heater) {
+      if (!self.isProgressBarsEnabled()) {
+        return false;
+      }
+
       if (!heater || !heater.actual || !heater.target) {
         return false;
       }
