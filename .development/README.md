@@ -37,8 +37,14 @@ Stops OctoPrint (by default: the instance listening on `OCTOPRINT_PORT`), option
 # restart and clear OctoPrint webassets cache (useful after frontend changes)
 .development/restart_octoprint_dev.sh --clear-cache
 
-# stop all detected OctoPrint instances for the current user before restarting
+# stop all detected OctoPrint instances for the current user and exit
 .development/restart_octoprint_dev.sh --stop-all
+
+# stop all detected OctoPrint instances for the current user, then restart
+.development/restart_octoprint_dev.sh --restart-all
+
+# alias for --stop-all
+.development/restart_octoprint_dev.sh --stop-only
 
 # show help
 .development/restart_octoprint_dev.sh --help

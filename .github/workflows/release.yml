@@ -32,6 +32,56 @@ jobs:
         run: |
           python -m build
 
+      - name: Create zip assets (versioned + latest)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME#v}"
+          zip_versioned="dist/octoprint_tempeta-${version}.zip"
+          zip_latest="dist/octoprint_tempeta-latest.zip"
+
+          shopt -s nullglob
+          sdist_candidates=(dist/*"${version}".tar.gz)
+          if (( ${#sdist_candidates[@]} != 1 )); then
+            echo "Expected exactly one sdist tarball matching version ${version}, found ${#sdist_candidates[@]}" >&2
+            ls -la dist >&2 || true
+            exit 1
+          fi
+          sdist="${sdist_candidates[0]}"
+
+          if [[ ! -f "$sdist" ]]; then
+            echo "Expected sdist not found: $sdist" >&2
+            exit 1
+          fi
+
+          python - "$sdist" "$zip_versioned" <<'PY'
+          import sys
+          import tarfile
+          import zipfile
+          from pathlib import Path
+
+          tar_path = Path(sys.argv[1])
+          zip_path = Path(sys.argv[2])
+          zip_path.parent.mkdir(parents=True, exist_ok=True)
+
+          with tarfile.open(tar_path, "r:gz") as tf, zipfile.ZipFile(
+              zip_path, "w", compression=zipfile.ZIP_DEFLATED
+          ) as zf:
+              for member in tf.getmembers():
+                  if not member.isfile():
+                      continue
+                  extracted = tf.extractfile(member)
+                  if extracted is None:
+                      continue
+                  data = extracted.read()
+                  zi = zipfile.ZipInfo(member.name)
+                  zi.external_attr = (member.mode & 0o777) << 16
+                  zf.writestr(zi, data)
+          PY
+
+          cp -f "$zip_versioned" "$zip_latest"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
