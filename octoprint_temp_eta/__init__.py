@@ -8,7 +8,7 @@ import threading
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence, Type
 
 try:
     from typing import Protocol, runtime_checkable
@@ -28,7 +28,6 @@ except ModuleNotFoundError:  # pragma: no cover
             pass
 
         class SettingsPlugin:
-            @staticmethod
             def on_settings_save(self: Any, data: Dict[str, Any]) -> Dict[str, Any]:
                 return data
 
@@ -45,6 +44,16 @@ except ModuleNotFoundError:  # pragma: no cover
         plugin = _OctoPrintPluginStubs
 
     octoprint = _OctoPrintStubs()  # type: ignore
+
+
+# OctoPrint's mixin base classes don't ship type information. Provide typed
+# aliases so Pylance accepts them as valid base classes.
+StartupPluginBase: Type[Any] = getattr(octoprint.plugin, "StartupPlugin", object)  # type: ignore[attr-defined]
+TemplatePluginBase: Type[Any] = getattr(octoprint.plugin, "TemplatePlugin", object)  # type: ignore[attr-defined]
+SettingsPluginBase: Type[Any] = getattr(octoprint.plugin, "SettingsPlugin", object)  # type: ignore[attr-defined]
+AssetPluginBase: Type[Any] = getattr(octoprint.plugin, "AssetPlugin", object)  # type: ignore[attr-defined]
+EventHandlerPluginBase: Type[Any] = getattr(octoprint.plugin, "EventHandlerPlugin", object)  # type: ignore[attr-defined]
+SimpleApiPluginBase: Type[Any] = getattr(octoprint.plugin, "SimpleApiPlugin", object)  # type: ignore[attr-defined]
 
 try:
     from flask import jsonify  # type: ignore
@@ -106,12 +115,12 @@ class PrinterLike(Protocol):
 
 
 class TempETAPlugin(
-    octoprint.plugin.StartupPlugin,
-    octoprint.plugin.TemplatePlugin,
-    octoprint.plugin.SettingsPlugin,
-    octoprint.plugin.AssetPlugin,
-    octoprint.plugin.EventHandlerPlugin,
-    octoprint.plugin.SimpleApiPlugin,
+    StartupPluginBase,
+    TemplatePluginBase,
+    SettingsPluginBase,
+    AssetPluginBase,
+    EventHandlerPluginBase,
+    SimpleApiPluginBase,
 ):
     """Main plugin implementation for Temperature ETA.
 
@@ -1012,7 +1021,7 @@ class TempETAPlugin(
                             else:
                                 should_compute = actual > (cooldown_target + cooldown_hyst_c)
 
-                        if should_compute:
+                        if should_compute and cooldown_target is not None:
                             cooldown_eta = self._calculate_cooldown_eta_seconds(
                                 heater_name=heater,
                                 actual_c=actual,
@@ -1520,7 +1529,7 @@ class TempETAPlugin(
             show_in_navbar=True,
             show_in_tab=True,
             show_progress_bars=True,
-            show_historical_graph=False,
+            show_historical_graph=True,
             historical_graph_window_seconds=180,
             temp_display="octoprint",
             threshold_unit="octoprint",

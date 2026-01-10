@@ -129,9 +129,19 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
 
     assert defaults["enable_cooldown_eta"] is True
     assert defaults["cooldown_mode"] in ("threshold", "ambient")
-    assert defaults["cooldown_target_tool0"] > 0
-    assert defaults["cooldown_hysteresis_c"] > 0
-    assert defaults["cooldown_fit_window_seconds"] >= 10
+    cooldown_target_tool0 = defaults["cooldown_target_tool0"]
+    assert cooldown_target_tool0 is not None
+    assert float(cooldown_target_tool0) > 0
+
+    cooldown_hysteresis_c = defaults["cooldown_hysteresis_c"]
+    assert cooldown_hysteresis_c is not None
+    assert float(cooldown_hysteresis_c) > 0
+
+    cooldown_fit_window_seconds = defaults["cooldown_fit_window_seconds"]
+    assert cooldown_fit_window_seconds is not None
+    assert int(cooldown_fit_window_seconds) >= 10
+
+    assert defaults["show_historical_graph"] is True
 
 
 def test_calculate_linear_eta_returns_none_with_insufficient_history(

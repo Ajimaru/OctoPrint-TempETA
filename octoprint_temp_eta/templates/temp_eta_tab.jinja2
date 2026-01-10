@@ -5,7 +5,7 @@
         <li class="active">
             <a href="#temp_eta_subtab_overview" data-toggle="tab">{{ _('Real-time Countdown') }}</a>
         </li>
-        <li>
+        <li data-bind="visible: isHistoricalGraphEnabled()">
             <a href="#temp_eta_subtab_history" data-toggle="tab">{{ _('Historical graph') }}</a>
         </li>
     </ul>
@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <div class="tab-pane temp-eta-subtab-history" id="temp_eta_subtab_history">
+        <div class="tab-pane temp-eta-subtab-history" id="temp_eta_subtab_history" data-bind="visible: isHistoricalGraphEnabled()">
             <div class="alert alert-info temp-eta-tab-info temp-eta-tab-history-info">
                 <div class="temp-eta-tab-info-inner">
                     <div class="temp-eta-tab-info-logo">
