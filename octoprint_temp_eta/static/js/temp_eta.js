@@ -464,11 +464,12 @@ $(function () {
 
     self._pluginSettings = function () {
       try {
-        return (
-          self.settings &&
-          self.settings.plugins &&
-          self.settings.plugins.temp_eta
-        );
+        // IMPORTANT: do not rely on `self.settings` here.
+        // OctoPrint may replace the settings object after save/reload, and
+        // using a stale reference would make feature toggles (like the
+        // historical graph) appear stuck.
+        var root = self._resolveSettingsRoot();
+        return root && root.plugins && root.plugins.temp_eta;
       } catch (e) {
         return null;
       }
