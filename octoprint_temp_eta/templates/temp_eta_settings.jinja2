@@ -2,7 +2,16 @@
     <fieldset>
         <legend>{{ _('Temperature ETA Settings') }}</legend>
 
-        <h4 class="temp-eta-settings-group">{{ _('Basic Settings') }}</h4>
+        <ul class="nav nav-tabs" id="temp_eta_settings_tabs">
+            <li class="active"><a href="#temp_eta_settings_tab_basic" data-toggle="tab">{{ _('Basic Settings') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_display" data-toggle="tab">{{ _('Display') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_cooldown" data-toggle="tab">{{ _('Cool-down ETA') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_advanced" data-toggle="tab">{{ _('Advanced Settings') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_maintenance" data-toggle="tab">{{ _('Maintenance') }}</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="temp_eta_settings_tab_basic">
 
         <!-- Enable/Disable Plugin -->
         <div class="control-group">
@@ -61,8 +70,9 @@
             </div>
         </div>
 
-        <hr class="temp-eta-settings-divider">
-        <h4 class="temp-eta-settings-group">{{ _('Display') }}</h4>
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_display">
 
         <div class="control-group">
             <label class="control-label" for="temp_eta_show_in_sidebar">{{ _('Show in sidebar') }}</label>
@@ -89,6 +99,34 @@
         </div>
 
         <div class="control-group">
+            <label class="control-label" for="temp_eta_show_progress_bars">{{ _('Show progress bars') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_progress_bars"
+                       data-bind="checked: settings.plugins.temp_eta.show_progress_bars, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show heating progress bars in the sidebar and tab views.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_show_historical_graph">{{ _('Show historical graph') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_historical_graph"
+                       data-bind="checked: settings.plugins.temp_eta.show_historical_graph, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show a small temperature history graph in the Temperature ETA tab.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_historical_graph_window_seconds">{{ _('Historical graph window (seconds)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_historical_graph_window_seconds"
+                       data-bind="value: settings.plugins.temp_eta.historical_graph_window_seconds, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.show_historical_graph"
+                       min="30" max="1800" step="10">
+                <p class="help-block">{{ _('How many seconds of temperature history to display (per heater).') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
             <label class="control-label" for="temp_eta_temp_display">{{ _('Temperature display') }}</label>
             <div class="controls">
                 <select class="input-xlarge" id="temp_eta_temp_display"
@@ -101,8 +139,91 @@
             </div>
         </div>
 
-        <hr class="temp-eta-settings-divider">
-        <h4 class="temp-eta-settings-group">{{ _('Advanced Settings') }}</h4>
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_cooldown">
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_enable_cooldown_eta">{{ _('Enable cool-down ETA') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_enable_cooldown_eta"
+                       data-bind="checked: settings.plugins.temp_eta.enable_cooldown_eta, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show an estimated time to cool down when no target temperature is set.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_mode">{{ _('Cool-down mode') }}</label>
+            <div class="controls">
+                <select class="input-xlarge" id="temp_eta_cooldown_mode"
+                        data-bind="value: settings.plugins.temp_eta.cooldown_mode, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta">
+                    <option value="threshold">{{ _('Threshold target (default)') }}</option>
+                    <option value="ambient">{{ _('Ambient-based target') }}</option>
+                </select>
+                <p class="help-block">{{ _('Threshold: cool down to a fixed target per heater. Ambient: cool down close to ambient temperature (uses an ambient value if set, otherwise estimates from recent data).') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_target_tool0">{{ _('Cool-down target (tool0)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_cooldown_target_tool0"
+                       data-bind="value: settings.plugins.temp_eta.cooldown_target_tool0, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'threshold'"
+                       min="0" max="400" step="1">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_target_bed">{{ _('Cool-down target (bed)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_cooldown_target_bed"
+                       data-bind="value: settings.plugins.temp_eta.cooldown_target_bed, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'threshold'"
+                       min="0" max="200" step="1">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_target_chamber">{{ _('Cool-down target (chamber)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_cooldown_target_chamber"
+                       data-bind="value: settings.plugins.temp_eta.cooldown_target_chamber, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'threshold'"
+                       min="0" max="100" step="1">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_ambient_temp">{{ _('Ambient temperature (optional)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_cooldown_ambient_temp"
+                       data-bind="value: settings.plugins.temp_eta.cooldown_ambient_temp, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'ambient'"
+                       min="-20" max="80" step="0.5">
+                <p class="help-block">{{ _('If empty, the plugin estimates ambient temperature from recent cooldown data.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_hysteresis_c">{{ _('Cool-down hysteresis (°C)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_cooldown_hysteresis_c"
+                       data-bind="value: settings.plugins.temp_eta.cooldown_hysteresis_c, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta"
+                       min="0.1" max="20" step="0.1">
+                <p class="help-block">{{ _('Stop showing Cool-down ETA when within this temperature band of the cool-down target.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_cooldown_fit_window_seconds">{{ _('Cool-down fit window (seconds)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_cooldown_fit_window_seconds"
+                       data-bind="value: settings.plugins.temp_eta.cooldown_fit_window_seconds, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta"
+                       min="10" max="1800" step="10">
+                <p class="help-block">{{ _('How many seconds of recent cooldown data to use for the ETA estimate.') }}</p>
+            </div>
+        </div>
+
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_advanced">
 
         <!-- Update Interval -->
         <div class="control-group">
@@ -135,8 +256,9 @@
             </div>
         </div>
 
-        <hr class="temp-eta-settings-divider">
-        <h4 class="temp-eta-settings-group">{{ _('Maintenance') }}</h4>
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_maintenance">
 
         <!-- Reset Profile History -->
         <div class="control-group">
@@ -177,6 +299,9 @@
                     {{ _('Restore') }}
                 </button>
                 <p class="help-block">{{ _('Restores Temperature ETA settings to their default values.') }}</p>
+            </div>
+        </div>
+
             </div>
         </div>
     </fieldset>

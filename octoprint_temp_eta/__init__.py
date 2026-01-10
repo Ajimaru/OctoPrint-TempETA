@@ -8,7 +8,7 @@ import threading
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence, Type
 
 try:
     from typing import Protocol, runtime_checkable
@@ -28,7 +28,6 @@ except ModuleNotFoundError:  # pragma: no cover
             pass
 
         class SettingsPlugin:
-            @staticmethod
             def on_settings_save(self: Any, data: Dict[str, Any]) -> Dict[str, Any]:
                 return data
 
@@ -45,6 +44,28 @@ except ModuleNotFoundError:  # pragma: no cover
         plugin = _OctoPrintPluginStubs
 
     octoprint = _OctoPrintStubs()  # type: ignore
+
+
+# OctoPrint's mixin base classes don't ship type information. Provide typed
+# aliases so Pylance accepts them as valid base classes.
+StartupPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "StartupPlugin", object
+)  # type: ignore[attr-defined]
+TemplatePluginBase: Type[Any] = getattr(
+    octoprint.plugin, "TemplatePlugin", object
+)  # type: ignore[attr-defined]
+SettingsPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "SettingsPlugin", object
+)  # type: ignore[attr-defined]
+AssetPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "AssetPlugin", object
+)  # type: ignore[attr-defined]
+EventHandlerPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "EventHandlerPlugin", object
+)  # type: ignore[attr-defined]
+SimpleApiPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "SimpleApiPlugin", object
+)  # type: ignore[attr-defined]
 
 try:
     from flask import jsonify  # type: ignore
@@ -106,12 +127,12 @@ class PrinterLike(Protocol):
 
 
 class TempETAPlugin(
-    octoprint.plugin.StartupPlugin,
-    octoprint.plugin.TemplatePlugin,
-    octoprint.plugin.SettingsPlugin,
-    octoprint.plugin.AssetPlugin,
-    octoprint.plugin.EventHandlerPlugin,
-    octoprint.plugin.SimpleApiPlugin,
+    StartupPluginBase,
+    TemplatePluginBase,
+    SettingsPluginBase,
+    AssetPluginBase,
+    EventHandlerPluginBase,
+    SimpleApiPluginBase,
 ):
     """Main plugin implementation for Temperature ETA.
 
@@ -158,11 +179,69 @@ class TempETAPlugin(
             "tool0": deque(maxlen=self._history_maxlen),
             "chamber": deque(maxlen=self._history_maxlen),
         }
+
+        # Cooldown history (target==0). Kept separate from heating history so
+        # the heat-up ETA fit doesn't get polluted by cooldown samples.
+        self._cooldown_history = {
+            "bed": deque(maxlen=self._history_maxlen),
+            "tool0": deque(maxlen=self._history_maxlen),
+            "chamber": deque(maxlen=self._history_maxlen),
+        }
+
+        # Ambient baseline per heater for ambient-mode cooldown.
+        # If the user doesn't provide an ambient temperature, we rely on the
+        # lowest temperature observed while the heater target is OFF (within a
+        # reasonable range) as a proxy for ambient.
+        self._cooldown_ambient_baseline: Dict[str, Optional[float]] = {
+            "bed": None,
+            "tool0": None,
+            "chamber": None,
+        }
         self._last_update_time = 0
+
+        # Track last seen target per heater so we can detect transitions like
+        # heating -> off (cooldown start).
+        self._last_target_by_heater: Dict[str, float] = {}
 
         # When enabled, suppress ETA updates while a print job is active.
         # This keeps the UI focused on the pre-print heat-up phase.
         self._suppressing_due_to_print = False
+
+        self._last_settings_snapshot_log_time = 0.0
+
+    def _debug_log_settings_snapshot(self, now: float) -> None:
+        """Throttled debug log of key plugin settings.
+
+        This helps diagnose cases where frontend features appear disabled due to
+        settings reload timing or mismatched config.
+        """
+        if not self._debug_logging_enabled:
+            return
+        if (now - self._last_settings_snapshot_log_time) < 60.0:
+            return
+        self._last_settings_snapshot_log_time = now
+
+        try:
+            enabled = bool(self._settings.get_boolean(["enabled"]))
+            show_hist = bool(self._settings.get_boolean(["show_historical_graph"]))
+            show_sidebar = bool(self._settings.get_boolean(["show_in_sidebar"]))
+            show_tab = bool(self._settings.get_boolean(["show_in_tab"]))
+            show_navbar = bool(self._settings.get_boolean(["show_in_navbar"]))
+            cooldown_enabled = bool(self._settings.get_boolean(["enable_cooldown_eta"]))
+            cooldown_mode = str(self._settings.get(["cooldown_mode"]) or "")
+        except Exception:
+            return
+
+        self._debug_log(
+            "Settings snapshot enabled=%s show_hist=%s show_tab=%s show_sidebar=%s show_navbar=%s cooldown=%s mode=%s",
+            str(enabled),
+            str(show_hist),
+            str(show_tab),
+            str(show_sidebar),
+            str(show_navbar),
+            str(cooldown_enabled),
+            str(cooldown_mode),
+        )
 
     def _suppress_while_printing_enabled(self) -> bool:
         """Return whether ETA display should be suppressed during active prints."""
@@ -704,6 +783,10 @@ class TempETAPlugin(
             self._suppressing_due_to_print = False
 
         current_time = time.time()
+
+        # Periodic settings snapshot for debugging.
+        self._debug_log_settings_snapshot(current_time)
+
         threshold = self._settings.get_float(["threshold_start"])
 
         # Log all heaters received from OctoPrint
@@ -716,6 +799,7 @@ class TempETAPlugin(
         epsilon_hold = 0.2
 
         recorded_count = 0
+        recorded_cooldown_count = 0
         with self._lock:
             # Update temperature history for each heater (dynamically register new heizers)
             for heater, temps in data.items():
@@ -732,12 +816,59 @@ class TempETAPlugin(
                 if actual_raw is None:
                     continue
                 try:
-                    target = float(target_raw or 0)
                     actual = float(actual_raw)
                 except Exception:
                     continue
 
+                try:
+                    target = float(target_raw or 0)
+                except Exception:
+                    # Some firmwares/virtual printer formats may provide a non-numeric
+                    # target (e.g. "off"). Treat that as OFF for cooldown tracking.
+                    target = 0.0
+                    self._debug_log_throttled(
+                        current_time,
+                        30.0,
+                        "Non-numeric target treated as OFF heater=%s target_raw=%r",
+                        str(heater),
+                        target_raw,
+                    )
+
+                prev_target = self._last_target_by_heater.get(str(heater))
+                self._last_target_by_heater[str(heater)] = float(target)
+
                 if target <= 0:
+                    # Cooldown tracking (target==0).
+                    if self._cooldown_enabled():
+                        if heater not in self._cooldown_history:
+                            self._cooldown_history[heater] = deque(
+                                maxlen=self._history_maxlen
+                            )
+
+                        # If we just transitioned from heating to OFF, start a fresh
+                        # cooldown history so our linear cooldown fit doesn't include
+                        # old OFF samples from before the heat-up phase.
+                        if prev_target is not None and prev_target > 0:
+                            self._cooldown_history[heater].clear()
+                            self._debug_log_throttled(
+                                current_time,
+                                10.0,
+                                "Cooldown start detected, cleared history heater=%s prev_target=%.1f actual=%.1f",
+                                str(heater),
+                                float(prev_target),
+                                float(actual),
+                            )
+
+                        self._cooldown_history[heater].append((current_time, actual))
+                        recorded_cooldown_count += 1
+
+                        # Track a baseline ambient temp while OFF.
+                        # We only learn baseline values in a sane range to
+                        # avoid "ambient" being polluted by still-hot cooldown.
+                        if math.isfinite(actual) and actual < 120.0:
+                            prev = self._cooldown_ambient_baseline.get(heater)
+                            if prev is None or actual < prev:
+                                self._cooldown_ambient_baseline[heater] = actual
                     continue
 
                 remaining = target - actual
@@ -762,10 +893,11 @@ class TempETAPlugin(
         self._debug_log_throttled(
             current_time,
             debug_interval,
-            "Temp callback profile=%s heaters=%d recorded=%d threshold=%.2f",
+            "Temp callback profile=%s heaters=%d recorded=%d cooldown_recorded=%d threshold=%.2f",
             str(self._active_profile_id),
             len(heaters_in_data),
             recorded_count,
+            recorded_cooldown_count,
             float(threshold),
         )
 
@@ -808,6 +940,9 @@ class TempETAPlugin(
                 for h in heaters:
                     self._temp_history[h].clear()
 
+                for h in list(self._cooldown_history.keys()):
+                    self._cooldown_history[h].clear()
+
             self._send_clear_messages(heaters)
 
         # Reset suppression flag on job lifecycle changes; actual suppression is decided in the temperature callback.
@@ -830,6 +965,10 @@ class TempETAPlugin(
         """
         algorithm = self._settings.get(["algorithm"])
         threshold = self._settings.get_float(["threshold_start"])
+
+        cooldown_enabled = self._cooldown_enabled()
+        cooldown_mode = self._cooldown_mode()
+        cooldown_hyst_c = self._cooldown_hysteresis_c()
 
         with self._lock:
             # Process all heaters in data (dynamically support tool0, tool1, tool2, etc)
@@ -863,11 +1002,76 @@ class TempETAPlugin(
 
                 # Only calculate ETA if heating and within threshold
                 if target <= 0:
-                    # No target set
+                    # No target set -> optionally show cooldown ETA.
                     eta = None
+                    eta_kind = None
+                    cooldown_target = None
+
+                    if cooldown_enabled:
+                        cooldown_target = self._get_cooldown_display_target_c(
+                            heater_name=heater,
+                            actual_c=actual,
+                            mode=cooldown_mode,
+                            hysteresis_c=cooldown_hyst_c,
+                        )
+
+                        if cooldown_target is None:
+                            self._debug_log_throttled(
+                                time.time(),
+                                15.0,
+                                "Cooldown ETA not available (no target) heater=%s mode=%s actual=%.1f",
+                                str(heater),
+                                str(cooldown_mode),
+                                float(actual),
+                            )
+
+                        should_compute = False
+                        if cooldown_target is not None:
+                            if cooldown_mode == "ambient":
+                                # cooldown_target already includes the band above ambient.
+                                should_compute = actual > cooldown_target
+                            else:
+                                should_compute = actual > (
+                                    cooldown_target + cooldown_hyst_c
+                                )
+
+                        if should_compute and cooldown_target is not None:
+                            cooldown_eta = self._calculate_cooldown_eta_seconds(
+                                heater_name=heater,
+                                actual_c=actual,
+                                display_target_c=cooldown_target,
+                                mode=cooldown_mode,
+                                hysteresis_c=cooldown_hyst_c,
+                            )
+                            if cooldown_eta is not None and cooldown_eta < 1:
+                                cooldown_eta = None
+
+                            if cooldown_eta is not None:
+                                eta = cooldown_eta
+                                eta_kind = "cooling"
+                            else:
+                                hist_len = 0
+                                try:
+                                    h = self._cooldown_history.get(heater)
+                                    hist_len = len(h) if h is not None else 0
+                                except Exception:
+                                    hist_len = 0
+                                self._debug_log_throttled(
+                                    time.time(),
+                                    15.0,
+                                    "Cooldown ETA not available (insufficient fit) heater=%s mode=%s "
+                                    "actual=%.1f goal=%.1f hist=%d",
+                                    str(heater),
+                                    str(cooldown_mode),
+                                    float(actual),
+                                    float(cooldown_target),
+                                    int(hist_len),
+                                )
                 elif actual >= target:
                     # Already at or above target
                     eta = None
+                    eta_kind = None
+                    cooldown_target = None
                 elif (target - actual) >= threshold:
                     # Still far from target - calculate ETA
                     if algorithm == "exponential":
@@ -878,9 +1082,13 @@ class TempETAPlugin(
                     # Hide ETA if less than 1 second (avoid flashing 0:00)
                     if eta is not None and eta < 1:
                         eta = None
+                    eta_kind = "heating" if eta is not None else None
+                    cooldown_target = None
                 else:
                     # Very close to target
                     eta = None
+                    eta_kind = None
+                    cooldown_target = None
 
                 # Send message to frontend (ALWAYS, even when eta is None to clear display)
                 self._plugin_manager.send_plugin_message(
@@ -889,10 +1097,302 @@ class TempETAPlugin(
                         "type": "eta_update",
                         "heater": heater,
                         "eta": eta,
+                        "eta_kind": eta_kind,
                         "target": target,
                         "actual": actual,
+                        "cooldown_target": cooldown_target,
+                        "cooldown_mode": cooldown_mode if cooldown_enabled else None,
                     },
                 )
+
+    def _cooldown_enabled(self) -> bool:
+        """Return whether cooldown ETA is enabled."""
+        if not getattr(self, "_settings", None):
+            return False
+        try:
+            return bool(self._settings.get_boolean(["enable_cooldown_eta"]))
+        except Exception:
+            return False
+
+    def _cooldown_mode(self) -> str:
+        """Return cooldown mode: 'threshold' or 'ambient'."""
+        if not getattr(self, "_settings", None):
+            return "threshold"
+        try:
+            mode = self._settings.get(["cooldown_mode"])
+            if mode in ("threshold", "ambient"):
+                return str(mode)
+        except Exception:
+            pass
+        return "threshold"
+
+    def _cooldown_hysteresis_c(self) -> float:
+        if not getattr(self, "_settings", None):
+            return 1.0
+        try:
+            v = float(self._settings.get_float(["cooldown_hysteresis_c"]))
+            if v <= 0:
+                return 1.0
+            return v
+        except Exception:
+            return 1.0
+
+    def _cooldown_fit_window_seconds(self) -> float:
+        if not getattr(self, "_settings", None):
+            return 120.0
+        try:
+            v = float(self._settings.get_int(["cooldown_fit_window_seconds"]))
+            if v < 10:
+                return 10.0
+            if v > 1800:
+                return 1800.0
+            return v
+        except Exception:
+            return 120.0
+
+    def _get_cooldown_threshold_target_c(self, heater_name: str) -> Optional[float]:
+        """Return fixed cooldown target (threshold mode) for a heater."""
+        key = None
+        if heater_name == "bed":
+            key = "cooldown_target_bed"
+        elif heater_name == "chamber":
+            key = "cooldown_target_chamber"
+        elif isinstance(heater_name, str) and heater_name.startswith("tool"):
+            key = "cooldown_target_tool0"
+
+        if not key:
+            return None
+
+        try:
+            raw = self._settings.get([key])
+            if raw is None or raw == "":
+                return None
+            value = float(raw)
+            if not math.isfinite(value) or value <= 0:
+                return None
+            return value
+        except Exception:
+            return None
+
+    def _get_cooldown_ambient_c(self, heater_name: str) -> Optional[float]:
+        """Return ambient temperature for ambient-mode.
+
+        If a user-provided ambient temp is not set, fall back to a conservative
+        estimate from the minimum temperature in the recent cooldown history.
+        """
+        try:
+            raw = self._settings.get(["cooldown_ambient_temp"])
+            if raw is not None and raw != "":
+                v = float(raw)
+                if math.isfinite(v) and v > -50:
+                    return v
+        except Exception:
+            pass
+
+        base = self._cooldown_ambient_baseline.get(heater_name)
+        if base is not None and math.isfinite(base):
+            return float(base)
+
+        hist = self._cooldown_history.get(heater_name)
+        if not hist:
+            return None
+
+        now = time.time()
+        window = max(self._cooldown_fit_window_seconds(), 60.0)
+        recent = [
+            temp for ts, temp in hist if ts > now - window and math.isfinite(temp)
+        ]
+        if len(recent) < 3:
+            return None
+
+        mn = min(recent)
+        # If the minimum is essentially "now" (still very hot), it's not a useful
+        # ambient estimate. In that case, require the user-provided ambient or an
+        # already learned baseline.
+        try:
+            current = float(recent[-1])
+        except Exception:
+            current = mn
+        if mn >= (current - 2.0):
+            return None
+
+        amb = mn - 0.5
+        if not math.isfinite(amb):
+            return None
+        return amb
+
+    def _get_cooldown_display_target_c(
+        self,
+        heater_name: str,
+        actual_c: float,
+        mode: str,
+        hysteresis_c: float,
+    ) -> Optional[float]:
+        """Return the cooldown goal temperature displayed in the UI."""
+        if mode == "ambient":
+            amb = self._get_cooldown_ambient_c(heater_name)
+            if amb is None:
+                return None
+            band = max(1.0, hysteresis_c)
+            return amb + band
+
+        return self._get_cooldown_threshold_target_c(heater_name)
+
+    def _calculate_cooldown_eta_seconds(
+        self,
+        heater_name: str,
+        actual_c: float,
+        display_target_c: float,
+        mode: str,
+        hysteresis_c: float,
+    ) -> Optional[float]:
+        """Calculate cooldown ETA in seconds."""
+        if not math.isfinite(actual_c) or not math.isfinite(display_target_c):
+            return None
+        if actual_c <= display_target_c:
+            return None
+
+        if mode == "ambient":
+            amb = self._get_cooldown_ambient_c(heater_name)
+            if amb is None:
+                return None
+            band = max(1.0, hysteresis_c)
+            goal = amb + band
+            return self._calculate_cooldown_exponential_eta(
+                heater_name=heater_name, ambient_c=amb, goal_c=goal
+            )
+
+        return self._calculate_cooldown_linear_eta(
+            heater_name=heater_name,
+            goal_c=display_target_c,
+        )
+
+    def _calculate_cooldown_linear_eta(
+        self, heater_name: str, goal_c: float
+    ) -> Optional[float]:
+        """Linear cooldown ETA from recent slope."""
+        hist = self._cooldown_history.get(heater_name)
+        if not hist or len(hist) < 2:
+            return None
+
+        now = time.time()
+        window = self._cooldown_fit_window_seconds()
+        recent = [(ts, temp) for ts, temp in hist if ts > now - window]
+        if len(recent) < 2:
+            self._debug_log_throttled(
+                now,
+                15.0,
+                "Cooldown linear fit: not enough recent samples heater=%s window=%.0fs hist=%d",
+                str(heater_name),
+                float(window),
+                int(len(hist)),
+            )
+            return None
+
+        t0, temp0 = recent[0]
+        t1, temp1 = recent[-1]
+        dt = t1 - t0
+        dtemp = temp1 - temp0
+        if dt <= 0:
+            return None
+
+        slope = dtemp / dt
+        if slope >= -1e-3:
+            self._debug_log_throttled(
+                now,
+                15.0,
+                "Cooldown linear fit: slope not negative heater=%s slope=%.6f dt=%.2f "
+                "dT=%.2f t0=%.1f t1=%.1f goal=%.1f",
+                str(heater_name),
+                float(slope),
+                float(dt),
+                float(dtemp),
+                float(temp0),
+                float(temp1),
+                float(goal_c),
+            )
+            return None
+
+        remaining = temp1 - goal_c
+        if remaining <= 0:
+            return None
+
+        eta = remaining / (-slope)
+        if not math.isfinite(eta) or eta < 0:
+            return None
+
+        return float(min(eta, 24 * 3600))
+
+    def _calculate_cooldown_exponential_eta(
+        self, heater_name: str, ambient_c: float, goal_c: float
+    ) -> Optional[float]:
+        """Exponential cooldown ETA (Newton's law of cooling)."""
+        hist = self._cooldown_history.get(heater_name)
+        if not hist or len(hist) < 4:
+            return None
+
+        if not (math.isfinite(ambient_c) and math.isfinite(goal_c)):
+            return None
+        if goal_c <= ambient_c:
+            return None
+
+        now = time.time()
+        window = self._cooldown_fit_window_seconds()
+        recent = [(ts, temp) for ts, temp in hist if ts > now - window]
+        if len(recent) < 6:
+            return None
+
+        _t_now, temp_now = recent[-1]
+        if temp_now <= goal_c:
+            return None
+
+        epsilon = 0.5
+        t0 = recent[0][0]
+        xs = []
+        ys = []
+        for ts, temp in recent:
+            delta = temp - ambient_c
+            if delta <= epsilon:
+                continue
+            x = ts - t0
+            if x < 0:
+                continue
+            xs.append(x)
+            ys.append(math.log(delta))
+
+        if len(xs) < 4:
+            return None
+
+        x_mean = sum(xs) / float(len(xs))
+        y_mean = sum(ys) / float(len(ys))
+        sxx = 0.0
+        sxy = 0.0
+        for x, y in zip(xs, ys):
+            dx = x - x_mean
+            dy = y - y_mean
+            sxx += dx * dx
+            sxy += dx * dy
+
+        if sxx <= 0:
+            return None
+
+        slope = sxy / sxx
+        if slope >= -1e-4:
+            return None
+
+        tau = -1.0 / slope
+        if tau <= 0 or tau > 20000:
+            return None
+
+        try:
+            eta = tau * math.log((temp_now - ambient_c) / (goal_c - ambient_c))
+        except Exception:
+            return None
+
+        if not math.isfinite(eta) or eta < 0:
+            return None
+
+        return float(min(eta, 24 * 3600))
 
     def _calculate_linear_eta(self, heater, target):
         """Calculate ETA assuming constant heating rate.
@@ -1046,6 +1546,9 @@ class TempETAPlugin(
             show_in_sidebar=True,
             show_in_navbar=True,
             show_in_tab=True,
+            show_progress_bars=True,
+            show_historical_graph=True,
+            historical_graph_window_seconds=180,
             temp_display="octoprint",
             threshold_unit="octoprint",
             debug_logging=False,
@@ -1053,6 +1556,15 @@ class TempETAPlugin(
             algorithm="linear",
             update_interval=1.0,
             history_size=60,
+            # Cool Down ETA
+            enable_cooldown_eta=True,
+            cooldown_mode="threshold",
+            cooldown_target_tool0=50.0,
+            cooldown_target_bed=40.0,
+            cooldown_target_chamber=30.0,
+            cooldown_ambient_temp=None,
+            cooldown_hysteresis_c=1.0,
+            cooldown_fit_window_seconds=120,
         )
 
     # TemplatePlugin mixin

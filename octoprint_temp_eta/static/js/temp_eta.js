@@ -2,7 +2,7 @@
  * View model for OctoPrint Temperature ETA Plugin
  *
  * Implements Issue #469: Temperature countdown/ETA display
- * Author: AjimaruGDR
+ * Author: Ajimaru
  * License: AGPLv3
  */
 $(function () {
@@ -444,13 +444,70 @@ $(function () {
       return !!defaultValue;
     }
 
+    function readKoNumber(value, defaultValue) {
+      try {
+        var v = value;
+        if (typeof v === "function") {
+          v = v();
+        }
+        if (v === undefined || v === null || v === "") {
+          return defaultValue;
+        }
+        var n = parseFloat(v);
+        if (!isFinite(n)) {
+          return defaultValue;
+        }
+        return n;
+      } catch (e) {}
+      return defaultValue;
+    }
+
     self._pluginSettings = function () {
       try {
-        return (
+        // IMPORTANT: prefer a fresh settings root (OctoPrint may replace the
+        // settings object after save/reload). However, some OctoPrint setups
+        // momentarily expose an empty settings structure while reloading.
+        // For UI features like the historical graph, fall back to the last
+        // known settings object if it still looks valid.
+        var root = self._resolveSettingsRoot();
+        var ps = root && root.plugins && root.plugins.temp_eta;
+        var source = "fresh";
+
+        if (
+          !ps &&
           self.settings &&
           self.settings.plugins &&
           self.settings.plugins.temp_eta
-        );
+        ) {
+          ps = self.settings.plugins.temp_eta;
+          source = "fallback";
+        }
+
+        if (ps && root && root.plugins) {
+          self.settings = root;
+        }
+
+        // Debug once in a while to diagnose cases where the settings root is
+        // temporarily missing and would disable features like the historical graph.
+        // This logs to the browser console only (controlled by debug_logging).
+        try {
+          var dbg = {
+            source: source,
+            hasFreshPlugins: !!(root && root.plugins),
+            hasFallbackPlugins: !!(self.settings && self.settings.plugins),
+            show_historical_graph: ps
+              ? readKoBool(ps.show_historical_graph, null)
+              : null,
+          };
+          self._debugLog(
+            "settings_graph",
+            "[TempETA] Settings snapshot",
+            dbg,
+            60000,
+          );
+        } catch (e) {}
+
+        return ps;
       } catch (e) {
         return null;
       }
@@ -478,6 +535,341 @@ $(function () {
       }
 
       return true;
+    };
+
+    self.isProgressBarsEnabled = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return true;
+      }
+
+      var pluginEnabled = readKoBool(ps.enabled, true);
+      if (!pluginEnabled) {
+        return false;
+      }
+
+      return readKoBool(ps.show_progress_bars, true);
+    };
+
+    self.isHistoricalGraphEnabled = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return false;
+      }
+
+      var pluginEnabled = readKoBool(ps.enabled, true);
+      if (!pluginEnabled) {
+        return false;
+      }
+
+      return readKoBool(ps.show_historical_graph, false);
+    };
+
+    self.getHistoricalGraphWindowSeconds = function () {
+      var ps = self._pluginSettings();
+      var seconds = 180;
+      if (ps) {
+        seconds = readKoNumber(ps.historical_graph_window_seconds, 180);
+      }
+
+      // Clamp to a reasonable range to prevent runaway memory usage.
+      if (!isFinite(seconds)) {
+        seconds = 180;
+      }
+      seconds = Math.max(30, Math.min(1800, seconds));
+      return seconds;
+    };
+
+    self.isHistoricalGraphVisible = function (heater) {
+      if (!self.isHistoricalGraphEnabled()) {
+        return false;
+      }
+
+      if (!heater || !heater.actual || !heater.target) {
+        return false;
+      }
+
+      var actual = parseFloat(heater.actual());
+      var target = parseFloat(heater.target());
+      if (!isFinite(actual) || !isFinite(target)) {
+        return false;
+      }
+
+      // Only show if we have at least a couple of points recorded.
+      if (!heater._history || heater._history.length < 2) {
+        return false;
+      }
+
+      return true;
+    };
+
+    self._recordHeaterHistory = function (heaterObj, tsSec, actualC, targetC) {
+      if (!heaterObj) {
+        return;
+      }
+
+      if (!heaterObj._history) {
+        heaterObj._history = [];
+      }
+
+      // Only record when the feature is enabled.
+      if (!self.isHistoricalGraphEnabled()) {
+        heaterObj._history = [];
+        return;
+      }
+
+      if (!isFinite(tsSec) || !isFinite(actualC) || !isFinite(targetC)) {
+        return;
+      }
+
+      heaterObj._history.push({ t: tsSec, a: actualC, tg: targetC });
+
+      // Prune to configured window (keep a small margin).
+      var windowSec = self.getHistoricalGraphWindowSeconds();
+      var cutoff = tsSec - windowSec - 5;
+      while (heaterObj._history.length && heaterObj._history[0].t < cutoff) {
+        heaterObj._history.shift();
+      }
+
+      // Hard cap as a safety net (shouldn't be hit in normal operation).
+      if (heaterObj._history.length > 5000) {
+        heaterObj._history = heaterObj._history.slice(-5000);
+      }
+    };
+
+    self._formatAxisTime = function (seconds) {
+      // Format seconds as M:SS (no i18n needed for numeric axis labels).
+      if (!isFinite(seconds) || seconds < 0) {
+        seconds = 0;
+      }
+      var s = Math.round(seconds);
+      var m = Math.floor(s / 60);
+      var r = s % 60;
+      return m + ":" + (r < 10 ? "0" : "") + r;
+    };
+
+    self._formatAxisTemp = function (tempC) {
+      // Keep labels compact; whole degrees read better at small font sizes.
+      if (!isFinite(tempC)) {
+        return "";
+      }
+
+      var unit = self._effectiveThresholdUnit() === "f" ? "°F" : "°C";
+      var value = tempC;
+      if (unit === "°F") {
+        value = self._cToF(tempC);
+      }
+
+      return String(Math.round(value)) + unit;
+    };
+
+    self._isHeaterHeatingNow = function (etaValue, actualC, targetC) {
+      // "Idle" in the UI should cover: no active target or already at/above target.
+      // Use a small epsilon to avoid flicker around the target.
+      var eps = 0.3;
+      if (!isFinite(actualC) || !isFinite(targetC) || targetC <= 0) {
+        return false;
+      }
+      if (self.isETAVisible(etaValue)) {
+        return true;
+      }
+      return targetC - actualC > eps;
+    };
+
+    self._renderHistoricalGraph = function (heaterObj) {
+      if (!heaterObj) {
+        return;
+      }
+
+      // Throttle per heater to ~1Hz.
+      var nowMs = Date.now();
+      if (
+        heaterObj._lastGraphRenderMs &&
+        nowMs - heaterObj._lastGraphRenderMs < 900
+      ) {
+        return;
+      }
+      heaterObj._lastGraphRenderMs = nowMs;
+
+      if (!self.isHistoricalGraphVisible(heaterObj)) {
+        return;
+      }
+
+      var poly = document.getElementById(
+        "temp_eta_graph_actual_" + heaterObj.name,
+      );
+      var targetLine = document.getElementById(
+        "temp_eta_graph_target_" + heaterObj.name,
+      );
+      if (!poly || !targetLine) {
+        return;
+      }
+
+      var hist = heaterObj._history || [];
+      if (hist.length < 2) {
+        poly.setAttribute("points", "");
+        return;
+      }
+
+      // ViewBox: 0..100 (x), 0..40 (y)
+      var vbW = 100;
+      var vbH = 40;
+      var plotLeft = 12;
+      var plotRight = 99;
+      var plotTop = 2;
+      var plotBottom = 30;
+      var plotW = plotRight - plotLeft;
+      var plotH = plotBottom - plotTop;
+
+      var windowSec = self.getHistoricalGraphWindowSeconds();
+      var nowSec = hist[hist.length - 1].t;
+      var minT = nowSec - windowSec;
+
+      // Determine min/max for scaling.
+      var minTemp = Infinity;
+      var maxTemp = -Infinity;
+      for (var i = 0; i < hist.length; i++) {
+        var p = hist[i];
+        if (p.t < minT) continue;
+        if (p.a < minTemp) minTemp = p.a;
+        if (p.a > maxTemp) maxTemp = p.a;
+        if (isFinite(p.tg) && p.tg > 0) {
+          if (p.tg < minTemp) minTemp = p.tg;
+          if (p.tg > maxTemp) maxTemp = p.tg;
+        }
+      }
+
+      if (!isFinite(minTemp) || !isFinite(maxTemp)) {
+        poly.setAttribute("points", "");
+        return;
+      }
+
+      if (Math.abs(maxTemp - minTemp) < 0.5) {
+        maxTemp = minTemp + 0.5;
+      }
+
+      // Add small padding.
+      var pad = Math.max(1.0, (maxTemp - minTemp) * 0.05);
+      minTemp -= pad;
+      maxTemp += pad;
+
+      function yForTemp(tempC) {
+        var yNorm = (tempC - minTemp) / (maxTemp - minTemp);
+        var y = plotBottom - yNorm * plotH;
+        if (!isFinite(y)) {
+          return plotBottom;
+        }
+        return Math.max(plotTop, Math.min(plotBottom, y));
+      }
+
+      function xForTime(ts) {
+        var x = plotLeft + ((ts - minT) / windowSec) * plotW;
+        if (!isFinite(x)) {
+          return plotLeft;
+        }
+        return Math.max(plotLeft, Math.min(plotRight, x));
+      }
+
+      var points = [];
+      for (var j = 0; j < hist.length; j++) {
+        var h = hist[j];
+        if (h.t < minT) continue;
+
+        var x = xForTime(h.t);
+        var y = yForTemp(h.a);
+        points.push(x.toFixed(2) + "," + y.toFixed(2));
+      }
+
+      poly.setAttribute("points", points.join(" "));
+
+      // Target line uses current target.
+      var currentTarget = parseFloat(heaterObj.target());
+      if (isFinite(currentTarget) && currentTarget > 0) {
+        var yT = yForTemp(currentTarget);
+        targetLine.setAttribute("x1", plotLeft);
+        targetLine.setAttribute("x2", plotRight);
+        targetLine.setAttribute("y1", yT.toFixed(2));
+        targetLine.setAttribute("y2", yT.toFixed(2));
+        targetLine.style.display = "";
+      } else {
+        targetLine.style.display = "none";
+      }
+
+      // Axes labels + Y ticks.
+      var yMin = minTemp;
+      var yMax = maxTemp;
+      var yMid = (yMin + yMax) / 2.0;
+
+      var unitX = document.getElementById(
+        "temp_eta_graph_unit_x_" + heaterObj.name,
+      );
+      if (unitX) {
+        unitX.textContent = "mm:ss";
+      }
+
+      var tickYMax = document.getElementById(
+        "temp_eta_graph_tick_ymax_" + heaterObj.name,
+      );
+      var tickYMid = document.getElementById(
+        "temp_eta_graph_tick_ymid_" + heaterObj.name,
+      );
+      var tickYMin = document.getElementById(
+        "temp_eta_graph_tick_ymin_" + heaterObj.name,
+      );
+
+      var labelYMax = document.getElementById(
+        "temp_eta_graph_label_ymax_" + heaterObj.name,
+      );
+      var labelYMid = document.getElementById(
+        "temp_eta_graph_label_ymid_" + heaterObj.name,
+      );
+      var labelYMin = document.getElementById(
+        "temp_eta_graph_label_ymin_" + heaterObj.name,
+      );
+
+      if (
+        tickYMax &&
+        tickYMid &&
+        tickYMin &&
+        labelYMax &&
+        labelYMid &&
+        labelYMin
+      ) {
+        var yTickMaxPos = yForTemp(yMax);
+        var yTickMidPos = yForTemp(yMid);
+        var yTickMinPos = yForTemp(yMin);
+
+        tickYMax.setAttribute("y1", yTickMaxPos.toFixed(2));
+        tickYMax.setAttribute("y2", yTickMaxPos.toFixed(2));
+        tickYMid.setAttribute("y1", yTickMidPos.toFixed(2));
+        tickYMid.setAttribute("y2", yTickMidPos.toFixed(2));
+        tickYMin.setAttribute("y1", yTickMinPos.toFixed(2));
+        tickYMin.setAttribute("y2", yTickMinPos.toFixed(2));
+
+        labelYMax.textContent = self._formatAxisTemp(yMax);
+        labelYMid.textContent = self._formatAxisTemp(yMid);
+        labelYMin.textContent = self._formatAxisTemp(yMin);
+
+        labelYMax.setAttribute("y", yTickMaxPos.toFixed(2));
+        labelYMid.setAttribute("y", yTickMidPos.toFixed(2));
+        labelYMin.setAttribute("y", yTickMinPos.toFixed(2));
+      }
+
+      // X labels are relative time within the window.
+      var labelXLeft = document.getElementById(
+        "temp_eta_graph_label_xleft_" + heaterObj.name,
+      );
+      var labelXMid = document.getElementById(
+        "temp_eta_graph_label_xmid_" + heaterObj.name,
+      );
+      var labelXRight = document.getElementById(
+        "temp_eta_graph_label_xright_" + heaterObj.name,
+      );
+      if (labelXLeft && labelXMid && labelXRight) {
+        labelXLeft.textContent = "-" + self._formatAxisTime(windowSec);
+        labelXMid.textContent = "-" + self._formatAxisTime(windowSec / 2.0);
+        labelXRight.textContent = "0:00";
+      }
     };
 
     /**
@@ -672,14 +1064,25 @@ $(function () {
       if (data.type === "eta_update") {
         var heater = data.heater;
         var eta = data.eta;
+        var etaKind = data.eta_kind || null;
+        var cooldownTarget =
+          data.cooldown_target !== undefined && data.cooldown_target !== null
+            ? parseFloat(data.cooldown_target)
+            : null;
 
         // Dynamically register heaters as they appear
         if (!self.heaterData[heater]) {
           self.heaterData[heater] = {
             name: heater,
             eta: ko.observable(null),
+            etaKind: ko.observable(null),
             actual: ko.observable(null),
             target: ko.observable(null),
+            cooldownTarget: ko.observable(null),
+            startTemp: ko.observable(null),
+            startTarget: ko.observable(null),
+            _history: [],
+            _lastGraphRenderMs: 0,
           };
           self.heaters.push(self.heaterData[heater]);
           self._debugLog(
@@ -692,12 +1095,95 @@ $(function () {
 
         // Update heater data
         self.heaterData[heater].eta(eta);
+        self.heaterData[heater].etaKind(etaKind);
         self.heaterData[heater].actual(data.actual);
         self.heaterData[heater].target(data.target);
+        self.heaterData[heater].cooldownTarget(
+          cooldownTarget !== null && isFinite(cooldownTarget)
+            ? cooldownTarget
+            : null,
+        );
+
+        // Track start temperature for progress bars.
+        // We reset this when a new target is set (or the target changes), so
+        // progress represents the fraction from startTemp -> target.
+        var actualNow = parseFloat(data.actual);
+        var targetNow = parseFloat(data.target);
+        var prevTarget = parseFloat(self.heaterData[heater].startTarget());
+
+        var heatingNow = self._isHeaterHeatingNow(eta, actualNow, targetNow);
+        if (!heatingNow) {
+          // Reset when the heater returns to "Idle" (e.g. reached target).
+          self.heaterData[heater].startTemp(null);
+          self.heaterData[heater].startTarget(null);
+        } else {
+          var needsReset =
+            !isFinite(prevTarget) ||
+            Math.abs(prevTarget - targetNow) > 1e-6 ||
+            self.heaterData[heater].startTemp() === null ||
+            self.heaterData[heater].startTemp() === undefined;
+
+          if (needsReset) {
+            self.heaterData[heater].startTemp(actualNow);
+            self.heaterData[heater].startTarget(targetNow);
+          }
+        }
+
+        // Record and render history graph (tab view).
+        self._recordHeaterHistory(
+          self.heaterData[heater],
+          Date.now() / 1000.0,
+          actualNow,
+          targetNow,
+        );
+        self._renderHistoricalGraph(self.heaterData[heater]);
 
         // Ensure sidebar becomes visible even if it was injected late.
         self._throttledEnsureSidebarBound();
       }
+    };
+
+    self._effectiveDisplayTargetC = function (heater) {
+      if (!heater) {
+        return NaN;
+      }
+
+      try {
+        var kind = heater.etaKind ? heater.etaKind() : null;
+        if (kind === "cooling") {
+          var ct = heater.cooldownTarget
+            ? parseFloat(heater.cooldownTarget())
+            : NaN;
+          if (isFinite(ct) && ct > -100) {
+            return ct;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      return heater.target ? parseFloat(heater.target()) : NaN;
+    };
+
+    self.formatTempPair = function (heater) {
+      if (!heater) {
+        return "";
+      }
+      var actual = heater.actual ? parseFloat(heater.actual()) : NaN;
+      var effTarget = self._effectiveDisplayTargetC(heater);
+
+      if (!isFinite(actual)) {
+        return "";
+      }
+
+      if (!isFinite(effTarget) || effTarget <= 0) {
+        // When no target is set and we don't have a cooldown target, show only the actual.
+        return self.formatTempDisplay(actual);
+      }
+
+      return (
+        self.formatTempDisplay(actual) + "/" + self.formatTempDisplay(effTarget)
+      );
     };
 
     /**
@@ -790,12 +1276,105 @@ $(function () {
       if (!self.isETAVisible(eta)) {
         return "hidden";
       }
+
+      if (heater.etaKind && heater.etaKind() === "cooling") {
+        return "eta-cooling";
+      }
       if (eta < 60) {
         return "eta-warning";
       } else if (eta < 300) {
         return "eta-info";
       }
       return "eta-normal";
+    };
+
+    /**
+     * Progress helpers (percent to target).
+     *
+     * We intentionally compute this client-side from actual/target to keep the
+     * backend payload small and robust across profiles/heaters.
+     */
+    self.isProgressVisible = function (heater) {
+      if (!self.isProgressBarsEnabled()) {
+        return false;
+      }
+
+      if (!heater || !heater.actual || !heater.target) {
+        return false;
+      }
+
+      var actual = parseFloat(heater.actual());
+      var target = parseFloat(heater.target());
+
+      if (!isFinite(actual) || !isFinite(target) || target <= 0) {
+        return false;
+      }
+
+      return true;
+    };
+
+    self.isTabProgressVisible = function (heater) {
+      if (!self.isProgressVisible(heater)) {
+        return false;
+      }
+
+      // Tab view should reset/hide progress when the heater is back to "Idle".
+      var eta = heater && heater.eta ? heater.eta() : null;
+      var actual = heater && heater.actual ? parseFloat(heater.actual()) : NaN;
+      var target = heater && heater.target ? parseFloat(heater.target()) : NaN;
+      return self._isHeaterHeatingNow(eta, actual, target);
+    };
+
+    self.getProgressPercent = function (heater) {
+      if (!self.isProgressVisible(heater)) {
+        return 0;
+      }
+
+      var actual = parseFloat(heater.actual());
+      var target = parseFloat(heater.target());
+
+      // Preferred: progress from startTemp -> target.
+      var start = null;
+      if (heater.startTemp && heater.startTarget) {
+        var st = parseFloat(heater.startTemp());
+        var tt = parseFloat(heater.startTarget());
+        if (isFinite(st) && isFinite(tt) && tt > 0) {
+          start = st;
+          target = tt;
+        }
+      }
+
+      if (!isFinite(actual) || !isFinite(target) || target <= 0) {
+        return 0;
+      }
+
+      // If start is unknown, fall back to actual/target.
+      var pct = 0;
+      if (start === null || start === undefined || !isFinite(start)) {
+        pct = (actual / target) * 100.0;
+      } else {
+        var denom = target - start;
+        if (!isFinite(denom) || denom <= 0.001) {
+          pct = (actual / target) * 100.0;
+        } else {
+          pct = ((actual - start) / denom) * 100.0;
+        }
+      }
+
+      if (!isFinite(pct)) {
+        pct = 0;
+      }
+      pct = Math.max(0, Math.min(100, pct));
+      return pct;
+    };
+
+    self.getProgressBarClass = function (heater) {
+      // Reuse the ETA coloring bands. When ETA is hidden, use a neutral style.
+      var c = self.getETAClass(heater);
+      if (!c || c === "hidden") {
+        return "eta-normal";
+      }
+      return c;
     };
 
     /**
@@ -814,7 +1393,14 @@ $(function () {
     };
 
     self.getNotHeatingText = function () {
-      return _gettext("Not heating");
+      return _gettext("Idle");
+    };
+
+    self.getHeaterIdleText = function (heater) {
+      if (heater && heater.etaKind && heater.etaKind() === "cooling") {
+        return _gettext("Cooling");
+      }
+      return _gettext("Idle");
     };
 
     /**

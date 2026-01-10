@@ -1,5 +1,5 @@
 /* Temperature ETA Plugin Styles */
-/* Author: AjimaruGDR */
+/* Author: Ajimaru */
 /* License: AGPLv3 */
 
 #navbar_plugin_temp_eta {
@@ -42,11 +42,17 @@
 
 #sidebar_plugin_temp_eta .temp-eta-item {
     display: flex;
-    align-items: center;
-    gap: 4px;
+    flex-direction: column;
+    gap: 2px;
     font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 #navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
@@ -81,6 +87,22 @@
 
 #sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i {
     color: #5bc0de;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
+    color: #337ab7;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
+    color: #337ab7;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
+    color: #337ab7;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
+    color: #337ab7;
 }
 
 #navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
@@ -142,6 +164,93 @@
     margin-left: auto;
 }
 
+.temp-eta-progress {
+    height: 6px;
+    margin: 0;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-progress {
+    width: 100%;
+}
+
+#temp_eta_content .temp-eta-progress {
+    margin-top: 8px;
+}
+
+#temp_eta_content .temp-eta-subtabs {
+    margin-top: 10px;
+}
+
+#temp_eta_content .temp-eta-subtab-content {
+    padding-top: 10px;
+}
+
+#temp_eta_content .temp-eta-graph {
+    margin-top: 10px;
+}
+
+#temp_eta_content .temp-eta-graph-svg {
+    width: 100%;
+    height: 60px;
+    display: block;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 3px;
+}
+
+#temp_eta_content .temp-eta-subtab-history .temp-eta-graph-svg {
+    height: 140px;
+}
+
+#temp_eta_content .temp-eta-graph-axis,
+#temp_eta_content .temp-eta-graph-axis-tick {
+    stroke: rgba(0, 0, 0, 0.28);
+    stroke-width: 0.7;
+    vector-effect: non-scaling-stroke;
+}
+
+#temp_eta_content .temp-eta-graph-label {
+    fill: rgba(0, 0, 0, 0.55);
+    font-size: 4px;
+    vector-effect: non-scaling-stroke;
+}
+
+#temp_eta_content .temp-eta-graph-line {
+    fill: none;
+    stroke: #5bc0de;
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+}
+
+#temp_eta_content .temp-eta-graph-target {
+    stroke: rgba(0, 0, 0, 0.25);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+    vector-effect: non-scaling-stroke;
+}
+
+.temp-eta-progress .progress-bar,
+.temp-eta-progress .bar {
+    transition: width 0.4s ease;
+    min-width: 2px;
+}
+
+.temp-eta-progress .progress-bar.eta-warning,
+.temp-eta-progress .bar.eta-warning {
+    background-color: #d9534f;
+}
+
+.temp-eta-progress .progress-bar.eta-info,
+.temp-eta-progress .bar.eta-info {
+    background-color: #5bc0de;
+}
+
+.temp-eta-progress .progress-bar.eta-normal,
+.temp-eta-progress .bar.eta-normal {
+    background-color: #5cb85c;
+}
+
 #navbar_plugin_temp_eta .temp-eta-value,
 #navbar_plugin_temp_eta .temp-eta-temp {
     min-width: 48px;
@@ -190,6 +299,10 @@
 
 #temp_eta_content .eta-display.eta-info {
     color: #5bc0de;
+}
+
+#temp_eta_content .eta-display.eta-cooling {
+    color: #337ab7;
 }
 
 #temp_eta_content .eta-display.eta-normal {
