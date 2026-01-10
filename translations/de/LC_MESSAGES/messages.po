@@ -441,11 +441,14 @@ msgstr ""
 #~ " behavior"
 #~ msgstr ""
 
-#~ msgid "Not heating"
-#~ msgstr "Heizt nicht"
+msgid "Not heating"
+msgstr "Heizt nicht"
 
-#~ msgid "Bed"
-#~ msgstr "Bett"
+msgid "Cooling"
+msgstr "Abkühlen"
 
-#~ msgid "Chamber"
-#~ msgstr "Kammer"
+msgid "Bed"
+msgstr "Bett"
+
+msgid "Chamber"
+msgstr "Kammer"

@@ -1343,6 +1343,13 @@ $(function () {
       return _gettext("Not heating");
     };
 
+    self.getHeaterIdleText = function (heater) {
+      if (heater && heater.etaKind && heater.etaKind() === "cooling") {
+        return _gettext("Cooling");
+      }
+      return _gettext("Not heating");
+    };
+
     /**
      * Sort heaters in logical order: tools first, then bed, then chamber
      */
