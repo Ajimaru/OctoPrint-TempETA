@@ -166,6 +166,16 @@ class TempETAPlugin(
             "tool0": deque(maxlen=self._history_maxlen),
             "chamber": deque(maxlen=self._history_maxlen),
         }
+
+        # Ambient baseline per heater for ambient-mode cooldown.
+        # If the user doesn't provide an ambient temperature, we rely on the
+        # lowest temperature observed while the heater target is OFF (within a
+        # reasonable range) as a proxy for ambient.
+        self._cooldown_ambient_baseline: Dict[str, Optional[float]] = {
+            "bed": None,
+            "tool0": None,
+            "chamber": None,
+        }
         self._last_update_time = 0
 
         # When enabled, suppress ETA updates while a print job is active.
@@ -755,6 +765,14 @@ class TempETAPlugin(
                             )
                         self._cooldown_history[heater].append((current_time, actual))
                         recorded_cooldown_count += 1
+
+                        # Track a baseline ambient temp while OFF.
+                        # We only learn baseline values in a sane range to
+                        # avoid "ambient" being polluted by still-hot cooldown.
+                        if math.isfinite(actual) and actual < 120.0:
+                            prev = self._cooldown_ambient_baseline.get(heater)
+                            if prev is None or actual < prev:
+                                self._cooldown_ambient_baseline[heater] = actual
                     continue
 
                 remaining = target - actual
@@ -901,10 +919,25 @@ class TempETAPlugin(
                             hysteresis_c=cooldown_hyst_c,
                         )
 
-                        if (
-                            cooldown_target is not None
-                            and actual > (cooldown_target + cooldown_hyst_c)
-                        ):
+                        if cooldown_target is None:
+                            self._debug_log_throttled(
+                                time.time(),
+                                15.0,
+                                "Cooldown ETA not available (no target) heater=%s mode=%s actual=%.1f",
+                                str(heater),
+                                str(cooldown_mode),
+                                float(actual),
+                            )
+
+                        should_compute = False
+                        if cooldown_target is not None:
+                            if cooldown_mode == "ambient":
+                                # cooldown_target already includes the band above ambient.
+                                should_compute = actual > cooldown_target
+                            else:
+                                should_compute = actual > (cooldown_target + cooldown_hyst_c)
+
+                        if should_compute:
                             cooldown_eta = self._calculate_cooldown_eta_seconds(
                                 heater_name=heater,
                                 actual_c=actual,
@@ -918,6 +951,23 @@ class TempETAPlugin(
                             if cooldown_eta is not None:
                                 eta = cooldown_eta
                                 eta_kind = "cooling"
+                            else:
+                                hist_len = 0
+                                try:
+                                    h = self._cooldown_history.get(heater)
+                                    hist_len = len(h) if h is not None else 0
+                                except Exception:
+                                    hist_len = 0
+                                self._debug_log_throttled(
+                                    time.time(),
+                                    15.0,
+                                    "Cooldown ETA not available (insufficient fit) heater=%s mode=%s actual=%.1f goal=%.1f hist=%d",
+                                    str(heater),
+                                    str(cooldown_mode),
+                                    float(actual),
+                                    float(cooldown_target),
+                                    int(hist_len),
+                                )
                 elif actual >= target:
                     # Already at or above target
                     eta = None
@@ -1040,6 +1090,10 @@ class TempETAPlugin(
         except Exception:
             pass
 
+        base = self._cooldown_ambient_baseline.get(heater_name)
+        if base is not None and math.isfinite(base):
+            return float(base)
+
         hist = self._cooldown_history.get(heater_name)
         if not hist:
             return None
@@ -1051,6 +1105,16 @@ class TempETAPlugin(
             return None
 
         mn = min(recent)
+        # If the minimum is essentially "now" (still very hot), it's not a useful
+        # ambient estimate. In that case, require the user-provided ambient or an
+        # already learned baseline.
+        try:
+            current = float(recent[-1])
+        except Exception:
+            current = mn
+        if mn >= (current - 2.0):
+            return None
+
         amb = mn - 0.5
         if not math.isfinite(amb):
             return None
