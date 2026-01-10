@@ -37,7 +37,7 @@
                         <p class="text-muted" data-bind="text: $parent.getNotHeatingText()"></p>
                     </div>
 
-                    <div class="text-center" data-bind="visible: $parent.isProgressVisible($data)">
+                    <div class="text-center" data-bind="visible: $parent.isTabProgressVisible($data)">
                         <p class="temp-eta-inline">
                             <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
                             <span data-bind="text: $parent.formatTempDisplay(target())"></span>
@@ -52,15 +52,41 @@
                         </div>
                     </div>
 
-                    <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
-                            <svg class="temp-eta-graph-svg" viewBox="0 0 100 30" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
-                                data-bind="attr: { id: 'temp_eta_graph_' + name }">
-                            <line class="temp-eta-graph-target" x1="0" y1="0" x2="100" y2="0"
-                                  data-bind="attr: { id: 'temp_eta_graph_target_' + name }"></line>
+                      <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
+                        <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
+                             data-bind="attr: { id: 'temp_eta_graph_' + name }">
+                            <g class="temp-eta-graph-axes">
+                              <line class="temp-eta-graph-axis" x1="12" y1="2" x2="12" y2="30"></line>
+                              <line class="temp-eta-graph-axis" x1="12" y1="30" x2="99" y2="30"></line>
+
+                              <line class="temp-eta-graph-axis-tick" x1="10.5" y1="2" x2="12" y2="2"
+                                  data-bind="attr: { id: 'temp_eta_graph_tick_ymax_' + name }"></line>
+                              <line class="temp-eta-graph-axis-tick" x1="10.5" y1="16" x2="12" y2="16"
+                                  data-bind="attr: { id: 'temp_eta_graph_tick_ymid_' + name }"></line>
+                              <line class="temp-eta-graph-axis-tick" x1="10.5" y1="30" x2="12" y2="30"
+                                  data-bind="attr: { id: 'temp_eta_graph_tick_ymin_' + name }"></line>
+
+                              <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="2" text-anchor="start" dominant-baseline="hanging"
+                                  data-bind="attr: { id: 'temp_eta_graph_label_ymax_' + name }"></text>
+                              <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="16" text-anchor="start" dominant-baseline="middle"
+                                  data-bind="attr: { id: 'temp_eta_graph_label_ymid_' + name }"></text>
+                              <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="30" text-anchor="start" dominant-baseline="baseline"
+                                  data-bind="attr: { id: 'temp_eta_graph_label_ymin_' + name }"></text>
+
+                              <text class="temp-eta-graph-label temp-eta-graph-label-x" x="12" y="39" text-anchor="start" dominant-baseline="alphabetic"
+                                  data-bind="attr: { id: 'temp_eta_graph_label_xleft_' + name }"></text>
+                              <text class="temp-eta-graph-label temp-eta-graph-label-x" x="55.5" y="39" text-anchor="middle" dominant-baseline="alphabetic"
+                                  data-bind="attr: { id: 'temp_eta_graph_label_xmid_' + name }"></text>
+                              <text class="temp-eta-graph-label temp-eta-graph-label-x" x="99" y="39" text-anchor="end" dominant-baseline="alphabetic"
+                                  data-bind="attr: { id: 'temp_eta_graph_label_xright_' + name }"></text>
+                            </g>
+
+                            <line class="temp-eta-graph-target" x1="12" y1="0" x2="99" y2="0"
+                                data-bind="attr: { id: 'temp_eta_graph_target_' + name }"></line>
                             <polyline class="temp-eta-graph-line" points=""
-                                      data-bind="attr: { id: 'temp_eta_graph_actual_' + name }"></polyline>
+                                  data-bind="attr: { id: 'temp_eta_graph_actual_' + name }"></polyline>
                         </svg>
-                    </div>
+                      </div>
                 </div>
             </div>
         </div>
