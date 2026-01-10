@@ -626,7 +626,7 @@ $(function () {
     };
 
     self._isHeaterHeatingNow = function (etaValue, actualC, targetC) {
-      // "Not heating" in the UI should cover: no active target or already at/above target.
+      // "Idle" in the UI should cover: no active target or already at/above target.
       // Use a small epsilon to avoid flicker around the target.
       var eps = 0.3;
       if (!isFinite(actualC) || !isFinite(targetC) || targetC <= 0) {
@@ -1068,7 +1068,7 @@ $(function () {
 
         var heatingNow = self._isHeaterHeatingNow(eta, actualNow, targetNow);
         if (!heatingNow) {
-          // Reset when the heater returns to "Not heating" (e.g. reached target).
+          // Reset when the heater returns to "Idle" (e.g. reached target).
           self.heaterData[heater].startTemp(null);
           self.heaterData[heater].startTarget(null);
         } else {
@@ -1269,7 +1269,7 @@ $(function () {
         return false;
       }
 
-      // Tab view should reset/hide progress when the heater is back to "Not heating".
+      // Tab view should reset/hide progress when the heater is back to "Idle".
       var eta = heater && heater.eta ? heater.eta() : null;
       var actual = heater && heater.actual ? parseFloat(heater.actual()) : NaN;
       var target = heater && heater.target ? parseFloat(heater.target()) : NaN;
@@ -1344,14 +1344,14 @@ $(function () {
     };
 
     self.getNotHeatingText = function () {
-      return _gettext("Not heating");
+      return _gettext("Idle");
     };
 
     self.getHeaterIdleText = function (heater) {
       if (heater && heater.etaKind && heater.etaKind() === "cooling") {
         return _gettext("Cooling");
       }
-      return _gettext("Not heating");
+      return _gettext("Idle");
     };
 
     /**

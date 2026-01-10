@@ -441,8 +441,8 @@ msgstr ""
 #~ " behavior"
 #~ msgstr ""
 
-msgid "Not heating"
-msgstr "Heizt nicht"
+msgid "Idle"
+msgstr "Idle"
 
 msgid "Cooling"
 msgstr "Abkühlen"

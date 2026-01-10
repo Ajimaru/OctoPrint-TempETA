@@ -420,8 +420,8 @@ msgstr "Write additional debug information to the OctoPrint log (may be noisy)"
 #~ " behavior"
 #~ msgstr ""
 
-msgid "Not heating"
-msgstr "Not heating"
+msgid "Idle"
+msgstr "Idle"
 
 msgid "Cooling"
 msgstr "Cooling"
