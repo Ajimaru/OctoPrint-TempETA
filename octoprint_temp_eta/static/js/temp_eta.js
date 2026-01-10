@@ -799,6 +799,59 @@ $(function () {
     };
 
     /**
+     * Progress helpers (percent to target).
+     *
+     * We intentionally compute this client-side from actual/target to keep the
+     * backend payload small and robust across profiles/heaters.
+     */
+    self.isProgressVisible = function (heater) {
+      if (!heater || !heater.actual || !heater.target) {
+        return false;
+      }
+
+      var actual = parseFloat(heater.actual());
+      var target = parseFloat(heater.target());
+
+      if (!isFinite(actual) || !isFinite(target) || target <= 0) {
+        return false;
+      }
+
+      // Prefer showing progress while heating (ETA visible). Fall back to
+      // showing it whenever a target is set.
+      return self.isETAVisible(heater.eta()) || target > 0;
+    };
+
+    self.getProgressPercent = function (heater) {
+      if (!self.isProgressVisible(heater)) {
+        return 0;
+      }
+
+      var actual = parseFloat(heater.actual());
+      var target = parseFloat(heater.target());
+
+      if (!isFinite(actual) || !isFinite(target) || target <= 0) {
+        return 0;
+      }
+
+      // Simple closeness-to-target: actual/target. Clamp to [0, 100].
+      var pct = (actual / target) * 100.0;
+      if (!isFinite(pct)) {
+        pct = 0;
+      }
+      pct = Math.max(0, Math.min(100, pct));
+      return pct;
+    };
+
+    self.getProgressBarClass = function (heater) {
+      // Reuse the ETA coloring bands. When ETA is hidden, use a neutral style.
+      var c = self.getETAClass(heater);
+      if (!c || c === "hidden") {
+        return "eta-normal";
+      }
+      return c;
+    };
+
+    /**
      * Get display name for heater (friendly name)
      */
     self.getHeaterLabel = function (heaterName) {

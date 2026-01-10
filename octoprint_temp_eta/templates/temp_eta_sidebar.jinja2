@@ -1,14 +1,24 @@
 <div id="sidebar_plugin_temp_eta" data-bind="visible: isComponentEnabled('sidebar') && displayHeaters().length > 0">
     <!-- ko foreach: displayHeaters() -->
     <div class="temp-eta-item" data-bind="css: $root.getETAClass($data)">
-        <span class="temp-eta-label">
-            <i class="fa" data-bind="css: $root.getHeaterIcon(name)"></i>
-        </span>
-        <span class="temp-eta-name" data-bind="text: $root.getHeaterLabel(name)"></span>
-        <span class="temp-eta-metrics">
-            <span class="temp-eta-value" data-bind="text: $root.formatETA(eta())"></span>
-            <span class="temp-eta-temp" data-bind="text: $root.formatTempDisplay(actual()) + '/' + $root.formatTempDisplay(target())"></span>
-        </span>
+        <div class="temp-eta-row">
+            <span class="temp-eta-label">
+                <i class="fa" data-bind="css: $root.getHeaterIcon(name)"></i>
+            </span>
+            <span class="temp-eta-name" data-bind="text: $root.getHeaterLabel(name)"></span>
+            <span class="temp-eta-metrics">
+                <span class="temp-eta-value" data-bind="text: $root.formatETA(eta())"></span>
+                <span class="temp-eta-temp" data-bind="text: $root.formatTempDisplay(actual()) + '/' + $root.formatTempDisplay(target())"></span>
+            </span>
+        </div>
+
+        <div class="progress temp-eta-progress" data-bind="visible: $root.isProgressVisible($data)">
+            <div class="progress-bar"
+                 role="progressbar"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 data-bind="style: { width: $root.getProgressPercent($data) + '%' }, css: $root.getProgressBarClass($data)"></div>
+        </div>
     </div>
     <!-- /ko -->
 </div>

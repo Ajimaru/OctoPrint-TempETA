@@ -42,11 +42,17 @@
 
 #sidebar_plugin_temp_eta .temp-eta-item {
     display: flex;
-    align-items: center;
-    gap: 4px;
+    flex-direction: column;
+    gap: 2px;
     font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 #navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
@@ -140,6 +146,35 @@
     align-items: baseline;
     gap: 6px;
     margin-left: auto;
+}
+
+.temp-eta-progress {
+    height: 6px;
+    margin: 0;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-progress {
+    width: 100%;
+}
+
+#temp_eta_content .temp-eta-progress {
+    margin-top: 8px;
+}
+
+.temp-eta-progress .progress-bar {
+    transition: width 0.4s ease;
+}
+
+.temp-eta-progress .progress-bar.eta-warning {
+    background-color: #d9534f;
+}
+
+.temp-eta-progress .progress-bar.eta-info {
+    background-color: #5bc0de;
+}
+
+.temp-eta-progress .progress-bar.eta-normal {
+    background-color: #5cb85c;
 }
 
 #navbar_plugin_temp_eta .temp-eta-value,

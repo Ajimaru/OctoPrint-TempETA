@@ -32,13 +32,24 @@
                         <h2 class="eta-display" data-bind="text: $parent.formatETA(eta()), css: $parent.getETAClass($data)">
                             --:--
                         </h2>
+                    </div>
+                    <div class="text-center" data-bind="ifnot: $parent.isETAVisible(eta())">
+                        <p class="text-muted" data-bind="text: $parent.getNotHeatingText()"></p>
+                    </div>
+
+                    <div class="text-center" data-bind="visible: $parent.isProgressVisible($data)">
                         <p class="temp-eta-inline">
                             <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
                             <span data-bind="text: $parent.formatTempDisplay(target())"></span>
                         </p>
-                    </div>
-                    <div class="text-center" data-bind="ifnot: $parent.isETAVisible(eta())">
-                        <p class="text-muted" data-bind="text: $parent.getNotHeatingText()"></p>
+
+                        <div class="progress temp-eta-progress">
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 data-bind="style: { width: $parent.getProgressPercent($data) + '%' }, css: $parent.getProgressBarClass($data)"></div>
+                        </div>
                     </div>
                 </div>
             </div>
