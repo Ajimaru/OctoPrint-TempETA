@@ -71,14 +71,14 @@
 2. Navigate to **Settings** → **Plugin Manager**
 3. Click **Get More...**
 4. Click **Install from URL** and enter:
-   `https://github.com/Ajimaru/OctoPrint-TempETA/archive/refs/heads/main.zip`
+   `https://github.com/Ajimaru/OctoPrint-TempETA/releases/download/v0.2.3/octoprint_tempeta-0.2.3.zip`
 5. Click **Install**
 6. Restart OctoPrint
 
 ### Manual Installation
 
 ```bash
-pip install https://github.com/Ajimaru/OctoPrint-TempETA/archive/refs/heads/main.zip
+pip install https://github.com/Ajimaru/OctoPrint-TempETA/releases/download/v0.2.3/octoprint_tempeta-0.2.3.zip
 ```
 
 ## Configuration
