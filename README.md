@@ -33,6 +33,7 @@
 - 🌡️ **Smart calculation algorithms**: Linear (default) and exponential models
 - 📊 **Flexible display**: Show ETA in navbar, sidebar, and/or a dedicated tab
 - 📈 **Heating progress bars** (optional): Show progress to target in the sidebar and tab views
+- 📉 **Historical temperature graphs** (optional): A dedicated history view in the tab with a configurable time window
 - 🎛️ **Configurable thresholds**: Start countdown when within a configurable delta to target
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
@@ -75,7 +76,10 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 ### Display
 
 - **Show in sidebar / navbar / tab**: Independently toggle UI placement
+- **Tab view layout**: The Temperature ETA tab contains two subtabs: **Real-time Countdown** and **Historical graph**
 - **Show progress bars**: Toggle heating progress bars in the sidebar and tab views
+- **Show historical graph**: Toggle the historical temperature graphs in the tab view
+- **Historical graph window (seconds)**: Time window to display in the historical graphs
 - **Temperature display**:
   - **Use OctoPrint appearance setting** (default)
   - **Celsius (°C)**
@@ -115,21 +119,23 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 
 The following defaults apply to the user-editable plugin settings:
 
-| Setting                 | Key                       | Default     |
-| ----------------------- | ------------------------- | ----------- |
-| Enable Temperature ETA  | `enabled`                 | `true`      |
-| Hide ETA while printing | `suppress_while_printing` | `false`     |
-| Show in sidebar         | `show_in_sidebar`         | `true`      |
-| Show in navbar          | `show_in_navbar`          | `true`      |
-| Show in tab             | `show_in_tab`             | `true`      |
-| Show progress bars      | `show_progress_bars`      | `true`      |
-| Temperature display     | `temp_display`            | `octoprint` |
-| Heating threshold       | `threshold_start`         | `5.0 °C`    |
-| Threshold unit          | `threshold_unit`          | `octoprint` |
-| Algorithm               | `algorithm`               | `linear`    |
-| Update Interval         | `update_interval`         | `1.0 s`     |
-| History Size            | `history_size`            | `60`        |
-| Enable debug logging    | `debug_logging`           | `false`     |
+| Setting                 | Key                               | Default     |
+| ----------------------- | --------------------------------- | ----------- |
+| Enable Temperature ETA  | `enabled`                         | `true`      |
+| Hide ETA while printing | `suppress_while_printing`         | `false`     |
+| Show in sidebar         | `show_in_sidebar`                 | `true`      |
+| Show in navbar          | `show_in_navbar`                  | `true`      |
+| Show in tab             | `show_in_tab`                     | `true`      |
+| Show progress bars      | `show_progress_bars`              | `true`      |
+| Show historical graph   | `show_historical_graph`           | `false`     |
+| Graph window (seconds)  | `historical_graph_window_seconds` | `180`       |
+| Temperature display     | `temp_display`                    | `octoprint` |
+| Heating threshold       | `threshold_start`                 | `5.0 °C`    |
+| Threshold unit          | `threshold_unit`                  | `octoprint` |
+| Algorithm               | `algorithm`                       | `linear`    |
+| Update Interval         | `update_interval`                 | `1.0 s`     |
+| History Size            | `history_size`                    | `60`        |
+| Enable debug logging    | `debug_logging`                   | `false`     |
 
 ## How It Works
 
