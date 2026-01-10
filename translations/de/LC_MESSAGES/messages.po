@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-10 09:59+0100\n"
+"POT-Creation-Date: 2026-01-10 10:08+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.14.0\n"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:199
 msgid ""
@@ -62,7 +62,7 @@ msgstr ""
 msgid "Confirm reset"
 msgstr "Zurücksetzen bestätigen"
 
-#: octoprint_temp_eta/__init__.py:1215
+#: octoprint_temp_eta/__init__.py:1220
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:173
 msgid "Defaults restored."
 msgstr "Standardeinstellungen wiederhergestellt."
@@ -247,7 +247,7 @@ msgstr "Im Tab anzeigen"
 msgid "Start ETA when target is this many degrees away"
 msgstr "ETA anzeigen, wenn Zieltemperatur um diesen Wert entfernt ist"
 
-#: octoprint_temp_eta/__init__.py:1076
+#: octoprint_temp_eta/__init__.py:1081
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:146
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:149
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:153

@@ -8,7 +8,12 @@ import threading
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol, Sequence, runtime_checkable
+from typing import Any, Dict, Optional, Sequence
+
+try:
+    from typing import Protocol, runtime_checkable
+except ImportError:  # pragma: no cover
+    from typing_extensions import Protocol, runtime_checkable
 
 try:
     import octoprint.plugin  # type: ignore
