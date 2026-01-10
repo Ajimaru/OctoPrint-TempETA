@@ -2,7 +2,7 @@
  * View model for OctoPrint Temperature ETA Plugin
  *
  * Implements Issue #469: Temperature countdown/ETA display
- * Author: AjimaruGDR
+ * Author: Ajimaru
  * License: AGPLv3
  */
 $(function () {
@@ -680,6 +680,8 @@ $(function () {
             eta: ko.observable(null),
             actual: ko.observable(null),
             target: ko.observable(null),
+            startTemp: ko.observable(null),
+            startTarget: ko.observable(null),
           };
           self.heaters.push(self.heaterData[heater]);
           self._debugLog(
@@ -694,6 +696,29 @@ $(function () {
         self.heaterData[heater].eta(eta);
         self.heaterData[heater].actual(data.actual);
         self.heaterData[heater].target(data.target);
+
+        // Track start temperature for progress bars.
+        // We reset this when a new target is set (or the target changes), so
+        // progress represents the fraction from startTemp -> target.
+        var actualNow = parseFloat(data.actual);
+        var targetNow = parseFloat(data.target);
+        var prevTarget = parseFloat(self.heaterData[heater].startTarget());
+
+        if (!isFinite(actualNow) || !isFinite(targetNow) || targetNow <= 0) {
+          self.heaterData[heater].startTemp(null);
+          self.heaterData[heater].startTarget(null);
+        } else {
+          var needsReset =
+            !isFinite(prevTarget) ||
+            Math.abs(prevTarget - targetNow) > 1e-6 ||
+            self.heaterData[heater].startTemp() === null ||
+            self.heaterData[heater].startTemp() === undefined;
+
+          if (needsReset) {
+            self.heaterData[heater].startTemp(actualNow);
+            self.heaterData[heater].startTarget(targetNow);
+          }
+        }
 
         // Ensure sidebar becomes visible even if it was injected late.
         self._throttledEnsureSidebarBound();
@@ -816,9 +841,7 @@ $(function () {
         return false;
       }
 
-      // Prefer showing progress while heating (ETA visible). Fall back to
-      // showing it whenever a target is set.
-      return self.isETAVisible(heater.eta()) || target > 0;
+      return true;
     };
 
     self.getProgressPercent = function (heater) {
@@ -829,12 +852,34 @@ $(function () {
       var actual = parseFloat(heater.actual());
       var target = parseFloat(heater.target());
 
+      // Preferred: progress from startTemp -> target.
+      var start = null;
+      if (heater.startTemp && heater.startTarget) {
+        var st = parseFloat(heater.startTemp());
+        var tt = parseFloat(heater.startTarget());
+        if (isFinite(st) && isFinite(tt) && tt > 0) {
+          start = st;
+          target = tt;
+        }
+      }
+
       if (!isFinite(actual) || !isFinite(target) || target <= 0) {
         return 0;
       }
 
-      // Simple closeness-to-target: actual/target. Clamp to [0, 100].
-      var pct = (actual / target) * 100.0;
+      // If start is unknown, fall back to actual/target.
+      var pct = 0;
+      if (start === null || start === undefined || !isFinite(start)) {
+        pct = (actual / target) * 100.0;
+      } else {
+        var denom = target - start;
+        if (!isFinite(denom) || denom <= 0.001) {
+          pct = (actual / target) * 100.0;
+        } else {
+          pct = ((actual - start) / denom) * 100.0;
+        }
+      }
+
       if (!isFinite(pct)) {
         pct = 0;
       }
