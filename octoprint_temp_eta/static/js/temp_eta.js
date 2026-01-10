@@ -765,14 +765,8 @@ $(function () {
       var unitX = document.getElementById(
         "temp_eta_graph_unit_x_" + heaterObj.name,
       );
-      var unitY = document.getElementById(
-        "temp_eta_graph_unit_y_" + heaterObj.name,
-      );
       if (unitX) {
         unitX.textContent = "mm:ss";
-      }
-      if (unitY) {
-        unitY.textContent = self._effectiveThresholdUnit() === "f" ? "°F" : "°C";
       }
 
       var tickYMax = document.getElementById(
