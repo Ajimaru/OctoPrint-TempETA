@@ -199,6 +199,10 @@ msgstr "How many seconds of temperature history to display (per heater)."
 msgid "Historical graph"
 msgstr "Historical graph"
 
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:6
+msgid "Real-time Countdown"
+msgstr "Real-time Countdown"
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:155
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:176
 msgid "OctoPrint API not available."

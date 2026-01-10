@@ -314,6 +314,10 @@ msgid "Real-time Heating Countdown"
 msgstr "Real-time Heating Countdown"
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:6
+msgid "Real-time Countdown"
+msgstr "Real-time Countdown"
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:6
 msgid ""
 "Watch the estimated time remaining for your printer to heat up the bed, "
 "hotend, or chamber."
