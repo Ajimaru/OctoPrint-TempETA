@@ -182,6 +182,26 @@ msgstr "Keine gespeicherten Historie-Dateien gefunden."
 msgid "Number of temperature samples to keep in history"
 msgstr "Anzahl der Temperaturmesswerte, die im Verlauf gespeichert werden"
 
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:101
+msgid "Show historical graph"
+msgstr "Historischen Graph anzeigen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:105
+msgid "Show a small temperature history graph in the Temperature ETA tab."
+msgstr "Einen kleinen Temperatur-Verlaufsgraph im Temperature-ETA-Tab anzeigen."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:110
+msgid "Historical graph window (seconds)"
+msgstr "Zeitraum für historischen Graph (Sekunden)"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:115
+msgid "How many seconds of temperature history to display (per heater)."
+msgstr "Wie viele Sekunden Temperaturverlauf angezeigt werden sollen (pro Heizer)."
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:56
+msgid "Historical graph"
+msgstr "Historischer Graph"
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:155
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:176
 msgid "OctoPrint API not available."

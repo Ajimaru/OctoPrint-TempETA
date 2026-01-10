@@ -51,6 +51,16 @@
                                  data-bind="style: { width: $parent.getProgressPercent($data) + '%' }, css: $parent.getProgressBarClass($data)"></div>
                         </div>
                     </div>
+
+                    <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
+                            <svg class="temp-eta-graph-svg" viewBox="0 0 100 30" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
+                                data-bind="attr: { id: 'temp_eta_graph_' + name }">
+                            <line class="temp-eta-graph-target" x1="0" y1="0" x2="100" y2="0"
+                                  data-bind="attr: { id: 'temp_eta_graph_target_' + name }"></line>
+                            <polyline class="temp-eta-graph-line" points=""
+                                      data-bind="attr: { id: 'temp_eta_graph_actual_' + name }"></polyline>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>

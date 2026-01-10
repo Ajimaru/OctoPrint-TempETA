@@ -98,6 +98,25 @@
         </div>
 
         <div class="control-group">
+            <label class="control-label" for="temp_eta_show_historical_graph">{{ _('Show historical graph') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_show_historical_graph"
+                       data-bind="checked: settings.plugins.temp_eta.show_historical_graph, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show a small temperature history graph in the Temperature ETA tab.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_historical_graph_window_seconds">{{ _('Historical graph window (seconds)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_historical_graph_window_seconds"
+                       data-bind="value: settings.plugins.temp_eta.historical_graph_window_seconds, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.show_historical_graph"
+                       min="30" max="1800" step="10">
+                <p class="help-block">{{ _('How many seconds of temperature history to display (per heater).') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
             <label class="control-label" for="temp_eta_temp_display">{{ _('Temperature display') }}</label>
             <div class="controls">
                 <select class="input-xlarge" id="temp_eta_temp_display"

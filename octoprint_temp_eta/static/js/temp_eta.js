@@ -444,6 +444,24 @@ $(function () {
       return !!defaultValue;
     }
 
+    function readKoNumber(value, defaultValue) {
+      try {
+        var v = value;
+        if (typeof v === "function") {
+          v = v();
+        }
+        if (v === undefined || v === null || v === "") {
+          return defaultValue;
+        }
+        var n = parseFloat(v);
+        if (!isFinite(n)) {
+          return defaultValue;
+        }
+        return n;
+      } catch (e) {}
+      return defaultValue;
+    }
+
     self._pluginSettings = function () {
       try {
         return (
@@ -492,6 +510,189 @@ $(function () {
       }
 
       return readKoBool(ps.show_progress_bars, true);
+    };
+
+    self.isHistoricalGraphEnabled = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return false;
+      }
+
+      var pluginEnabled = readKoBool(ps.enabled, true);
+      if (!pluginEnabled) {
+        return false;
+      }
+
+      return readKoBool(ps.show_historical_graph, false);
+    };
+
+    self.getHistoricalGraphWindowSeconds = function () {
+      var ps = self._pluginSettings();
+      var seconds = 180;
+      if (ps) {
+        seconds = readKoNumber(ps.historical_graph_window_seconds, 180);
+      }
+
+      // Clamp to a reasonable range to prevent runaway memory usage.
+      if (!isFinite(seconds)) {
+        seconds = 180;
+      }
+      seconds = Math.max(30, Math.min(1800, seconds));
+      return seconds;
+    };
+
+    self.isHistoricalGraphVisible = function (heater) {
+      if (!self.isHistoricalGraphEnabled()) {
+        return false;
+      }
+
+      if (!heater || !heater.actual || !heater.target) {
+        return false;
+      }
+
+      var actual = parseFloat(heater.actual());
+      var target = parseFloat(heater.target());
+      if (!isFinite(actual) || !isFinite(target)) {
+        return false;
+      }
+
+      // Only show if we have at least a couple of points recorded.
+      if (!heater._history || heater._history.length < 2) {
+        return false;
+      }
+
+      return true;
+    };
+
+    self._recordHeaterHistory = function (heaterObj, tsSec, actualC, targetC) {
+      if (!heaterObj) {
+        return;
+      }
+
+      if (!heaterObj._history) {
+        heaterObj._history = [];
+      }
+
+      // Only record when the feature is enabled.
+      if (!self.isHistoricalGraphEnabled()) {
+        heaterObj._history = [];
+        return;
+      }
+
+      if (!isFinite(tsSec) || !isFinite(actualC) || !isFinite(targetC)) {
+        return;
+      }
+
+      heaterObj._history.push({ t: tsSec, a: actualC, tg: targetC });
+
+      // Prune to configured window (keep a small margin).
+      var windowSec = self.getHistoricalGraphWindowSeconds();
+      var cutoff = tsSec - windowSec - 5;
+      while (heaterObj._history.length && heaterObj._history[0].t < cutoff) {
+        heaterObj._history.shift();
+      }
+
+      // Hard cap as a safety net (shouldn't be hit in normal operation).
+      if (heaterObj._history.length > 5000) {
+        heaterObj._history = heaterObj._history.slice(-5000);
+      }
+    };
+
+    self._renderHistoricalGraph = function (heaterObj) {
+      if (!heaterObj) {
+        return;
+      }
+
+      // Throttle per heater to ~1Hz.
+      var nowMs = Date.now();
+      if (
+        heaterObj._lastGraphRenderMs &&
+        nowMs - heaterObj._lastGraphRenderMs < 900
+      ) {
+        return;
+      }
+      heaterObj._lastGraphRenderMs = nowMs;
+
+      if (!self.isHistoricalGraphVisible(heaterObj)) {
+        return;
+      }
+
+      var poly = document.getElementById(
+        "temp_eta_graph_actual_" + heaterObj.name,
+      );
+      var targetLine = document.getElementById(
+        "temp_eta_graph_target_" + heaterObj.name,
+      );
+      if (!poly || !targetLine) {
+        return;
+      }
+
+      var hist = heaterObj._history || [];
+      if (hist.length < 2) {
+        poly.setAttribute("points", "");
+        return;
+      }
+
+      var windowSec = self.getHistoricalGraphWindowSeconds();
+      var nowSec = hist[hist.length - 1].t;
+      var minT = nowSec - windowSec;
+
+      // Determine min/max for scaling.
+      var minTemp = Infinity;
+      var maxTemp = -Infinity;
+      for (var i = 0; i < hist.length; i++) {
+        var p = hist[i];
+        if (p.t < minT) continue;
+        if (p.a < minTemp) minTemp = p.a;
+        if (p.a > maxTemp) maxTemp = p.a;
+        if (isFinite(p.tg) && p.tg > 0) {
+          if (p.tg < minTemp) minTemp = p.tg;
+          if (p.tg > maxTemp) maxTemp = p.tg;
+        }
+      }
+
+      if (!isFinite(minTemp) || !isFinite(maxTemp)) {
+        poly.setAttribute("points", "");
+        return;
+      }
+
+      if (Math.abs(maxTemp - minTemp) < 0.5) {
+        maxTemp = minTemp + 0.5;
+      }
+
+      // Add small padding.
+      var pad = Math.max(1.0, (maxTemp - minTemp) * 0.05);
+      minTemp -= pad;
+      maxTemp += pad;
+
+      var points = [];
+      for (var j = 0; j < hist.length; j++) {
+        var h = hist[j];
+        if (h.t < minT) continue;
+
+        var x = ((h.t - minT) / windowSec) * 100;
+        x = Math.max(0, Math.min(100, x));
+
+        var yNorm = (h.a - minTemp) / (maxTemp - minTemp);
+        var y = 30 - yNorm * 30;
+        y = Math.max(0, Math.min(30, y));
+
+        points.push(x.toFixed(2) + "," + y.toFixed(2));
+      }
+
+      poly.setAttribute("points", points.join(" "));
+
+      // Target line uses current target.
+      var currentTarget = parseFloat(heaterObj.target());
+      if (isFinite(currentTarget) && currentTarget > 0) {
+        var yT = 30 - ((currentTarget - minTemp) / (maxTemp - minTemp)) * 30;
+        yT = Math.max(0, Math.min(30, yT));
+        targetLine.setAttribute("y1", yT.toFixed(2));
+        targetLine.setAttribute("y2", yT.toFixed(2));
+        targetLine.style.display = "";
+      } else {
+        targetLine.style.display = "none";
+      }
     };
 
     /**
@@ -696,6 +897,8 @@ $(function () {
             target: ko.observable(null),
             startTemp: ko.observable(null),
             startTarget: ko.observable(null),
+            _history: [],
+            _lastGraphRenderMs: 0,
           };
           self.heaters.push(self.heaterData[heater]);
           self._debugLog(
@@ -733,6 +936,15 @@ $(function () {
             self.heaterData[heater].startTarget(targetNow);
           }
         }
+
+        // Record and render history graph (tab view).
+        self._recordHeaterHistory(
+          self.heaterData[heater],
+          Date.now() / 1000.0,
+          actualNow,
+          targetNow,
+        );
+        self._renderHistoricalGraph(self.heaterData[heater]);
 
         // Ensure sidebar becomes visible even if it was injected late.
         self._throttledEnsureSidebarBound();
