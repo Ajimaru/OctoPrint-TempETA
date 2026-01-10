@@ -4,6 +4,8 @@
 
 If you believe you have found a security vulnerability in this project, please report it privately.
 
+Please write security reports in **English**.
+
 Preferred reporting channels:
 
 1. **GitHub Security Advisories** (recommended):

@@ -51,6 +51,11 @@ class TempETAPlugin(
 - **No dead code**: Remove all commented-out experiments
 - **Import order**: stdlib → third-party → octoprint → local
 
+### Repository communication (English only)
+
+- **All public-facing repository communication must be in English only**: GitHub Issues, Pull Requests, Discussions, Wiki pages, and Security advisories.
+- If a user writes in another language, respond in English and keep technical terms consistent.
+
 **When generating code**: Follow OctoPrint standards, use English, include docstrings, test edge cases, ensure thread safety, keep performance in mind.
 
 ```python
