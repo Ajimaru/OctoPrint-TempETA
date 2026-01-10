@@ -464,12 +464,20 @@ $(function () {
 
     self._pluginSettings = function () {
       try {
-        // IMPORTANT: do not rely on `self.settings` here.
-        // OctoPrint may replace the settings object after save/reload, and
-        // using a stale reference would make feature toggles (like the
-        // historical graph) appear stuck.
+        // IMPORTANT: prefer a fresh settings root (OctoPrint may replace the
+        // settings object after save/reload). However, some OctoPrint setups
+        // momentarily expose an empty settings structure while reloading.
+        // For UI features like the historical graph, fall back to the last
+        // known settings object if it still looks valid.
         var root = self._resolveSettingsRoot();
-        return root && root.plugins && root.plugins.temp_eta;
+        var ps = root && root.plugins && root.plugins.temp_eta;
+        if (!ps && self.settings && self.settings.plugins && self.settings.plugins.temp_eta) {
+          ps = self.settings.plugins.temp_eta;
+        }
+        if (ps && root && root.plugins) {
+          self.settings = root;
+        }
+        return ps;
       } catch (e) {
         return null;
       }
