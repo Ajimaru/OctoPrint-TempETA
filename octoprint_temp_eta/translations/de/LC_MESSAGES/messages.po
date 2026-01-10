@@ -7,28 +7,29 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-09 15:25+0100\n"
+"POT-Creation-Date: 2026-01-10 09:53+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: German\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.8.0\n"
+"Generated-By: Babel 2.16.0\n"
 
-#: octoprint_temp_eta/__init__.py:895
+#: octoprint_temp_eta/__init__.py:1076
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:146
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:149
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:153
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:169
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:172
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:174
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:9
 msgid "Temperature ETA"
 msgstr "Temperatur-ETA"
 
-#: octoprint_temp_eta/__init__.py:1022
+#: octoprint_temp_eta/__init__.py:1215
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:173
 msgid "Defaults restored."
 msgstr "Standardeinstellungen wiederhergestellt."
@@ -110,7 +111,8 @@ msgid ""
 "Accounts for thermal asymptotic behavior, more accurate."
 msgstr ""
 "Linear: Geht von einer konstanten Heizrate aus – einfach und schnell. "
-"Exponentiell: Berücksichtigt das asymptotische thermische Verhalten – genauer."
+"Exponentiell: Berücksichtigt das asymptotische thermische Verhalten – "
+"genauer."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:65
 msgid "Display"
@@ -163,8 +165,8 @@ msgid ""
 "How often to update ETA display (lower = more responsive, higher = less "
 "CPU)"
 msgstr ""
-"Wie oft die ETA-Anzeige aktualisiert wird (niedriger = reaktionsschneller, "
-"höher = weniger CPU)"
+"Wie oft die ETA-Anzeige aktualisiert wird (niedriger = "
+"reaktionsschneller, höher = weniger CPU)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:120
 msgid "Temperature History Size"
@@ -254,7 +256,7 @@ msgstr "Wiederherstellen der Standardwerte fehlgeschlagen."
 msgid "Restore"
 msgstr "Wiederherstellen"
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:181
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:179
 msgid "Restores Temperature ETA settings to their default values."
 msgstr "Stellt die Temperature-ETA-Einstellungen auf Standardwerte zurück."
 
@@ -290,33 +292,23 @@ msgstr ""
 msgid "Temperature ETA Monitor"
 msgstr "Temperatur-ETA Monitor"
 
-#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:5
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:12
 msgid "Real-time Heating Countdown"
 msgstr "Echtzeit-Aufheiz-Countdown"
 
-#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:6
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:13
 msgid ""
 "Watch the estimated time remaining for your printer to heat up the bed, "
 "hotend, or chamber."
 msgstr ""
-"Sieh die geschätzte verbleibende Zeit, bis dein Drucker Bett, Hotend oder "
-"Kammer aufgeheizt hat."
+"Sieh die geschätzte verbleibende Zeit, bis dein Drucker Bett, Hotend oder"
+" Kammer aufgeheizt hat."
 
-#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:7
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:14
 msgid "Configure algorithm and threshold in Settings → Temperature ETA"
-msgstr "Algorithmus und Schwellwert unter Einstellungen → Temperatur-ETA konfigurieren"
-
-#: octoprint_temp_eta/static/js/temp_eta.js
-msgid "Not heating"
-msgstr "Heizt nicht"
-
-#: octoprint_temp_eta/static/js/temp_eta.js
-msgid "Bed"
-msgstr "Bett"
-
-#: octoprint_temp_eta/static/js/temp_eta.js
-msgid "Chamber"
-msgstr "Kammer"
+msgstr ""
+"Algorithmus und Schwellwert unter Einstellungen → Temperatur-ETA "
+"konfigurieren"
 
 #~ msgid "Heating threshold (°C)"
 #~ msgstr "Heiz-Schwellenwert (°C)"
@@ -361,3 +353,12 @@ msgstr "Kammer"
 #~ "Exponential: Accounts for thermal asymptotic"
 #~ " behavior"
 #~ msgstr ""
+
+#~ msgid "Not heating"
+#~ msgstr "Heizt nicht"
+
+#~ msgid "Bed"
+#~ msgstr "Bett"
+
+#~ msgid "Chamber"
+#~ msgstr "Kammer"
