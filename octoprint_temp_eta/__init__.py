@@ -10,9 +10,51 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Dict, Optional, Protocol, Sequence, runtime_checkable
 
-import octoprint.plugin
-from flask import jsonify
-from flask_babel import gettext
+try:
+    import octoprint.plugin  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    # Allow importing this module in environments where OctoPrint isn't installed
+    # (e.g. CI or static analysis). The real runtime always provides these.
+    class _OctoPrintPluginStubs:
+        class StartupPlugin:
+            pass
+
+        class TemplatePlugin:
+            pass
+
+        class SettingsPlugin:
+            @staticmethod
+            def on_settings_save(self: Any, data: Dict[str, Any]) -> Dict[str, Any]:
+                return data
+
+        class AssetPlugin:
+            pass
+
+        class EventHandlerPlugin:
+            pass
+
+        class SimpleApiPlugin:
+            pass
+
+    class _OctoPrintStubs:
+        plugin = _OctoPrintPluginStubs
+
+    octoprint = _OctoPrintStubs()  # type: ignore
+
+try:
+    from flask import jsonify  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+
+    def jsonify(*_args: Any, **_kwargs: Any) -> Any:
+        raise RuntimeError("Flask is required to use the plugin's API endpoints")
+
+
+try:
+    from flask_babel import gettext  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+
+    def gettext(message: str) -> str:
+        return message
 
 
 @runtime_checkable
