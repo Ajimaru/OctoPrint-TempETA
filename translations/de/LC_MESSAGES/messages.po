@@ -284,6 +284,18 @@ msgstr "ETA anzeigen, wenn Zieltemperatur um diesen Wert entfernt ist"
 msgid "Temperature ETA"
 msgstr "Temperatur-ETA"
 
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:69
+msgid "Historical temperature graphs"
+msgstr "Historische Temperaturgrafen"
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:70
+msgid "Shows recent temperature history for each heater."
+msgstr "Zeigt den aktuellen Temperaturverlauf für jedes Heizelement."
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:71
+msgid "Adjust the time window in Settings → Temperature ETA."
+msgstr "Passe das Zeitfenster unter Einstellungen → Temperatur-ETA an."
+
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:2
 msgid "Temperature ETA Monitor"
 msgstr "Temperatur-ETA Monitor"

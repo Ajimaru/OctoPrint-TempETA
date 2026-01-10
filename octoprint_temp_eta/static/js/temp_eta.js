@@ -615,7 +615,14 @@ $(function () {
       if (!isFinite(tempC)) {
         return "";
       }
-      return String(Math.round(tempC));
+
+      var unit = self._effectiveThresholdUnit() === "f" ? "°F" : "°C";
+      var value = tempC;
+      if (unit === "°F") {
+        value = self._cToF(tempC);
+      }
+
+      return String(Math.round(value)) + unit;
     };
 
     self._isHeaterHeatingNow = function (etaValue, actualC, targetC) {
@@ -754,6 +761,19 @@ $(function () {
       var yMin = minTemp;
       var yMax = maxTemp;
       var yMid = (yMin + yMax) / 2.0;
+
+      var unitX = document.getElementById(
+        "temp_eta_graph_unit_x_" + heaterObj.name,
+      );
+      var unitY = document.getElementById(
+        "temp_eta_graph_unit_y_" + heaterObj.name,
+      );
+      if (unitX) {
+        unitX.textContent = "mm:ss";
+      }
+      if (unitY) {
+        unitY.textContent = self._effectiveThresholdUnit() === "f" ? "°F" : "°C";
+      }
 
       var tickYMax = document.getElementById(
         "temp_eta_graph_tick_ymax_" + heaterObj.name,

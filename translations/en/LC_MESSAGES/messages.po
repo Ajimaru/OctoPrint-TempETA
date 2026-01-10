@@ -281,6 +281,18 @@ msgstr "Start ETA when target is this many degrees away"
 msgid "Temperature ETA"
 msgstr "Temperature ETA"
 
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:69
+msgid "Historical temperature graphs"
+msgstr "Historical temperature graphs"
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:70
+msgid "Shows recent temperature history for each heater."
+msgstr "Shows recent temperature history for each heater."
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:71
+msgid "Adjust the time window in Settings → Temperature ETA."
+msgstr "Adjust the time window in Settings → Temperature ETA."
+
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:2
 msgid "Temperature ETA Monitor"
 msgstr "Temperature ETA Monitor"

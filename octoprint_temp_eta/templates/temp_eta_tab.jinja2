@@ -70,6 +70,21 @@
         </div>
 
         <div class="tab-pane temp-eta-subtab-history" id="temp_eta_subtab_history">
+            <div class="alert alert-info temp-eta-tab-info temp-eta-tab-history-info">
+                <div class="temp-eta-tab-info-inner">
+                    <div class="temp-eta-tab-info-logo">
+                        <img class="temp-eta-tab-info-logo-img"
+                             src="{{ url_for('plugin.temp_eta.static', filename='img/temp_eta.svg') }}"
+                             alt="{{ _('Temperature ETA') }}">
+                    </div>
+                    <div class="temp-eta-tab-info-text">
+                        <strong>{{ _('Historical temperature graphs') }}</strong>
+                        <p>{{ _('Shows recent temperature history for each heater.') }}</p>
+                        <p>{{ _('Adjust the time window in Settings → Temperature ETA.') }}</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <!-- Dynamically generated Heater Graphs -->
                 <!-- ko foreach: displayHeaters -->
@@ -93,6 +108,11 @@
                                 <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
                                      data-bind="attr: { id: 'temp_eta_graph_' + name }">
                                     <g class="temp-eta-graph-axes">
+                                        <text class="temp-eta-graph-label temp-eta-graph-unit" x="0.5" y="0.5" text-anchor="start" dominant-baseline="hanging"
+                                            data-bind="attr: { id: 'temp_eta_graph_unit_y_' + name }"></text>
+                                        <text class="temp-eta-graph-label temp-eta-graph-unit" x="99" y="34" text-anchor="end" dominant-baseline="alphabetic"
+                                            data-bind="attr: { id: 'temp_eta_graph_unit_x_' + name }"></text>
+
                                         <line class="temp-eta-graph-axis" x1="12" y1="2" x2="12" y2="30"></line>
                                         <line class="temp-eta-graph-axis" x1="12" y1="30" x2="99" y2="30"></line>
 
