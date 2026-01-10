@@ -59,7 +59,7 @@ jobs:
           import sys
           import tarfile
           import zipfile
-          from pathlib import Path
+          from pathlib import Path, PurePosixPath
 
           tar_path = Path(sys.argv[1])
           zip_path = Path(sys.argv[2])
@@ -71,11 +71,18 @@ jobs:
               for member in tf.getmembers():
                   if not member.isfile():
                       continue
+
+                # Defensive: ensure tar member paths cannot become path traversal entries in the zip.
+                # Tar archives always use POSIX-style paths.
+                member_path = PurePosixPath(member.name)
+                if member_path.is_absolute() or ".." in member_path.parts or ":" in member.name or member.name.startswith("\\"):
+                  continue
+
                   extracted = tf.extractfile(member)
                   if extracted is None:
                       continue
                   data = extracted.read()
-                  zi = zipfile.ZipInfo(member.name)
+                zi = zipfile.ZipInfo(str(member_path))
                   zi.external_attr = (member.mode & 0o777) << 16
                   zf.writestr(zi, data)
           PY

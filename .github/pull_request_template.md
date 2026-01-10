@@ -10,3 +10,4 @@
 - [ ] Tests pass (`pytest`)
 - [ ] Lint/formatting passes (`pre-commit run --all-files`)
 - [ ] Docs updated (if needed)
+- [ ] Workflow changes (if any) keep least-privilege `permissions:` and avoid `pull_request_target` unless strictly necessary
