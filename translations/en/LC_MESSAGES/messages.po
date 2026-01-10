@@ -93,6 +93,51 @@ msgstr "Enable Temperature ETA"
 msgid "Enable debug logging"
 msgstr "Enable debug logging"
 
+msgid "Enable cool-down ETA"
+msgstr "Enable cool-down ETA"
+
+msgid "Show an estimated time to cool down when no target temperature is set."
+msgstr "Show an estimated time to cool down when no target temperature is set."
+
+msgid "Cool-down mode"
+msgstr "Cool-down mode"
+
+msgid "Threshold target (default)"
+msgstr "Threshold target (default)"
+
+msgid "Ambient-based target"
+msgstr "Ambient-based target"
+
+msgid "Threshold: cool down to a fixed target per heater. Ambient: cool down close to ambient temperature (uses an ambient value if set, otherwise estimates from recent data)."
+msgstr "Threshold: cool down to a fixed target per heater. Ambient: cool down close to ambient temperature (uses an ambient value if set, otherwise estimates from recent data)."
+
+msgid "Cool-down target (tool0)"
+msgstr "Cool-down target (tool0)"
+
+msgid "Cool-down target (bed)"
+msgstr "Cool-down target (bed)"
+
+msgid "Cool-down target (chamber)"
+msgstr "Cool-down target (chamber)"
+
+msgid "Ambient temperature (optional)"
+msgstr "Ambient temperature (optional)"
+
+msgid "If empty, the plugin estimates ambient temperature from recent cooldown data."
+msgstr "If empty, the plugin estimates ambient temperature from recent cooldown data."
+
+msgid "Cool-down hysteresis (°C)"
+msgstr "Cool-down hysteresis (°C)"
+
+msgid "Stop showing Cool-down ETA when within this temperature band of the cool-down target."
+msgstr "Stop showing Cool-down ETA when within this temperature band of the cool-down target."
+
+msgid "Cool-down fit window (seconds)"
+msgstr "Cool-down fit window (seconds)"
+
+msgid "How many seconds of recent cooldown data to use for the ETA estimate."
+msgstr "How many seconds of recent cooldown data to use for the ETA estimate."
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:195
 msgid "Estimates time to reach target temperature"
 msgstr "Estimates time to reach target temperature"

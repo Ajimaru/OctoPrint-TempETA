@@ -8,7 +8,7 @@
             <span class="temp-eta-name" data-bind="text: $root.getHeaterLabel(name)"></span>
             <span class="temp-eta-metrics">
                 <span class="temp-eta-value" data-bind="text: $root.formatETA(eta())"></span>
-                <span class="temp-eta-temp" data-bind="text: $root.formatTempDisplay(actual()) + '/' + $root.formatTempDisplay(target())"></span>
+                <span class="temp-eta-temp" data-bind="text: $root.formatTempPair($data)"></span>
             </span>
         </div>
 

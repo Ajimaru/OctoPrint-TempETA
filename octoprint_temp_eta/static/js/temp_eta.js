@@ -1019,14 +1019,21 @@ $(function () {
       if (data.type === "eta_update") {
         var heater = data.heater;
         var eta = data.eta;
+        var etaKind = data.eta_kind || null;
+        var cooldownTarget =
+          data.cooldown_target !== undefined && data.cooldown_target !== null
+            ? parseFloat(data.cooldown_target)
+            : null;
 
         // Dynamically register heaters as they appear
         if (!self.heaterData[heater]) {
           self.heaterData[heater] = {
             name: heater,
             eta: ko.observable(null),
+            etaKind: ko.observable(null),
             actual: ko.observable(null),
             target: ko.observable(null),
+            cooldownTarget: ko.observable(null),
             startTemp: ko.observable(null),
             startTarget: ko.observable(null),
             _history: [],
@@ -1043,8 +1050,14 @@ $(function () {
 
         // Update heater data
         self.heaterData[heater].eta(eta);
+        self.heaterData[heater].etaKind(etaKind);
         self.heaterData[heater].actual(data.actual);
         self.heaterData[heater].target(data.target);
+        self.heaterData[heater].cooldownTarget(
+          cooldownTarget !== null && isFinite(cooldownTarget)
+            ? cooldownTarget
+            : null,
+        );
 
         // Track start temperature for progress bars.
         // We reset this when a new target is set (or the target changes), so
@@ -1083,6 +1096,45 @@ $(function () {
         // Ensure sidebar becomes visible even if it was injected late.
         self._throttledEnsureSidebarBound();
       }
+    };
+
+    self._effectiveDisplayTargetC = function (heater) {
+      if (!heater) {
+        return NaN;
+      }
+
+      try {
+        var kind = heater.etaKind ? heater.etaKind() : null;
+        if (kind === "cooling") {
+          var ct = heater.cooldownTarget ? parseFloat(heater.cooldownTarget()) : NaN;
+          if (isFinite(ct) && ct > -100) {
+            return ct;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      return heater.target ? parseFloat(heater.target()) : NaN;
+    };
+
+    self.formatTempPair = function (heater) {
+      if (!heater) {
+        return "";
+      }
+      var actual = heater.actual ? parseFloat(heater.actual()) : NaN;
+      var effTarget = self._effectiveDisplayTargetC(heater);
+
+      if (!isFinite(actual)) {
+        return "";
+      }
+
+      if (!isFinite(effTarget) || effTarget <= 0) {
+        // When no target is set and we don't have a cooldown target, show only the actual.
+        return self.formatTempDisplay(actual);
+      }
+
+      return self.formatTempDisplay(actual) + "/" + self.formatTempDisplay(effTarget);
     };
 
     /**

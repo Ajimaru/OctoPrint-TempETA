@@ -127,6 +127,12 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
     assert defaults["update_interval"] == 1.0
     assert defaults["history_size"] == 60
 
+    assert defaults["enable_cooldown_eta"] is True
+    assert defaults["cooldown_mode"] in ("threshold", "ambient")
+    assert defaults["cooldown_target_tool0"] > 0
+    assert defaults["cooldown_hysteresis_c"] > 0
+    assert defaults["cooldown_fit_window_seconds"] >= 10
+
 
 def test_calculate_linear_eta_returns_none_with_insufficient_history(
     plugin: TempETAPlugin,
@@ -204,6 +210,90 @@ def test_temperature_callback_records_only_when_target_set_and_far_enough(
     _set_time(monkeypatch, 102.0)
     plugin.on_printer_add_temperature({"tool0": {"actual": 10.0, "target": 0.0}})
     assert len(plugin._temp_history["tool0"]) == 1
+
+
+def test_calculate_cooldown_linear_eta_simple(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    p_any = cast(Any, plugin)
+    settings = cast(DummySettings, p_any._settings)
+    settings.set(["enable_cooldown_eta"], True)
+    settings.set(["cooldown_fit_window_seconds"], 120)
+
+    # Cooling: 100C -> 90C over 10s => -1 C/s. Goal 80C => remaining 10C => 10s.
+    _set_time(monkeypatch, 10.0)
+    plugin._cooldown_history["tool0"] = deque(
+        [(0.0, 100.0), (10.0, 90.0)], maxlen=60
+    )
+
+    eta = plugin._calculate_cooldown_linear_eta("tool0", 80.0)
+    assert eta is not None
+    assert abs(eta - 10.0) < 1e-6
+
+
+def test_calculate_cooldown_exponential_eta_returns_number_for_reasonable_curve(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    p_any = cast(Any, plugin)
+    settings = cast(DummySettings, p_any._settings)
+    settings.set(["enable_cooldown_eta"], True)
+    settings.set(["cooldown_fit_window_seconds"], 300)
+
+    ambient = 20.0
+    goal = 21.0
+
+    # Build a smooth cooldown curve towards ambient.
+    points = [
+        (0.0, 90.0),
+        (10.0, 75.0),
+        (20.0, 64.0),
+        (30.0, 56.0),
+        (40.0, 50.0),
+        (50.0, 45.0),
+        (60.0, 41.0),
+    ]
+    _set_time(monkeypatch, 60.0)
+    plugin._cooldown_history["tool0"] = deque(points, maxlen=60)
+
+    eta = plugin._calculate_cooldown_exponential_eta(
+        heater_name="tool0", ambient_c=ambient, goal_c=goal
+    )
+    assert eta is not None
+    assert eta > 0
+
+
+def test_broadcast_includes_cooldown_eta_when_target_is_zero(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    p_any = cast(Any, plugin)
+    settings = cast(DummySettings, p_any._settings)
+    settings.set(["enable_cooldown_eta"], True)
+    settings.set(["cooldown_mode"], "threshold")
+    settings.set(["cooldown_target_tool0"], 50.0)
+    settings.set(["cooldown_hysteresis_c"], 1.0)
+    settings.set(["cooldown_fit_window_seconds"], 120)
+
+    # Provide cooldown history for a falling temperature.
+    _set_time(monkeypatch, 10.0)
+    plugin._cooldown_history["tool0"] = deque(
+        [(0.0, 80.0), (10.0, 70.0)], maxlen=60
+    )
+
+    pm: DummyPluginManager = plugin._plugin_manager  # type: ignore[assignment]
+
+    plugin._calculate_and_broadcast_eta(
+        {"tool0": {"actual": 70.0, "target": 0.0}}
+    )
+
+    msgs = [m["payload"] for m in pm.messages if m["payload"].get("heater") == "tool0"]
+    assert msgs
+    payload = msgs[-1]
+    assert payload.get("type") == "eta_update"
+    assert payload.get("eta_kind") in ("cooling", None)
+    # When cooling ETA is available, cooldown_target should be provided.
+    if payload.get("eta_kind") == "cooling":
+        assert payload.get("cooldown_target") is not None
+        assert payload.get("eta") is not None
 
 
 def test_suppress_while_printing_clears_once_and_stops_updates(

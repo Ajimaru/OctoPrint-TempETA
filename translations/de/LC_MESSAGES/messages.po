@@ -95,6 +95,51 @@ msgstr "Temperatur-ETA aktivieren"
 msgid "Enable debug logging"
 msgstr "Debug-Logging aktivieren"
 
+msgid "Enable cool-down ETA"
+msgstr "Cool-Down-ETA aktivieren"
+
+msgid "Show an estimated time to cool down when no target temperature is set."
+msgstr "Zeigt eine geschätzte Abkühlzeit, wenn keine Zieltemperatur gesetzt ist."
+
+msgid "Cool-down mode"
+msgstr "Cool-Down-Modus"
+
+msgid "Threshold target (default)"
+msgstr "Schwellwert-Ziel (Standard)"
+
+msgid "Ambient-based target"
+msgstr "Umgebungsbasiertes Ziel"
+
+msgid "Threshold: cool down to a fixed target per heater. Ambient: cool down close to ambient temperature (uses an ambient value if set, otherwise estimates from recent data)."
+msgstr "Schwellwert: Abkühlen bis zu einem festen Ziel pro Heizer. Umgebung: Abkühlen bis nahe an die Umgebungstemperatur (nutzt einen gesetzten Wert oder schätzt ihn aus den letzten Daten)."
+
+msgid "Cool-down target (tool0)"
+msgstr "Cool-Down-Ziel (Tool0)"
+
+msgid "Cool-down target (bed)"
+msgstr "Cool-Down-Ziel (Bett)"
+
+msgid "Cool-down target (chamber)"
+msgstr "Cool-Down-Ziel (Chamber)"
+
+msgid "Ambient temperature (optional)"
+msgstr "Umgebungstemperatur (optional)"
+
+msgid "If empty, the plugin estimates ambient temperature from recent cooldown data."
+msgstr "Wenn leer, schätzt das Plugin die Umgebungstemperatur aus den letzten Abkühl-Daten."
+
+msgid "Cool-down hysteresis (°C)"
+msgstr "Cool-Down-Hysterese (°C)"
+
+msgid "Stop showing Cool-down ETA when within this temperature band of the cool-down target."
+msgstr "Blendet die Cool-Down-ETA aus, sobald die Temperatur innerhalb dieses Bereichs um das Cool-Down-Ziel liegt."
+
+msgid "Cool-down fit window (seconds)"
+msgstr "Cool-Down-Fit-Fenster (Sekunden)"
+
+msgid "How many seconds of recent cooldown data to use for the ETA estimate."
+msgstr "Wie viele Sekunden an aktuellen Abkühl-Daten für die ETA-Schätzung genutzt werden."
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:195
 msgid "Estimates time to reach target temperature"
 msgstr "Schätzt die Zeit bis zur Zieltemperatur"
