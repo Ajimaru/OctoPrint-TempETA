@@ -1,5 +1,5 @@
 /* Temperature ETA Plugin Styles */
-/* Author: AjimaruGDR */
+/* Author: Ajimaru */
 /* License: AGPLv3 */
 
 #navbar_plugin_temp_eta {
@@ -161,19 +161,24 @@
     margin-top: 8px;
 }
 
-.temp-eta-progress .progress-bar {
+.temp-eta-progress .progress-bar,
+.temp-eta-progress .bar {
     transition: width 0.4s ease;
+    min-width: 2px;
 }
 
-.temp-eta-progress .progress-bar.eta-warning {
+.temp-eta-progress .progress-bar.eta-warning,
+.temp-eta-progress .bar.eta-warning {
     background-color: #d9534f;
 }
 
-.temp-eta-progress .progress-bar.eta-info {
+.temp-eta-progress .progress-bar.eta-info,
+.temp-eta-progress .bar.eta-info {
     background-color: #5bc0de;
 }
 
-.temp-eta-progress .progress-bar.eta-normal {
+.temp-eta-progress .progress-bar.eta-normal,
+.temp-eta-progress .bar.eta-normal {
     background-color: #5cb85c;
 }
 
