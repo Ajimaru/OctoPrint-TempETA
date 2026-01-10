@@ -30,7 +30,7 @@ jobs:
 
       - name: Verify messages.pot is up to date
         run: |
-          pybabel extract -F babel.cfg -o /tmp/messages.pot .
+          pybabel extract --sort-output -F babel.cfg -o /tmp/messages.pot .
           python - <<'PY'
           import pathlib
           import sys
@@ -57,7 +57,7 @@ jobs:
 
           if normalize(repo) != normalize(tmp):
               print("translations/messages.pot is out of date. Run:")
-              print("  pybabel extract -F babel.cfg -o translations/messages.pot .")
+              print("  pybabel extract --sort-output -F babel.cfg -o translations/messages.pot .")
               print("  pybabel update -i translations/messages.pot -d translations -l de")
               print("  pybabel update -i translations/messages.pot -d translations -l en")
               sys.exit(1)

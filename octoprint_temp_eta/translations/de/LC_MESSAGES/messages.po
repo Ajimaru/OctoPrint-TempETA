@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-10 09:53+0100\n"
+"POT-Creation-Date: 2026-01-10 09:59+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -17,6 +17,235 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:199
+msgid ""
+"Adjust the algorithm, threshold, and polling interval above to tune the "
+"ETA calculation for your printer."
+msgstr ""
+"Passe Algorithmus, Schwellwert und Abfrageintervall oben an, um die ETA-"
+"Berechnung für deinen Drucker zu optimieren."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:105
+msgid "Advanced Settings"
+msgstr "Erweiterte Einstellungen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
+msgid "Basic Settings"
+msgstr "Grundeinstellungen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:194
+msgid "Calculates heating rate (°C/second)"
+msgstr "Berechnet die Heizrate (°C/Sekunde)"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:52
+msgid "Calculation Algorithm"
+msgstr "Berechnungsalgorithmus"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:42
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:97
+msgid "Celsius (°C)"
+msgstr "Celsius (°C)"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:98
+msgid "Celsius + Fahrenheit (°C/°F)"
+msgstr "Celsius + Fahrenheit (°C/°F)"
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:14
+msgid "Configure algorithm and threshold in Settings → Temperature ETA"
+msgstr ""
+"Algorithmus und Schwellwert unter Einstellungen → Temperatur-ETA "
+"konfigurieren"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:147
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:170
+msgid "Confirm reset"
+msgstr "Zurücksetzen bestätigen"
+
+#: octoprint_temp_eta/__init__.py:1215
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:173
+msgid "Defaults restored."
+msgstr "Standardeinstellungen wiederhergestellt."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:151
+msgid "Deleted persisted history for all profiles ({count} file(s))."
+msgstr "Gespeicherte Historie für alle Profile gelöscht ({count} Datei(en))."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:159
+msgid ""
+"Deletes all persisted ETA history JSON files for all printer profiles "
+"(stored in OctoPrint's plugin data folder)."
+msgstr ""
+"Löscht alle gespeicherten ETA-Historien (JSON) für alle Druckerprofile "
+"(gespeichert im OctoPrint-Plugin-Datenordner)."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:65
+msgid "Display"
+msgstr "Anzeige"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:196
+msgid "Displays countdown in MM:SS format"
+msgstr "Zeigt den Countdown im Format MM:SS an"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:9
+msgid "Enable Temperature ETA"
+msgstr "Temperatur-ETA aktivieren"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:131
+msgid "Enable debug logging"
+msgstr "Debug-Logging aktivieren"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:195
+msgid "Estimates time to reach target temperature"
+msgstr "Schätzt die Zeit bis zur Zieltemperatur"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:56
+msgid "Exponential"
+msgstr "Exponentiell"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:43
+msgid "Fahrenheit (°F)"
+msgstr "Fahrenheit (°F)"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:44
+msgid "Follow temperature display"
+msgstr "Temperaturanzeige übernehmen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:27
+msgid "Heating threshold"
+msgstr "Heiz-Schwellenwert"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:16
+msgid "Hide ETA while printing"
+msgstr "ETA während des Drucks ausblenden"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:150
+msgid "History reset completed."
+msgstr "Historie wurde zurückgesetzt."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:188
+msgid "How it works"
+msgstr "So funktioniert es"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:114
+msgid ""
+"How often to update ETA display (lower = more responsive, higher = less "
+"CPU)"
+msgstr ""
+"Wie oft die ETA-Anzeige aktualisiert wird (niedriger = "
+"reaktionsschneller, höher = weniger CPU)"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:20
+msgid ""
+"If disabled: ETA is shown when the temperature difference to the target "
+"is at least the heating threshold. If enabled: ETA is only shown when no "
+"print job is active."
+msgstr ""
+"Wenn deaktiviert: ETA wird angezeigt, wenn der Abstand zur Zieltemperatur"
+" mindestens dem Heizschwellwert entspricht. Wenn aktiviert: ETA wird nur "
+"angezeigt, wenn kein Druckauftrag aktiv ist."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:46
+msgid ""
+"Internally, the calculation uses °C. If you choose °F here, the value "
+"will be converted automatically."
+msgstr ""
+"Intern verwendet die Berechnung °C. Wenn du hier °F auswählst, wird der "
+"Wert automatisch umgerechnet."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:55
+msgid "Linear (default)"
+msgstr "Linear (Standard)"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:59
+msgid ""
+"Linear: Assumes constant heating rate, simple and fast. Exponential: "
+"Accounts for thermal asymptotic behavior, more accurate."
+msgstr ""
+"Linear: Geht von einer konstanten Heizrate aus – einfach und schnell. "
+"Exponentiell: Berücksichtigt das asymptotische thermische Verhalten – "
+"genauer."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:139
+msgid "Maintenance"
+msgstr "Wartung"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:193
+msgid "Monitors temperature changes in real-time"
+msgstr "Überwacht Temperaturänderungen in Echtzeit"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:152
+msgid "No persisted history files found."
+msgstr "Keine gespeicherten Historie-Dateien gefunden."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:125
+msgid "Number of temperature samples to keep in history"
+msgstr "Anzahl der Temperaturmesswerte, die im Verlauf gespeichert werden"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:155
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:176
+msgid "OctoPrint API not available."
+msgstr "OctoPrint-API nicht verfügbar."
+
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:12
+msgid "Real-time Heating Countdown"
+msgstr "Echtzeit-Aufheiz-Countdown"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:148
+msgid ""
+"Really delete all persisted ETA history JSON files for all printer "
+"profiles?"
+msgstr ""
+"Wirklich alle gespeicherten ETA-Historien (JSON) für alle Druckerprofile "
+"löschen?"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:156
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:154
+msgid "Reset failed."
+msgstr "Zurücksetzen fehlgeschlagen."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:143
+msgid "Reset profile history"
+msgstr "Profil-Historie zurücksetzen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:177
+msgid "Restore"
+msgstr "Wiederherstellen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:171
+msgid "Restore all Temperature ETA settings to their default values?"
+msgstr "Alle Temperature-ETA-Einstellungen auf Standardwerte zurücksetzen?"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:166
+msgid "Restore defaults"
+msgstr "Standards wiederherstellen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:175
+msgid "Restore defaults failed."
+msgstr "Wiederherstellen der Standardwerte fehlgeschlagen."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:179
+msgid "Restores Temperature ETA settings to their default values."
+msgstr "Stellt die Temperature-ETA-Einstellungen auf Standardwerte zurück."
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:76
+msgid "Show in navbar"
+msgstr "In der Navbar anzeigen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:68
+msgid "Show in sidebar"
+msgstr "In der Sidebar anzeigen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:84
+msgid "Show in tab"
+msgstr "Im Tab anzeigen"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:33
+msgid "Start ETA when target is this many degrees away"
+msgstr "ETA anzeigen, wenn Zieltemperatur um diesen Wert entfernt ist"
 
 #: octoprint_temp_eta/__init__.py:1076
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:146
@@ -29,118 +258,25 @@ msgstr ""
 msgid "Temperature ETA"
 msgstr "Temperatur-ETA"
 
-#: octoprint_temp_eta/__init__.py:1215
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:173
-msgid "Defaults restored."
-msgstr "Standardeinstellungen wiederhergestellt."
+#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:2
+msgid "Temperature ETA Monitor"
+msgstr "Temperatur-ETA Monitor"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:3
 msgid "Temperature ETA Settings"
 msgstr "Temperatur-ETA"
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
-msgid "Basic Settings"
-msgstr "Grundeinstellungen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:9
-msgid "Enable Temperature ETA"
-msgstr "Temperatur-ETA aktivieren"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:16
-msgid "Hide ETA while printing"
-msgstr "ETA während des Drucks ausblenden"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:20
-msgid ""
-"If disabled: ETA is shown when the temperature difference to the target "
-"is at least the heating threshold. If enabled: ETA is only shown when no "
-"print job is active."
-msgstr ""
-"Wenn deaktiviert: ETA wird angezeigt, wenn der Abstand zur Zieltemperatur"
-" mindestens dem Heizschwellwert entspricht. Wenn aktiviert: ETA wird nur "
-"angezeigt, wenn kein Druckauftrag aktiv ist."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:27
-msgid "Heating threshold"
-msgstr "Heiz-Schwellenwert"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:33
-msgid "Start ETA when target is this many degrees away"
-msgstr "ETA anzeigen, wenn Zieltemperatur um diesen Wert entfernt ist"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:38
-msgid "Threshold unit"
-msgstr "Einheit der Schwelle"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:42
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:97
-msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:43
-msgid "Fahrenheit (°F)"
-msgstr "Fahrenheit (°F)"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:44
-msgid "Follow temperature display"
-msgstr "Temperaturanzeige übernehmen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:46
-msgid ""
-"Internally, the calculation uses °C. If you choose °F here, the value "
-"will be converted automatically."
-msgstr ""
-"Intern verwendet die Berechnung °C. Wenn du hier °F auswählst, wird der "
-"Wert automatisch umgerechnet."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:52
-msgid "Calculation Algorithm"
-msgstr "Berechnungsalgorithmus"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:55
-msgid "Linear (default)"
-msgstr "Linear (Standard)"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:56
-msgid "Exponential"
-msgstr "Exponentiell"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:59
-msgid ""
-"Linear: Assumes constant heating rate, simple and fast. Exponential: "
-"Accounts for thermal asymptotic behavior, more accurate."
-msgstr ""
-"Linear: Geht von einer konstanten Heizrate aus – einfach und schnell. "
-"Exponentiell: Berücksichtigt das asymptotische thermische Verhalten – "
-"genauer."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:65
-msgid "Display"
-msgstr "Anzeige"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:68
-msgid "Show in sidebar"
-msgstr "In der Sidebar anzeigen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:76
-msgid "Show in navbar"
-msgstr "In der Navbar anzeigen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:84
-msgid "Show in tab"
-msgstr "Im Tab anzeigen"
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:120
+msgid "Temperature History Size"
+msgstr "Größe der Temperatur-Historie"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:92
 msgid "Temperature display"
 msgstr "Temperaturanzeige"
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:96
-msgid "Use OctoPrint appearance setting"
-msgstr "OctoPrint-Einstellung übernehmen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:98
-msgid "Celsius + Fahrenheit (°C/°F)"
-msgstr "Celsius + Fahrenheit (°C/°F)"
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:38
+msgid "Threshold unit"
+msgstr "Einheit der Schwelle"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:100
 msgid ""
@@ -152,149 +288,13 @@ msgstr ""
 "„Temperaturen in Fahrenheit zusätzlich zu Celsius anzeigen“ aktivieren. "
 "Dieses Plugin kann das auch über das Dropdown oben überschreiben."
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:105
-msgid "Advanced Settings"
-msgstr "Erweiterte Einstellungen"
-
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:109
 msgid "Update Interval (seconds)"
 msgstr "Aktualisierungsintervall (Sekunden)"
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:114
-msgid ""
-"How often to update ETA display (lower = more responsive, higher = less "
-"CPU)"
-msgstr ""
-"Wie oft die ETA-Anzeige aktualisiert wird (niedriger = "
-"reaktionsschneller, höher = weniger CPU)"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:120
-msgid "Temperature History Size"
-msgstr "Größe der Temperatur-Historie"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:125
-msgid "Number of temperature samples to keep in history"
-msgstr "Anzahl der Temperaturmesswerte, die im Verlauf gespeichert werden"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:131
-msgid "Enable debug logging"
-msgstr "Debug-Logging aktivieren"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:134
-msgid "Write additional debug information to the OctoPrint log (may be noisy)"
-msgstr ""
-"Zusätzliche Debug-Informationen ins OctoPrint-Log schreiben (kann sehr "
-"ausführlich sein)"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:139
-msgid "Maintenance"
-msgstr "Wartung"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:143
-msgid "Reset profile history"
-msgstr "Profil-Historie zurücksetzen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:147
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:170
-msgid "Confirm reset"
-msgstr "Zurücksetzen bestätigen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:148
-msgid ""
-"Really delete all persisted ETA history JSON files for all printer "
-"profiles?"
-msgstr ""
-"Wirklich alle gespeicherten ETA-Historien (JSON) für alle Druckerprofile "
-"löschen?"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:150
-msgid "History reset completed."
-msgstr "Historie wurde zurückgesetzt."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:151
-msgid "Deleted persisted history for all profiles ({count} file(s))."
-msgstr "Gespeicherte Historie für alle Profile gelöscht ({count} Datei(en))."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:152
-msgid "No persisted history files found."
-msgstr "Keine gespeicherten Historie-Dateien gefunden."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:154
-msgid "Reset failed."
-msgstr "Zurücksetzen fehlgeschlagen."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:155
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:176
-msgid "OctoPrint API not available."
-msgstr "OctoPrint-API nicht verfügbar."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:156
-msgid "Reset"
-msgstr "Zurücksetzen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:159
-msgid ""
-"Deletes all persisted ETA history JSON files for all printer profiles "
-"(stored in OctoPrint's plugin data folder)."
-msgstr ""
-"Löscht alle gespeicherten ETA-Historien (JSON) für alle Druckerprofile "
-"(gespeichert im OctoPrint-Plugin-Datenordner)."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:166
-msgid "Restore defaults"
-msgstr "Standards wiederherstellen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:171
-msgid "Restore all Temperature ETA settings to their default values?"
-msgstr "Alle Temperature-ETA-Einstellungen auf Standardwerte zurücksetzen?"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:175
-msgid "Restore defaults failed."
-msgstr "Wiederherstellen der Standardwerte fehlgeschlagen."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:177
-msgid "Restore"
-msgstr "Wiederherstellen"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:179
-msgid "Restores Temperature ETA settings to their default values."
-msgstr "Stellt die Temperature-ETA-Einstellungen auf Standardwerte zurück."
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:188
-msgid "How it works"
-msgstr "So funktioniert es"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:193
-msgid "Monitors temperature changes in real-time"
-msgstr "Überwacht Temperaturänderungen in Echtzeit"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:194
-msgid "Calculates heating rate (°C/second)"
-msgstr "Berechnet die Heizrate (°C/Sekunde)"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:195
-msgid "Estimates time to reach target temperature"
-msgstr "Schätzt die Zeit bis zur Zieltemperatur"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:196
-msgid "Displays countdown in MM:SS format"
-msgstr "Zeigt den Countdown im Format MM:SS an"
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:199
-msgid ""
-"Adjust the algorithm, threshold, and polling interval above to tune the "
-"ETA calculation for your printer."
-msgstr ""
-"Passe Algorithmus, Schwellwert und Abfrageintervall oben an, um die ETA-"
-"Berechnung für deinen Drucker zu optimieren."
-
-#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:2
-msgid "Temperature ETA Monitor"
-msgstr "Temperatur-ETA Monitor"
-
-#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:12
-msgid "Real-time Heating Countdown"
-msgstr "Echtzeit-Aufheiz-Countdown"
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:96
+msgid "Use OctoPrint appearance setting"
+msgstr "OctoPrint-Einstellung übernehmen"
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:13
 msgid ""
@@ -304,11 +304,11 @@ msgstr ""
 "Sieh die geschätzte verbleibende Zeit, bis dein Drucker Bett, Hotend oder"
 " Kammer aufgeheizt hat."
 
-#: octoprint_temp_eta/templates/temp_eta_tab.jinja2:14
-msgid "Configure algorithm and threshold in Settings → Temperature ETA"
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:134
+msgid "Write additional debug information to the OctoPrint log (may be noisy)"
 msgstr ""
-"Algorithmus und Schwellwert unter Einstellungen → Temperatur-ETA "
-"konfigurieren"
+"Zusätzliche Debug-Informationen ins OctoPrint-Log schreiben (kann sehr "
+"ausführlich sein)"
 
 #~ msgid "Heating threshold (°C)"
 #~ msgstr "Heiz-Schwellenwert (°C)"

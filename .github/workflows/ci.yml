@@ -41,9 +41,11 @@ jobs:
           pytest -q
 
       - name: Run pre-commit
+        if: matrix.python-version != '3.7'
         run: |
           pre-commit run --all-files
 
       - name: Build package
+        if: matrix.python-version != '3.7'
         run: |
           python -m build
