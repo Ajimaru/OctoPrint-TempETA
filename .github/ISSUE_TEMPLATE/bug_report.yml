@@ -7,6 +7,9 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report!
 
+        This repository is **English-only** for public-facing communication (issues/PRs/discussions/wiki/security).
+        Please write your report in English.
+
         **Before you continue:** Have you checked if this issue already exists?
 
   - type: textarea

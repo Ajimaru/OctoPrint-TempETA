@@ -7,6 +7,9 @@ body:
       value: |
         Thanks for taking the time to suggest a new feature!
 
+        This repository is **English-only** for public-facing communication (issues/PRs/discussions/wiki/security).
+        Please write your request in English.
+
   - type: textarea
     id: feature-description
     attributes:
