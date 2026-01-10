@@ -16,17 +16,19 @@ from setuptools.command.build_py import build_py as _build_py
 from setuptools.command.sdist import sdist as _sdist
 
 
-def _sync_translations() -> None:
-    """Sync top-level translations into the package directory.
+def _copy_translations_tree(src_root: str, dst_root: str) -> None:
+    """Copy top-level translations into a destination directory.
 
-    Wheels include package data, but do not include arbitrary top-level folders.
-    To make i18n robust, we keep a copy of the translation catalogs under
-    octoprint_temp_eta/translations and refresh it automatically during builds.
+    IMPORTANT: This must NOT modify the working tree.
+
+    `python -m build` runs `sdist` against the source checkout. If we write
+    generated translation copies back into `octoprint_temp_eta/translations`, it
+    creates noisy post-commit diffs. Instead, we only copy catalogs into build
+    staging directories:
+
+    - Wheel builds: into `build_lib/octoprint_temp_eta/translations`
+    - sdist builds: into the sdist release tree
     """
-
-    repo_root = os.path.dirname(os.path.abspath(__file__))
-    src_root = os.path.join(repo_root, "translations")
-    dst_root = os.path.join(repo_root, "octoprint_temp_eta", "translations")
 
     if not os.path.isdir(src_root):
         return
@@ -53,15 +55,23 @@ def _sync_translations() -> None:
 class build_py(_build_py):
 
     def run(self) -> None:
-        _sync_translations()
         super().run()
+
+        repo_root = os.path.dirname(os.path.abspath(__file__))
+        src_root = os.path.join(repo_root, "translations")
+        dst_root = os.path.join(self.build_lib, "octoprint_temp_eta", "translations")
+        _copy_translations_tree(src_root, dst_root)
 
 
 class sdist(_sdist):
 
-    def run(self) -> None:
-        _sync_translations()
-        super().run()
+    def make_release_tree(self, base_dir: str, files) -> None:  # type: ignore[override]
+        super().make_release_tree(base_dir, files)
+
+        repo_root = os.path.dirname(os.path.abspath(__file__))
+        src_root = os.path.join(repo_root, "translations")
+        dst_root = os.path.join(base_dir, "octoprint_temp_eta", "translations")
+        _copy_translations_tree(src_root, dst_root)
 
 
 setup(
