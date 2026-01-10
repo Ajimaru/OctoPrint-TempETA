@@ -212,6 +212,25 @@ def test_temperature_callback_records_only_when_target_set_and_far_enough(
     assert len(plugin._temp_history["tool0"]) == 1
 
 
+def test_temperature_callback_treats_string_target_off_as_cooldown(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    p_any = cast(Any, plugin)
+    settings = cast(DummySettings, p_any._settings)
+    settings.set(["enable_cooldown_eta"], True)
+    settings.set(["cooldown_mode"], "threshold")
+    settings.set(["cooldown_target_tool0"], 50.0)
+    settings.set(["cooldown_hysteresis_c"], 1.0)
+    settings.set(["cooldown_fit_window_seconds"], 120)
+
+    _set_time(monkeypatch, 200.0)
+    plugin._cooldown_history["tool0"].clear()
+
+    # Simulate a firmware/virtual-printer target format that sends a string like "off".
+    plugin.on_printer_add_temperature({"tool0": {"actual": 200.0, "target": "off"}})
+    assert len(plugin._cooldown_history["tool0"]) == 1
+
+
 def test_calculate_cooldown_linear_eta_simple(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:

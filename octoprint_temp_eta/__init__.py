@@ -751,10 +751,23 @@ class TempETAPlugin(
                 if actual_raw is None:
                     continue
                 try:
-                    target = float(target_raw or 0)
                     actual = float(actual_raw)
                 except Exception:
                     continue
+
+                try:
+                    target = float(target_raw or 0)
+                except Exception:
+                    # Some firmwares/virtual printer formats may provide a non-numeric
+                    # target (e.g. "off"). Treat that as OFF for cooldown tracking.
+                    target = 0.0
+                    self._debug_log_throttled(
+                        current_time,
+                        30.0,
+                        "Non-numeric target treated as OFF heater=%s target_raw=%r",
+                        str(heater),
+                        target_raw,
+                    )
 
                 if target <= 0:
                     # Cooldown tracking (target==0).
@@ -1178,6 +1191,14 @@ class TempETAPlugin(
         window = self._cooldown_fit_window_seconds()
         recent = [(ts, temp) for ts, temp in hist if ts > now - window]
         if len(recent) < 2:
+            self._debug_log_throttled(
+                now,
+                15.0,
+                "Cooldown linear fit: not enough recent samples heater=%s window=%.0fs hist=%d",
+                str(heater_name),
+                float(window),
+                int(len(hist)),
+            )
             return None
 
         t0, temp0 = recent[0]
@@ -1189,6 +1210,18 @@ class TempETAPlugin(
 
         slope = dtemp / dt
         if slope >= -1e-3:
+            self._debug_log_throttled(
+                now,
+                15.0,
+                "Cooldown linear fit: slope not negative heater=%s slope=%.6f dt=%.2f dT=%.2f t0=%.1f t1=%.1f goal=%.1f",
+                str(heater_name),
+                float(slope),
+                float(dt),
+                float(dtemp),
+                float(temp0),
+                float(temp1),
+                float(goal_c),
+            )
             return None
 
         remaining = temp1 - goal_c
