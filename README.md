@@ -32,6 +32,7 @@
 - ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating
 - 🌡️ **Smart calculation algorithms**: Linear (default) and exponential models
 - 📊 **Flexible display**: Show ETA in navbar, sidebar, and/or a dedicated tab
+- 📈 **Heating progress bars** (optional): Show progress to target in the sidebar and tab views
 - 🎛️ **Configurable thresholds**: Start countdown when within a configurable delta to target
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
@@ -74,6 +75,7 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 ### Display
 
 - **Show in sidebar / navbar / tab**: Independently toggle UI placement
+- **Show progress bars**: Toggle heating progress bars in the sidebar and tab views
 - **Temperature display**:
   - **Use OctoPrint appearance setting** (default)
   - **Celsius (°C)**
@@ -120,6 +122,7 @@ The following defaults apply to the user-editable plugin settings:
 | Show in sidebar         | `show_in_sidebar`         | `true`      |
 | Show in navbar          | `show_in_navbar`          | `true`      |
 | Show in tab             | `show_in_tab`             | `true`      |
+| Show progress bars      | `show_progress_bars`      | `true`      |
 | Temperature display     | `temp_display`            | `octoprint` |
 | Heating threshold       | `threshold_start`         | `5.0 °C`    |
 | Threshold unit          | `threshold_unit`          | `octoprint` |
