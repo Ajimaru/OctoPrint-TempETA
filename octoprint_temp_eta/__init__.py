@@ -178,6 +178,10 @@ class TempETAPlugin(
         }
         self._last_update_time = 0
 
+        # Track last seen target per heater so we can detect transitions like
+        # heating -> off (cooldown start).
+        self._last_target_by_heater: Dict[str, float] = {}
+
         # When enabled, suppress ETA updates while a print job is active.
         # This keeps the UI focused on the pre-print heat-up phase.
         self._suppressing_due_to_print = False
@@ -769,6 +773,9 @@ class TempETAPlugin(
                         target_raw,
                     )
 
+                prev_target = self._last_target_by_heater.get(str(heater))
+                self._last_target_by_heater[str(heater)] = float(target)
+
                 if target <= 0:
                     # Cooldown tracking (target==0).
                     if self._cooldown_enabled():
@@ -776,6 +783,21 @@ class TempETAPlugin(
                             self._cooldown_history[heater] = deque(
                                 maxlen=self._history_maxlen
                             )
+
+                        # If we just transitioned from heating to OFF, start a fresh
+                        # cooldown history so our linear cooldown fit doesn't include
+                        # old OFF samples from before the heat-up phase.
+                        if prev_target is not None and prev_target > 0:
+                            self._cooldown_history[heater].clear()
+                            self._debug_log_throttled(
+                                current_time,
+                                10.0,
+                                "Cooldown start detected, cleared history heater=%s prev_target=%.1f actual=%.1f",
+                                str(heater),
+                                float(prev_target),
+                                float(actual),
+                            )
+
                         self._cooldown_history[heater].append((current_time, actual))
                         recorded_cooldown_count += 1
 
