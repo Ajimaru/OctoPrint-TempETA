@@ -397,4 +397,3 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:255
 msgid "Write additional debug information to the OctoPrint log (may be noisy)"
 msgstr ""
-
