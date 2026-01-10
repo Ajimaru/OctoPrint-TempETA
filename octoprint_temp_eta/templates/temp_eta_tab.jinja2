@@ -1,96 +1,139 @@
 <div id="temp_eta_content" data-bind="visible: isComponentEnabled('tab')">
     <h3>{{ _('Temperature ETA Monitor') }}</h3>
 
-    <div class="alert alert-info temp-eta-tab-info">
-        <div class="temp-eta-tab-info-inner">
-            <div class="temp-eta-tab-info-logo">
-                <img class="temp-eta-tab-info-logo-img"
-                     src="{{ url_for('plugin.temp_eta.static', filename='img/temp_eta.svg') }}"
-                     alt="{{ _('Temperature ETA') }}">
-            </div>
-            <div class="temp-eta-tab-info-text">
-                <strong>{{ _('Real-time Heating Countdown') }}</strong>
-                <p>{{ _('Watch the estimated time remaining for your printer to heat up the bed, hotend, or chamber.') }}</p>
-                <p>{{ _('Configure algorithm and threshold in Settings → Temperature ETA') }}</p>
-            </div>
-        </div>
-    </div>
+    <ul class="nav nav-tabs temp-eta-subtabs" id="temp_eta_subtabs">
+        <li class="active">
+            <a href="#temp_eta_subtab_overview" data-toggle="tab">{{ _('Temperature ETA') }}</a>
+        </li>
+        <li>
+            <a href="#temp_eta_subtab_history" data-toggle="tab">{{ _('Historical graph') }}</a>
+        </li>
+    </ul>
 
-    <div class="row">
-        <!-- Dynamically generated Heater Cards -->
-        <!-- ko foreach: displayHeaters -->
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <i class="fa" data-bind="css: $parent.getHeaterIcon(name)"></i>
-                        <span data-bind="text: $parent.getHeaterLabel(name)"></span>
-                    </h4>
+    <div class="tab-content temp-eta-subtab-content">
+        <div class="tab-pane active" id="temp_eta_subtab_overview">
+            <div class="alert alert-info temp-eta-tab-info">
+                <div class="temp-eta-tab-info-inner">
+                    <div class="temp-eta-tab-info-logo">
+                        <img class="temp-eta-tab-info-logo-img"
+                             src="{{ url_for('plugin.temp_eta.static', filename='img/temp_eta.svg') }}"
+                             alt="{{ _('Temperature ETA') }}">
+                    </div>
+                    <div class="temp-eta-tab-info-text">
+                        <strong>{{ _('Real-time Heating Countdown') }}</strong>
+                        <p>{{ _('Watch the estimated time remaining for your printer to heat up the bed, hotend, or chamber.') }}</p>
+                        <p>{{ _('Configure algorithm and threshold in Settings → Temperature ETA') }}</p>
+                    </div>
                 </div>
-                <div class="panel-body">
-                    <div class="text-center" data-bind="if: $parent.isETAVisible(eta())">
-                        <h2 class="eta-display" data-bind="text: $parent.formatETA(eta()), css: $parent.getETAClass($data)">
-                            --:--
-                        </h2>
-                    </div>
-                    <div class="text-center" data-bind="ifnot: $parent.isETAVisible(eta())">
-                        <p class="text-muted" data-bind="text: $parent.getNotHeatingText()"></p>
-                    </div>
+            </div>
 
-                    <div class="text-center" data-bind="visible: $parent.isTabProgressVisible($data)">
-                        <p class="temp-eta-inline">
-                            <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
-                            <span data-bind="text: $parent.formatTempDisplay(target())"></span>
-                        </p>
+            <div class="row">
+                <!-- Dynamically generated Heater Cards -->
+                <!-- ko foreach: displayHeaters -->
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fa" data-bind="css: $parent.getHeaterIcon(name)"></i>
+                                <span data-bind="text: $parent.getHeaterLabel(name)"></span>
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="text-center" data-bind="if: $parent.isETAVisible(eta())">
+                                <h2 class="eta-display" data-bind="text: $parent.formatETA(eta()), css: $parent.getETAClass($data)">
+                                    --:--
+                                </h2>
+                            </div>
+                            <div class="text-center" data-bind="ifnot: $parent.isETAVisible(eta())">
+                                <p class="text-muted" data-bind="text: $parent.getNotHeatingText()"></p>
+                            </div>
 
-                        <div class="progress temp-eta-progress">
-                            <div class="bar progress-bar"
-                                 role="progressbar"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100"
-                                 data-bind="style: { width: $parent.getProgressPercent($data) + '%' }, css: $parent.getProgressBarClass($data)"></div>
+                            <div class="text-center" data-bind="visible: $parent.isTabProgressVisible($data)">
+                                <p class="temp-eta-inline">
+                                    <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
+                                    <span data-bind="text: $parent.formatTempDisplay(target())"></span>
+                                </p>
+
+                                <div class="progress temp-eta-progress">
+                                    <div class="bar progress-bar"
+                                         role="progressbar"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100"
+                                         data-bind="style: { width: $parent.getProgressPercent($data) + '%' }, css: $parent.getProgressBarClass($data)"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                      <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
-                        <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
-                             data-bind="attr: { id: 'temp_eta_graph_' + name }">
-                            <g class="temp-eta-graph-axes">
-                              <line class="temp-eta-graph-axis" x1="12" y1="2" x2="12" y2="30"></line>
-                              <line class="temp-eta-graph-axis" x1="12" y1="30" x2="99" y2="30"></line>
-
-                              <line class="temp-eta-graph-axis-tick" x1="10.5" y1="2" x2="12" y2="2"
-                                  data-bind="attr: { id: 'temp_eta_graph_tick_ymax_' + name }"></line>
-                              <line class="temp-eta-graph-axis-tick" x1="10.5" y1="16" x2="12" y2="16"
-                                  data-bind="attr: { id: 'temp_eta_graph_tick_ymid_' + name }"></line>
-                              <line class="temp-eta-graph-axis-tick" x1="10.5" y1="30" x2="12" y2="30"
-                                  data-bind="attr: { id: 'temp_eta_graph_tick_ymin_' + name }"></line>
-
-                              <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="2" text-anchor="start" dominant-baseline="hanging"
-                                  data-bind="attr: { id: 'temp_eta_graph_label_ymax_' + name }"></text>
-                              <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="16" text-anchor="start" dominant-baseline="middle"
-                                  data-bind="attr: { id: 'temp_eta_graph_label_ymid_' + name }"></text>
-                              <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="30" text-anchor="start" dominant-baseline="baseline"
-                                  data-bind="attr: { id: 'temp_eta_graph_label_ymin_' + name }"></text>
-
-                              <text class="temp-eta-graph-label temp-eta-graph-label-x" x="12" y="39" text-anchor="start" dominant-baseline="alphabetic"
-                                  data-bind="attr: { id: 'temp_eta_graph_label_xleft_' + name }"></text>
-                              <text class="temp-eta-graph-label temp-eta-graph-label-x" x="55.5" y="39" text-anchor="middle" dominant-baseline="alphabetic"
-                                  data-bind="attr: { id: 'temp_eta_graph_label_xmid_' + name }"></text>
-                              <text class="temp-eta-graph-label temp-eta-graph-label-x" x="99" y="39" text-anchor="end" dominant-baseline="alphabetic"
-                                  data-bind="attr: { id: 'temp_eta_graph_label_xright_' + name }"></text>
-                            </g>
-
-                            <line class="temp-eta-graph-target" x1="12" y1="0" x2="99" y2="0"
-                                data-bind="attr: { id: 'temp_eta_graph_target_' + name }"></line>
-                            <polyline class="temp-eta-graph-line" points=""
-                                  data-bind="attr: { id: 'temp_eta_graph_actual_' + name }"></polyline>
-                        </svg>
-                      </div>
                 </div>
+                <!-- /ko -->
             </div>
         </div>
-        <!-- /ko -->
+
+        <div class="tab-pane temp-eta-subtab-history" id="temp_eta_subtab_history">
+            <div class="row">
+                <!-- Dynamically generated Heater Graphs -->
+                <!-- ko foreach: displayHeaters -->
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fa" data-bind="css: $parent.getHeaterIcon(name)"></i>
+                                <span data-bind="text: $parent.getHeaterLabel(name)"></span>
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="text-center">
+                                <p class="temp-eta-inline">
+                                    <span data-bind="text: $parent.formatTempDisplay(actual())"></span> /
+                                    <span data-bind="text: $parent.formatTempDisplay(target())"></span>
+                                </p>
+                            </div>
+
+                            <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
+                                <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
+                                     data-bind="attr: { id: 'temp_eta_graph_' + name }">
+                                    <g class="temp-eta-graph-axes">
+                                        <line class="temp-eta-graph-axis" x1="12" y1="2" x2="12" y2="30"></line>
+                                        <line class="temp-eta-graph-axis" x1="12" y1="30" x2="99" y2="30"></line>
+
+                                        <line class="temp-eta-graph-axis-tick" x1="10.5" y1="2" x2="12" y2="2"
+                                              data-bind="attr: { id: 'temp_eta_graph_tick_ymax_' + name }"></line>
+                                        <line class="temp-eta-graph-axis-tick" x1="10.5" y1="16" x2="12" y2="16"
+                                              data-bind="attr: { id: 'temp_eta_graph_tick_ymid_' + name }"></line>
+                                        <line class="temp-eta-graph-axis-tick" x1="10.5" y1="30" x2="12" y2="30"
+                                              data-bind="attr: { id: 'temp_eta_graph_tick_ymin_' + name }"></line>
+
+                                        <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="2" text-anchor="start" dominant-baseline="hanging"
+                                              data-bind="attr: { id: 'temp_eta_graph_label_ymax_' + name }"></text>
+                                        <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="16" text-anchor="start" dominant-baseline="middle"
+                                              data-bind="attr: { id: 'temp_eta_graph_label_ymid_' + name }"></text>
+                                        <text class="temp-eta-graph-label temp-eta-graph-label-y" x="0.5" y="30" text-anchor="start" dominant-baseline="baseline"
+                                              data-bind="attr: { id: 'temp_eta_graph_label_ymin_' + name }"></text>
+
+                                        <text class="temp-eta-graph-label temp-eta-graph-label-x" x="12" y="39" text-anchor="start" dominant-baseline="alphabetic"
+                                              data-bind="attr: { id: 'temp_eta_graph_label_xleft_' + name }"></text>
+                                        <text class="temp-eta-graph-label temp-eta-graph-label-x" x="55.5" y="39" text-anchor="middle" dominant-baseline="alphabetic"
+                                              data-bind="attr: { id: 'temp_eta_graph_label_xmid_' + name }"></text>
+                                        <text class="temp-eta-graph-label temp-eta-graph-label-x" x="99" y="39" text-anchor="end" dominant-baseline="alphabetic"
+                                              data-bind="attr: { id: 'temp_eta_graph_label_xright_' + name }"></text>
+                                    </g>
+
+                                    <line class="temp-eta-graph-target" x1="12" y1="0" x2="99" y2="0"
+                                          data-bind="attr: { id: 'temp_eta_graph_target_' + name }"></line>
+                                    <polyline class="temp-eta-graph-line" points=""
+                                              data-bind="attr: { id: 'temp_eta_graph_actual_' + name }"></polyline>
+                                </svg>
+                            </div>
+
+                            <div class="text-center" data-bind="visible: !$parent.isHistoricalGraphVisible($data)">
+                                <p class="text-muted" data-bind="text: $parent.getNotHeatingText()"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+            </div>
+        </div>
     </div>
 
 </div>
