@@ -1227,6 +1227,10 @@ $(function () {
       if (!self.isETAVisible(eta)) {
         return "hidden";
       }
+
+      if (heater.etaKind && heater.etaKind() === "cooling") {
+        return "eta-cooling";
+      }
       if (eta < 60) {
         return "eta-warning";
       } else if (eta < 300) {
