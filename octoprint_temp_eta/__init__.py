@@ -186,6 +186,42 @@ class TempETAPlugin(
         # This keeps the UI focused on the pre-print heat-up phase.
         self._suppressing_due_to_print = False
 
+        self._last_settings_snapshot_log_time = 0.0
+
+    def _debug_log_settings_snapshot(self, now: float) -> None:
+        """Throttled debug log of key plugin settings.
+
+        This helps diagnose cases where frontend features appear disabled due to
+        settings reload timing or mismatched config.
+        """
+        if not self._debug_logging_enabled:
+            return
+        if (now - self._last_settings_snapshot_log_time) < 60.0:
+            return
+        self._last_settings_snapshot_log_time = now
+
+        try:
+            enabled = bool(self._settings.get_boolean(["enabled"]))
+            show_hist = bool(self._settings.get_boolean(["show_historical_graph"]))
+            show_sidebar = bool(self._settings.get_boolean(["show_in_sidebar"]))
+            show_tab = bool(self._settings.get_boolean(["show_in_tab"]))
+            show_navbar = bool(self._settings.get_boolean(["show_in_navbar"]))
+            cooldown_enabled = bool(self._settings.get_boolean(["enable_cooldown_eta"]))
+            cooldown_mode = str(self._settings.get(["cooldown_mode"]) or "")
+        except Exception:
+            return
+
+        self._debug_log(
+            "Settings snapshot enabled=%s show_hist=%s show_tab=%s show_sidebar=%s show_navbar=%s cooldown=%s mode=%s",
+            str(enabled),
+            str(show_hist),
+            str(show_tab),
+            str(show_sidebar),
+            str(show_navbar),
+            str(cooldown_enabled),
+            str(cooldown_mode),
+        )
+
     def _suppress_while_printing_enabled(self) -> bool:
         """Return whether ETA display should be suppressed during active prints."""
         if not getattr(self, "_settings", None):
@@ -726,6 +762,10 @@ class TempETAPlugin(
             self._suppressing_due_to_print = False
 
         current_time = time.time()
+
+        # Periodic settings snapshot for debugging.
+        self._debug_log_settings_snapshot(current_time)
+
         threshold = self._settings.get_float(["threshold_start"])
 
         # Log all heaters received from OctoPrint

@@ -471,12 +471,30 @@ $(function () {
         // known settings object if it still looks valid.
         var root = self._resolveSettingsRoot();
         var ps = root && root.plugins && root.plugins.temp_eta;
+        var source = "fresh";
+
         if (!ps && self.settings && self.settings.plugins && self.settings.plugins.temp_eta) {
           ps = self.settings.plugins.temp_eta;
+          source = "fallback";
         }
+
         if (ps && root && root.plugins) {
           self.settings = root;
         }
+
+        // Debug once in a while to diagnose cases where the settings root is
+        // temporarily missing and would disable features like the historical graph.
+        // This logs to the browser console only (controlled by debug_logging).
+        try {
+          var dbg = {
+            source: source,
+            hasFreshPlugins: !!(root && root.plugins),
+            hasFallbackPlugins: !!(self.settings && self.settings.plugins),
+            show_historical_graph: ps ? readKoBool(ps.show_historical_graph, null) : null,
+          };
+          self._debugLog("settings_graph", "[TempETA] Settings snapshot", dbg, 60000);
+        } catch (e) {}
+
         return ps;
       } catch (e) {
         return null;
