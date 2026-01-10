@@ -19,6 +19,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls)
 
 ### Heat Up and Cool Down with Confidence
+
 <!-- markdownlint-disable MD033-->
 <strong>
   Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up or cooling down.<br />
@@ -115,6 +116,7 @@ If enabled, the plugin can estimate an ETA while heaters are cooling down (targe
 - **Restore defaults**: Resets only this plugin's settings back to defaults (does not delete history files).
 
 <!-- markdownlint-disable MD033 -->
+
 #### Settings Screenshot
 
 <img
@@ -122,6 +124,7 @@ If enabled, the plugin can estimate an ETA while heaters are cooling down (targe
   alt="Temperature ETA settings"
   width="666"
 />
+
 <!-- markdownlint-enable MD033 -->
 
 ### Settings Defaults
@@ -184,7 +187,7 @@ Contributions welcome! Please:
 5. For local development scripts (setup, restart helper, post-commit build hook), see [.development/README.md](.development/README.md).
 6. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 7. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
-Note: `main` is protected on GitHub, so changes go through PRs.
+   Note: `main` is protected on GitHub, so changes go through PRs.
 
 ## License
 

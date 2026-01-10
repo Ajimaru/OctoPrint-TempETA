@@ -473,7 +473,12 @@ $(function () {
         var ps = root && root.plugins && root.plugins.temp_eta;
         var source = "fresh";
 
-        if (!ps && self.settings && self.settings.plugins && self.settings.plugins.temp_eta) {
+        if (
+          !ps &&
+          self.settings &&
+          self.settings.plugins &&
+          self.settings.plugins.temp_eta
+        ) {
           ps = self.settings.plugins.temp_eta;
           source = "fallback";
         }
@@ -490,9 +495,16 @@ $(function () {
             source: source,
             hasFreshPlugins: !!(root && root.plugins),
             hasFallbackPlugins: !!(self.settings && self.settings.plugins),
-            show_historical_graph: ps ? readKoBool(ps.show_historical_graph, null) : null,
+            show_historical_graph: ps
+              ? readKoBool(ps.show_historical_graph, null)
+              : null,
           };
-          self._debugLog("settings_graph", "[TempETA] Settings snapshot", dbg, 60000);
+          self._debugLog(
+            "settings_graph",
+            "[TempETA] Settings snapshot",
+            dbg,
+            60000,
+          );
         } catch (e) {}
 
         return ps;
@@ -815,7 +827,14 @@ $(function () {
         "temp_eta_graph_label_ymin_" + heaterObj.name,
       );
 
-      if (tickYMax && tickYMid && tickYMin && labelYMax && labelYMid && labelYMin) {
+      if (
+        tickYMax &&
+        tickYMid &&
+        tickYMin &&
+        labelYMax &&
+        labelYMid &&
+        labelYMin
+      ) {
         var yTickMaxPos = yForTemp(yMax);
         var yTickMidPos = yForTemp(yMid);
         var yTickMinPos = yForTemp(yMin);
@@ -1132,7 +1151,9 @@ $(function () {
       try {
         var kind = heater.etaKind ? heater.etaKind() : null;
         if (kind === "cooling") {
-          var ct = heater.cooldownTarget ? parseFloat(heater.cooldownTarget()) : NaN;
+          var ct = heater.cooldownTarget
+            ? parseFloat(heater.cooldownTarget())
+            : NaN;
           if (isFinite(ct) && ct > -100) {
             return ct;
           }
@@ -1160,7 +1181,9 @@ $(function () {
         return self.formatTempDisplay(actual);
       }
 
-      return self.formatTempDisplay(actual) + "/" + self.formatTempDisplay(effTarget);
+      return (
+        self.formatTempDisplay(actual) + "/" + self.formatTempDisplay(effTarget)
+      );
     };
 
     /**

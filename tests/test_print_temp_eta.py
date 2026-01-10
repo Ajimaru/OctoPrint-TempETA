@@ -251,9 +251,7 @@ def test_calculate_cooldown_linear_eta_simple(
 
     # Cooling: 100C -> 90C over 10s => -1 C/s. Goal 80C => remaining 10C => 10s.
     _set_time(monkeypatch, 10.0)
-    plugin._cooldown_history["tool0"] = deque(
-        [(0.0, 100.0), (10.0, 90.0)], maxlen=60
-    )
+    plugin._cooldown_history["tool0"] = deque([(0.0, 100.0), (10.0, 90.0)], maxlen=60)
 
     eta = plugin._calculate_cooldown_linear_eta("tool0", 80.0)
     assert eta is not None
@@ -304,15 +302,11 @@ def test_broadcast_includes_cooldown_eta_when_target_is_zero(
 
     # Provide cooldown history for a falling temperature.
     _set_time(monkeypatch, 10.0)
-    plugin._cooldown_history["tool0"] = deque(
-        [(0.0, 80.0), (10.0, 70.0)], maxlen=60
-    )
+    plugin._cooldown_history["tool0"] = deque([(0.0, 80.0), (10.0, 70.0)], maxlen=60)
 
     pm: DummyPluginManager = plugin._plugin_manager  # type: ignore[assignment]
 
-    plugin._calculate_and_broadcast_eta(
-        {"tool0": {"actual": 70.0, "target": 0.0}}
-    )
+    plugin._calculate_and_broadcast_eta({"tool0": {"actual": 70.0, "target": 0.0}})
 
     msgs = [m["payload"] for m in pm.messages if m["payload"].get("heater") == "tool0"]
     assert msgs

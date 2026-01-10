@@ -48,12 +48,24 @@ except ModuleNotFoundError:  # pragma: no cover
 
 # OctoPrint's mixin base classes don't ship type information. Provide typed
 # aliases so Pylance accepts them as valid base classes.
-StartupPluginBase: Type[Any] = getattr(octoprint.plugin, "StartupPlugin", object)  # type: ignore[attr-defined]
-TemplatePluginBase: Type[Any] = getattr(octoprint.plugin, "TemplatePlugin", object)  # type: ignore[attr-defined]
-SettingsPluginBase: Type[Any] = getattr(octoprint.plugin, "SettingsPlugin", object)  # type: ignore[attr-defined]
-AssetPluginBase: Type[Any] = getattr(octoprint.plugin, "AssetPlugin", object)  # type: ignore[attr-defined]
-EventHandlerPluginBase: Type[Any] = getattr(octoprint.plugin, "EventHandlerPlugin", object)  # type: ignore[attr-defined]
-SimpleApiPluginBase: Type[Any] = getattr(octoprint.plugin, "SimpleApiPlugin", object)  # type: ignore[attr-defined]
+StartupPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "StartupPlugin", object
+)  # type: ignore[attr-defined]
+TemplatePluginBase: Type[Any] = getattr(
+    octoprint.plugin, "TemplatePlugin", object
+)  # type: ignore[attr-defined]
+SettingsPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "SettingsPlugin", object
+)  # type: ignore[attr-defined]
+AssetPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "AssetPlugin", object
+)  # type: ignore[attr-defined]
+EventHandlerPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "EventHandlerPlugin", object
+)  # type: ignore[attr-defined]
+SimpleApiPluginBase: Type[Any] = getattr(
+    octoprint.plugin, "SimpleApiPlugin", object
+)  # type: ignore[attr-defined]
 
 try:
     from flask import jsonify  # type: ignore
@@ -1019,7 +1031,9 @@ class TempETAPlugin(
                                 # cooldown_target already includes the band above ambient.
                                 should_compute = actual > cooldown_target
                             else:
-                                should_compute = actual > (cooldown_target + cooldown_hyst_c)
+                                should_compute = actual > (
+                                    cooldown_target + cooldown_hyst_c
+                                )
 
                         if should_compute and cooldown_target is not None:
                             cooldown_eta = self._calculate_cooldown_eta_seconds(
@@ -1045,7 +1059,8 @@ class TempETAPlugin(
                                 self._debug_log_throttled(
                                     time.time(),
                                     15.0,
-                                    "Cooldown ETA not available (insufficient fit) heater=%s mode=%s actual=%.1f goal=%.1f hist=%d",
+                                    "Cooldown ETA not available (insufficient fit) heater=%s mode=%s "
+                                    "actual=%.1f goal=%.1f hist=%d",
                                     str(heater),
                                     str(cooldown_mode),
                                     float(actual),
@@ -1184,7 +1199,9 @@ class TempETAPlugin(
 
         now = time.time()
         window = max(self._cooldown_fit_window_seconds(), 60.0)
-        recent = [temp for ts, temp in hist if ts > now - window and math.isfinite(temp)]
+        recent = [
+            temp for ts, temp in hist if ts > now - window and math.isfinite(temp)
+        ]
         if len(recent) < 3:
             return None
 
@@ -1284,7 +1301,8 @@ class TempETAPlugin(
             self._debug_log_throttled(
                 now,
                 15.0,
-                "Cooldown linear fit: slope not negative heater=%s slope=%.6f dt=%.2f dT=%.2f t0=%.1f t1=%.1f goal=%.1f",
+                "Cooldown linear fit: slope not negative heater=%s slope=%.6f dt=%.2f "
+                "dT=%.2f t0=%.1f t1=%.1f goal=%.1f",
                 str(heater_name),
                 float(slope),
                 float(dt),
@@ -1538,7 +1556,6 @@ class TempETAPlugin(
             algorithm="linear",
             update_interval=1.0,
             history_size=60,
-
             # Cool Down ETA
             enable_cooldown_eta=True,
             cooldown_mode="threshold",
