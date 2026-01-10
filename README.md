@@ -1,22 +1,31 @@
-# OctoPrint Temperature ETA Plugin
+<!-- markdownlint-disable MD041 MD033-->
+<p align="center">
+  <img src="octoprint_temp_eta/static/img/temp_eta.svg" alt="Temperature ETA Logo" width="96" />
+</p>
+<h1 align="center">OctoPrint Temperature ETA Plugin</h1>
+<!-- markdownlint-enable MD041 MD033-->
 
 [![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.12.0%2B-blue.svg)](https://octoprint.org)
+[![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/latest/total)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
+[![Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
+[![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
+[![CI](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml?query=branch%3Amain)
+[![i18n](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml?query=branch%3Amain)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls)
 
-<table>
-  <tr>
-    <td width="120" valign="top">
-      <img src="octoprint_temp_eta/static/img/temp_eta.svg" alt="Temperature ETA Logo" width="96" />
-    </td>
-    <td valign="middle">
-      <strong>
-        Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up.<br />
-        No more guessing how long until your print starts!
-      </strong>
-    </td>
-  </tr>
-</table>
+<!-- markdownlint-disable MD033-->
+<strong>
+  Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up.<br />
+  No more guessing how long until your print starts!
+</strong>
+<br /><br />
+<img src="assets/img/Temperature_ETA_heating.png" alt="Heating ETA" width="666" />
+<!-- markdownlint-enable MD033-->
 
 ## Features
 
@@ -29,40 +38,6 @@
 - 🌍 **Internationalization**: English and German included, easily extensible
 - 🚀 **Lightweight**: Minimal performance impact (~2Hz monitoring)
 
-## Screenshots
-
-<!-- markdownlint-disable MD033 -->
-
-### Heating ETA
-
-<img src="assets/img/Temperature_ETA_heating.png" alt="Heating ETA" width="666" />
-
-### Tab + Sidebar
-
-<img
-  src="assets/img/Temperature_ETA_Tab_SideBar.png"
-  alt="Tab and Sidebar ETA"
-  width="666"
-/>
-
-### Settings (1)
-
-<img
-  src="assets/img/Temperature_ETA_settings_1.png"
-  alt="Temperature ETA settings (1)"
-  width="666"
-/>
-
-### Settings (2)
-
-<img
-  src="assets/img/Temperature_ETA_settings_2.png"
-  alt="Temperature ETA settings (2)"
-  width="666"
-/>
-
-<!-- markdownlint-enable MD033 -->
-
 ## Installation
 
 ### Via Plugin Manager (Recommended)
@@ -71,15 +46,17 @@
 2. Navigate to **Settings** → **Plugin Manager**
 3. Click **Get More...**
 4. Click **Install from URL** and enter:
-   `https://github.com/Ajimaru/OctoPrint-TempETA/releases/download/v0.2.3/octoprint_tempeta-0.2.3.zip`
+   `https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest/download/octoprint_tempeta-latest.zip`
 5. Click **Install**
 6. Restart OctoPrint
 
 ### Manual Installation
 
 ```bash
-pip install https://github.com/Ajimaru/OctoPrint-TempETA/releases/download/v0.2.3/octoprint_tempeta-0.2.3.zip
+pip install https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest/download/octoprint_tempeta-latest.zip
 ```
+
+The `releases/latest` URL always points to the newest stable release.
 
 ## Configuration
 
@@ -111,6 +88,26 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 
 - **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder).
 - **Restore defaults**: Resets only this plugin's settings back to defaults (does not delete history files).
+
+<!-- markdownlint-disable MD033 -->
+
+### Settings (1)
+
+<img
+  src="assets/img/Temperature_ETA_settings_1.png"
+  alt="Temperature ETA settings (1)"
+  width="666"
+/>
+
+### Settings (2)
+
+<img
+  src="assets/img/Temperature_ETA_settings_2.png"
+  alt="Temperature ETA settings (2)"
+  width="666"
+/>
+
+<!-- markdownlint-enable MD033 -->
 
 ### Settings Defaults
 
@@ -196,8 +193,10 @@ For logs and troubleshooting, enable "debug logging" in the plugin settings.
 ## Credits
 
 - **Original Request**: [Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469) by [@CptanPanic](https://github.com/CptanPanic) (2014)
-- **Development**: Built following [OctoPrint Plugin Guidelines](https://docs.octoprint.org/en/main/plugins/index.html)
+- **Development**: Built following [OctoPrint Plugin Guidelines](https://docs.octoprint.org/en/latest/plugins/index.html)
 - **Contributors**: See [AUTHORS.md](AUTHORS.md)
+
+Note: `main` is protected on GitHub, so changes go through PRs.
 
 ---
 

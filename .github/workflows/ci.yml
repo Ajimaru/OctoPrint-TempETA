@@ -37,8 +37,22 @@ jobs:
           python -m pip install -e ".[develop]" build
 
       - name: Run tests
+        if: matrix.python-version == '3.7'
         run: |
           pytest -q
+
+      - name: Run tests (with coverage)
+        if: matrix.python-version != '3.7'
+        run: |
+          pytest -q --cov=octoprint_temp_eta --cov-branch --cov-report=xml:coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version != '3.7' && github.repository == 'Ajimaru/OctoPrint-TempETA'
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
 
       - name: Run pre-commit
         if: matrix.python-version != '3.7'

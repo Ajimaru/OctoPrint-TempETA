@@ -69,7 +69,7 @@ LOG_LINE_START=0
 
 usage() {
   cat <<EOF
-Usage: $0 [--force-kill] [--clear-cache] [--stop-all]
+Usage: $0 [--force-kill] [--clear-cache] [--stop-all | --restart-all] [--stop-only]
 
 Options:
   -h, --help     Show this help and exit.
@@ -78,8 +78,11 @@ Options:
   --clear-cache  Remove OctoPrint generated webassets cache before starting.
                 Useful when changing plugin frontend assets (JS/CSS/templates) and you
                 suspect stale bundles. Not required for pure Python changes.
-  --stop-all     Stop all detected OctoPrint instances for the current user before restarting.
+  --stop-all     Stop all detected OctoPrint instances for the current user and exit.
                 Uses process matching (best-effort), no sudo required.
+  --restart-all  Stop all detected OctoPrint instances for the current user, then restart.
+                Uses process matching (best-effort), no sudo required.
+  --stop-only    Alias for --stop-all.
 
 Environment overrides:
   OCTOPRINT_CMD, OCTOPRINT_VENV, OCTOPRINT_PORT, OCTOPRINT_ARGS,
@@ -90,6 +93,7 @@ EOF
 FORCE_KILL=0
 CLEAR_CACHE=0
 STOP_ALL=0
+RESTART_AFTER_STOP_ALL=0
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" ]]; then
   usage
   exit 0
@@ -111,6 +115,17 @@ while [[ $# -gt 0 ]]; do
       ;;
     --stop-all)
       STOP_ALL=1
+      RESTART_AFTER_STOP_ALL=0
+      shift
+      ;;
+    --restart-all)
+      STOP_ALL=1
+      RESTART_AFTER_STOP_ALL=1
+      shift
+      ;;
+    --stop-only)
+      STOP_ALL=1
+      RESTART_AFTER_STOP_ALL=0
       shift
       ;;
     *)
@@ -434,6 +449,11 @@ verify_plugin_loaded() {
 
 if (( STOP_ALL )); then
   stop_all_octoprint
+fi
+
+if (( STOP_ALL )) && (( ! RESTART_AFTER_STOP_ALL )); then
+  echo "Stop-all requested; not starting OctoPrint."
+  exit 0
 fi
 
 stop_octoprint

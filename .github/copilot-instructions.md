@@ -1,11 +1,11 @@
 # GitHub Copilot Instructions - OctoPrint Temperature ETA Plugin
 
 **Issue**: [#469](https://github.com/OctoPrint/OctoPrint/issues/469) - Show ETA for bed/hotend heating
-**Target**: OctoPrint 1.4.0+, Python 3.7+ | Implements 2014 feature request
+**Target**: OctoPrint 1.12.0+, Python 3.7+ | Implements 2014 feature request
 
 ## Requirements
 
-**Blueprint**: See `.development/octoprint-temp-eta-plugin-plan.md` for implementation details and task breakdown.
+**Blueprint**:
 
 - Monitor temperature ~2Hz, calculate heating rate, estimate time to target
 - Display countdown in navbar/sidebar with configurable threshold
@@ -24,7 +24,7 @@
 
 ```
 octoprint_temp_eta/__init__.py       # Main plugin
-octoprint_temp_eta/static/           # JS, CSS
+octoprint_temp_eta/static/           # JS, LESS assets
 octoprint_temp_eta/templates/        # Jinja2 templates
 translations/                         # i18n
 ```
@@ -217,7 +217,7 @@ from flask_babel import gettext
 message = gettext("Heating to {target}°C, ETA: {eta}").format(target=X, eta=Y)
 ```
 
-**Languages**: English (primary) + German (secondary)
+**Languages**: English (en) + German (de)
 
 ## Critical Rules
 

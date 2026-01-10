@@ -68,7 +68,5 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have tested this in safe mode
-          required: false
         - label: I have searched for similar issues
           required: true
