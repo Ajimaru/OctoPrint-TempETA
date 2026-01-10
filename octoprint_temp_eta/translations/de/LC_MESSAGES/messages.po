@@ -28,6 +28,9 @@ msgstr ""
 msgid "Temperature ETA"
 msgstr "Temperatur-ETA"
 
+msgid "Cool-down ETA"
+msgstr "Cool-Down-ETA"
+
 #: octoprint_temp_eta/__init__.py:1022
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:173
 msgid "Defaults restored."

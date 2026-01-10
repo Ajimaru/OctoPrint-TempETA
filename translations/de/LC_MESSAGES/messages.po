@@ -104,6 +104,9 @@ msgstr "Zeigt eine geschätzte Abkühlzeit, wenn keine Zieltemperatur gesetzt is
 msgid "Cool-down mode"
 msgstr "Cool-Down-Modus"
 
+msgid "Cool-down ETA"
+msgstr "Cool-Down-ETA"
+
 msgid "Threshold target (default)"
 msgstr "Schwellwert-Ziel (Standard)"
 

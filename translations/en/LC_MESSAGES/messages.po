@@ -102,6 +102,9 @@ msgstr "Show an estimated time to cool down when no target temperature is set."
 msgid "Cool-down mode"
 msgstr "Cool-down mode"
 
+msgid "Cool-down ETA"
+msgstr "Cool-down ETA"
+
 msgid "Threshold target (default)"
 msgstr "Threshold target (default)"
 

@@ -2,7 +2,16 @@
     <fieldset>
         <legend>{{ _('Temperature ETA Settings') }}</legend>
 
-        <h4 class="temp-eta-settings-group">{{ _('Basic Settings') }}</h4>
+        <ul class="nav nav-tabs" id="temp_eta_settings_tabs">
+            <li class="active"><a href="#temp_eta_settings_tab_basic" data-toggle="tab">{{ _('Basic Settings') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_display" data-toggle="tab">{{ _('Display') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_cooldown" data-toggle="tab">{{ _('Cool-down ETA') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_advanced" data-toggle="tab">{{ _('Advanced Settings') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_maintenance" data-toggle="tab">{{ _('Maintenance') }}</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="temp_eta_settings_tab_basic">
 
         <!-- Enable/Disable Plugin -->
         <div class="control-group">
@@ -61,8 +70,9 @@
             </div>
         </div>
 
-        <hr class="temp-eta-settings-divider">
-        <h4 class="temp-eta-settings-group">{{ _('Display') }}</h4>
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_display">
 
         <div class="control-group">
             <label class="control-label" for="temp_eta_show_in_sidebar">{{ _('Show in sidebar') }}</label>
@@ -128,6 +138,10 @@
                 <p class="help-block">{{ _('Tip: In OctoPrint Settings → Appearance you can enable “Show temperatures in Fahrenheit as well as Celsius”. This plugin can also override that via the dropdown above.') }}</p>
             </div>
         </div>
+
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_cooldown">
 
         <div class="control-group">
             <label class="control-label" for="temp_eta_enable_cooldown_eta">{{ _('Enable cool-down ETA') }}</label>
@@ -207,8 +221,9 @@
             </div>
         </div>
 
-        <hr class="temp-eta-settings-divider">
-        <h4 class="temp-eta-settings-group">{{ _('Advanced Settings') }}</h4>
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_advanced">
 
         <!-- Update Interval -->
         <div class="control-group">
@@ -241,8 +256,9 @@
             </div>
         </div>
 
-        <hr class="temp-eta-settings-divider">
-        <h4 class="temp-eta-settings-group">{{ _('Maintenance') }}</h4>
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_maintenance">
 
         <!-- Reset Profile History -->
         <div class="control-group">
@@ -283,6 +299,9 @@
                     {{ _('Restore') }}
                 </button>
                 <p class="help-block">{{ _('Restores Temperature ETA settings to their default values.') }}</p>
+            </div>
+        </div>
+
             </div>
         </div>
     </fieldset>
