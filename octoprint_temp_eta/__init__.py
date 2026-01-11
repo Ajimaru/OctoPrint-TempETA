@@ -197,7 +197,13 @@ class TempETAPlugin(
             "tool0": None,
             "chamber": None,
         }
-        self._last_update_time = 0
+        self._last_update_time = 0.0
+
+        # Cache hot-path settings values for fast access in the ~2Hz callback.
+        # Refreshed on startup and on settings save.
+        self._threshold_start_c = 5.0
+        self._update_interval_s = 1.0
+        self._last_runtime_cache_refresh_time = 0.0
 
         # Track last seen target per heater so we can detect transitions like
         # heating -> off (cooldown start).
@@ -327,11 +333,33 @@ class TempETAPlugin(
         self._refresh_debug_logging_flag()
         self._debug_log("Debug logging enabled")
 
+        self._refresh_runtime_caches()
+
         # Apply configured history size now that settings are available.
         self._set_history_maxlen(self._read_history_maxlen_setting())
 
         # Load persisted history for the active printer profile.
         self._switch_active_profile_if_needed(force=True)
+
+    def _refresh_runtime_caches(self) -> None:
+        """Refresh cached settings values used in hot paths."""
+        if not getattr(self, "_settings", None):
+            return
+
+        try:
+            v = float(self._settings.get_float(["threshold_start"]))
+            if math.isfinite(v) and v > 0:
+                self._threshold_start_c = v
+        except Exception:
+            pass
+
+        try:
+            v = float(self._settings.get_float(["update_interval"]))
+            # Allow 0.0 as a special case meaning "update on every callback".
+            if math.isfinite(v) and v >= 0:
+                self._update_interval_s = v
+        except Exception:
+            pass
 
     def _get_current_profile_id(self) -> str:
         """Return current printer profile id or a stable fallback."""
@@ -454,6 +482,7 @@ class TempETAPlugin(
 
         # Apply settings that affect cached runtime state.
         self._refresh_debug_logging_flag()
+        self._refresh_runtime_caches()
         self._set_history_maxlen(self._read_history_maxlen_setting())
 
     def _load_profile_history(self, profile_id: str) -> Dict[str, deque]:
@@ -787,29 +816,44 @@ class TempETAPlugin(
 
         current_time = time.time()
 
+        # Keep cached settings reasonably fresh even if settings change outside
+        # of the normal save flow (e.g. tests or edge-case integrations).
+        if (current_time - self._last_runtime_cache_refresh_time) >= 5.0:
+            self._last_runtime_cache_refresh_time = current_time
+            self._refresh_runtime_caches()
+
         # Periodic settings snapshot for debugging.
         self._debug_log_settings_snapshot(current_time)
 
-        threshold = self._settings.get_float(["threshold_start"])
+        threshold = float(getattr(self, "_threshold_start_c", 5.0))
+        update_interval = float(getattr(self, "_update_interval_s", 1.0))
         heating_enabled = self._heating_enabled()
+        cooldown_enabled = self._cooldown_enabled()
 
-        # Log all heaters received from OctoPrint
-        heaters_in_data = [k for k, v in data.items() if isinstance(v, dict)]
-        if heaters_in_data:
-            self._logger.debug(
-                f"Received temperature data for heaters: {heaters_in_data}"
-            )
+        # Avoid eager f-string formatting in the hot path.
+        try:
+            is_logger_debug = bool(getattr(self._logger, "isEnabledFor")(10))  # type: ignore[attr-defined]
+        except Exception:
+            is_logger_debug = False
+        if is_logger_debug:
+            heaters_in_data = [k for k, v in data.items() if isinstance(v, dict)]
+            if heaters_in_data:
+                self._logger.debug(
+                    "Received temperature data for heaters: %s", heaters_in_data
+                )
 
         epsilon_hold = 0.2
 
         recorded_count = 0
         recorded_cooldown_count = 0
+        heaters_seen = 0
         with self._lock:
             # Update temperature history for each heater (dynamically register new heizers)
             for heater, temps in data.items():
                 # Skip non-dict values (like timestamps)
                 if not isinstance(temps, dict):
                     continue
+                heaters_seen += 1
 
                 # Only record history while ETA could be shown:
                 # - target must be set
@@ -843,7 +887,7 @@ class TempETAPlugin(
 
                 if target <= 0:
                     # Cooldown tracking (target==0).
-                    if self._cooldown_enabled():
+                    if cooldown_enabled:
                         if heater not in self._cooldown_history:
                             self._cooldown_history[heater] = deque(
                                 maxlen=self._history_maxlen
@@ -902,16 +946,14 @@ class TempETAPlugin(
             debug_interval,
             "Temp callback profile=%s heaters=%d recorded=%d cooldown_recorded=%d threshold=%.2f",
             str(self._active_profile_id),
-            len(heaters_in_data),
+            int(heaters_seen),
             recorded_count,
             recorded_cooldown_count,
             float(threshold),
         )
 
         # Update frontend at configurable interval (default 1Hz)
-        if current_time - self._last_update_time >= self._settings.get_float(
-            ["update_interval"]
-        ):
+        if (current_time - self._last_update_time) >= update_interval:
             self._last_update_time = current_time
             self._calculate_and_broadcast_eta(data)
             self._maybe_persist_history(current_time)
@@ -971,7 +1013,7 @@ class TempETAPlugin(
             data (dict): Current temperature data with all available heaters
         """
         algorithm = self._settings.get(["algorithm"])
-        threshold = self._settings.get_float(["threshold_start"])
+        threshold = float(getattr(self, "_threshold_start_c", 5.0))
 
         heating_enabled = self._heating_enabled()
 
@@ -979,6 +1021,7 @@ class TempETAPlugin(
         cooldown_mode = self._cooldown_mode()
         cooldown_hyst_c = self._cooldown_hysteresis_c()
 
+        payloads = []
         with self._lock:
             # Process all heaters in data (dynamically support tool0, tool1, tool2, etc)
             for heater, heater_data in data.items():
@@ -1099,9 +1142,8 @@ class TempETAPlugin(
                     eta_kind = None
                     cooldown_target = None
 
-                # Send message to frontend (ALWAYS, even when eta is None to clear display)
-                self._plugin_manager.send_plugin_message(
-                    self._identifier,
+                # Prepare message payload; send outside the lock to keep the critical section small.
+                payloads.append(
                     {
                         "type": "eta_update",
                         "heater": heater,
@@ -1111,8 +1153,12 @@ class TempETAPlugin(
                         "actual": actual,
                         "cooldown_target": cooldown_target,
                         "cooldown_mode": cooldown_mode if cooldown_enabled else None,
-                    },
+                    }
                 )
+
+        # Send message to frontend (ALWAYS, even when eta is None to clear display)
+        for payload in payloads:
+            self._plugin_manager.send_plugin_message(self._identifier, payload)
 
     def _heating_enabled(self) -> bool:
         """Return whether heating ETA is enabled."""
@@ -1656,6 +1702,7 @@ class TempETAPlugin(
         is_enabled = bool(self._settings.get_boolean(["enabled"]))
 
         self._refresh_debug_logging_flag()
+        self._refresh_runtime_caches()
         if old_debug != bool(self._debug_logging_enabled):
             self._logger.info(
                 "Debug logging %s",
