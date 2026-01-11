@@ -39,7 +39,7 @@
   </g>
 
   <!-- Heating (flame) indicator (left) -->
-  <g transform="translate(6 20)">
+  <g transform="translate(4 12)">
     <path
       d="M14 24 C9.5 21 8.5 16 10.5 12.5 C12 10 12.5 7.5 12.3 5.3 C15 7.2 18.2 11.3 18.2 15.7 C18.2 19.8 16.6 22.6 14 24 Z"
       fill="url(#heatGradient)"/>
@@ -49,14 +49,44 @@
   </g>
 
   <!-- Cooling (snowflake) indicator (right) -->
-  <g transform="translate(50 28)" stroke="url(#coolGradient)" stroke-width="2" stroke-linecap="round">
-    <line x1="0" y1="-8" x2="0" y2="8"/>
-    <line x1="-7" y1="-4" x2="7" y2="4"/>
-    <line x1="-7" y1="4" x2="7" y2="-4"/>
-    <!-- small tips -->
-    <line x1="0" y1="-8" x2="-2" y2="-6"/>
-    <line x1="0" y1="-8" x2="2" y2="-6"/>
-    <line x1="0" y1="8" x2="-2" y2="6"/>
-    <line x1="0" y1="8" x2="2" y2="6"/>
+  <g transform="translate(50 28)" stroke="url(#coolGradient)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <!-- main arms (6) -->
+    <line x1="0" y1="-9" x2="0" y2="9"/>
+    <line x1="-7.8" y1="-4.5" x2="7.8" y2="4.5"/>
+    <line x1="-7.8" y1="4.5" x2="7.8" y2="-4.5"/>
+
+    <!-- branches on vertical arm -->
+    <line x1="0" y1="-6.5" x2="-2" y2="-5.2"/>
+    <line x1="0" y1="-6.5" x2="2" y2="-5.2"/>
+    <line x1="0" y1="6.5" x2="-2" y2="5.2"/>
+    <line x1="0" y1="6.5" x2="2" y2="5.2"/>
+
+    <!-- branches on diagonal arm (\) -->
+    <line x1="-5.6" y1="-3.2" x2="-5.9" y2="-1"/>
+    <line x1="-5.6" y1="-3.2" x2="-3.7" y2="-2.4"/>
+    <line x1="5.6" y1="3.2" x2="5.9" y2="1"/>
+    <line x1="5.6" y1="3.2" x2="3.7" y2="2.4"/>
+
+    <!-- branches on diagonal arm (/) -->
+    <line x1="-5.6" y1="3.2" x2="-5.9" y2="1"/>
+    <line x1="-5.6" y1="3.2" x2="-3.7" y2="2.4"/>
+    <line x1="5.6" y1="-3.2" x2="5.9" y2="-1"/>
+    <line x1="5.6" y1="-3.2" x2="3.7" y2="-2.4"/>
+
+    <!-- tips -->
+    <line x1="0" y1="-9" x2="-2.2" y2="-7.2"/>
+    <line x1="0" y1="-9" x2="2.2" y2="-7.2"/>
+    <line x1="0" y1="9" x2="-2.2" y2="7.2"/>
+    <line x1="0" y1="9" x2="2.2" y2="7.2"/>
+
+    <line x1="-7.8" y1="-4.5" x2="-5.5" y2="-4.3"/>
+    <line x1="-7.8" y1="-4.5" x2="-6.6" y2="-2.6"/>
+    <line x1="7.8" y1="4.5" x2="5.5" y2="4.3"/>
+    <line x1="7.8" y1="4.5" x2="6.6" y2="2.6"/>
+
+    <line x1="-7.8" y1="4.5" x2="-5.5" y2="4.3"/>
+    <line x1="-7.8" y1="4.5" x2="-6.6" y2="2.6"/>
+    <line x1="7.8" y1="-4.5" x2="5.5" y2="-4.3"/>
+    <line x1="7.8" y1="-4.5" x2="6.6" y2="-2.6"/>
   </g>
 </svg>
