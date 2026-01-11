@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-11 17:05+0100\n"
+"POT-Creation-Date: 2026-01-11 17:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:1767
+#: octoprint_temp_eta/__init__.py:1768
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:468
 msgid "Defaults restored."
 msgstr ""
@@ -534,7 +534,7 @@ msgstr ""
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:1628
+#: octoprint_temp_eta/__init__.py:1629
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:21
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:441
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:444
@@ -656,3 +656,4 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 msgid "{heater}: reached {target}"
 msgstr ""
+

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-11 17:05+0100\n"
+"POT-Creation-Date: 2026-01-11 17:14+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -137,7 +137,7 @@ msgstr "Cooldown abgeschlossen"
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:1767
+#: octoprint_temp_eta/__init__.py:1768
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:468
 msgid "Defaults restored."
 msgstr "Standardeinstellungen wiederhergestellt."
@@ -583,7 +583,7 @@ msgstr "Zieltemperatur für die Kammer im Schwellwert-Modus."
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr "Zieltemperatur für Tool0 im Schwellwert-Modus."
 
-#: octoprint_temp_eta/__init__.py:1628
+#: octoprint_temp_eta/__init__.py:1629
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:21
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:441
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:444
@@ -805,3 +805,4 @@ msgstr "{heater}: Ziel erreicht ({target})"
 
 #~ msgid "Shared"
 #~ msgstr "Gemeinsam"
+
