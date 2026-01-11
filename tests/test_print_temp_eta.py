@@ -143,6 +143,17 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
 
     assert defaults["show_historical_graph"] is True
 
+    assert defaults["color_mode"] in ("bands", "status")
+    assert isinstance(defaults["color_heating"], str)
+    assert isinstance(defaults["color_cooling"], str)
+    assert isinstance(defaults["color_idle"], str)
+
+    assert defaults["sound_enabled"] is False
+    assert defaults["sound_target_reached"] is False
+    assert defaults["sound_cooldown_finished"] is False
+    assert 0.0 <= float(defaults["sound_volume"]) <= 1.0
+    assert float(defaults["sound_min_interval_s"]) >= 0.0
+
 
 def test_calculate_linear_eta_returns_none_with_insufficient_history(
     plugin: TempETAPlugin,

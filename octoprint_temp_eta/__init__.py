@@ -1565,6 +1565,17 @@ class TempETAPlugin(
             cooldown_ambient_temp=None,
             cooldown_hysteresis_c=1.0,
             cooldown_fit_window_seconds=120,
+            # Extended settings: status colors
+            color_mode="bands",
+            color_heating="#5cb85c",
+            color_cooling="#337ab7",
+            color_idle="#777777",
+            # Extended settings: sound alerts
+            sound_enabled=False,
+            sound_target_reached=False,
+            sound_cooldown_finished=False,
+            sound_volume=0.5,
+            sound_min_interval_s=10.0,
         )
 
     # TemplatePlugin mixin

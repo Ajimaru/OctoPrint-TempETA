@@ -5,6 +5,7 @@
         <ul class="nav nav-tabs" id="temp_eta_settings_tabs">
             <li class="active"><a href="#temp_eta_settings_tab_basic" data-toggle="tab">{{ _('Basic Settings') }}</a></li>
             <li><a href="#temp_eta_settings_tab_display" data-toggle="tab">{{ _('Display') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_extended" data-toggle="tab">{{ _('Extended Settings') }}</a></li>
             <li><a href="#temp_eta_settings_tab_cooldown" data-toggle="tab">{{ _('Cool-down ETA') }}</a></li>
             <li><a href="#temp_eta_settings_tab_advanced" data-toggle="tab">{{ _('Advanced Settings') }}</a></li>
             <li><a href="#temp_eta_settings_tab_maintenance" data-toggle="tab">{{ _('Maintenance') }}</a></li>
@@ -136,6 +137,112 @@
                     <option value="cf">{{ _('Celsius + Fahrenheit (°C/°F)') }}</option>
                 </select>
                 <p class="help-block">{{ _('Tip: In OctoPrint Settings → Appearance you can enable “Show temperatures in Fahrenheit as well as Celsius”. This plugin can also override that via the dropdown above.') }}</p>
+            </div>
+        </div>
+
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_extended">
+
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Status colors') }}</h4>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_mode">{{ _('Color mode') }}</label>
+                <div class="controls">
+                    <select class="input-xlarge" id="temp_eta_color_mode"
+                            data-bind="value: settings.plugins.temp_eta.color_mode, enable: settings.plugins.temp_eta.enabled">
+                        <option value="bands">{{ _('Time-based bands (default)') }}</option>
+                        <option value="status">{{ _('Status colors (heating/cooling/idle)') }}</option>
+                    </select>
+                    <p class="help-block">{{ _('Time-based bands use warning/info/normal colors based on remaining time. Status mode uses fixed colors for heating, cooling, and idle.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_heating">{{ _('Heating color') }}</label>
+                <div class="controls">
+                    <input type="color" id="temp_eta_color_heating"
+                           data-bind="value: settings.plugins.temp_eta.color_heating, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <input type="text" class="input-small" style="margin-left: 8px;" data-bind="value: settings.plugins.temp_eta.color_heating, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_cooling">{{ _('Cooling color') }}</label>
+                <div class="controls">
+                    <input type="color" id="temp_eta_color_cooling"
+                           data-bind="value: settings.plugins.temp_eta.color_cooling, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <input type="text" class="input-small" style="margin-left: 8px;" data-bind="value: settings.plugins.temp_eta.color_cooling, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_idle">{{ _('Idle color') }}</label>
+                <div class="controls">
+                    <input type="color" id="temp_eta_color_idle"
+                           data-bind="value: settings.plugins.temp_eta.color_idle, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <input type="text" class="input-small" style="margin-left: 8px;" data-bind="value: settings.plugins.temp_eta.color_idle, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <p class="help-block">{{ _('Tip: These colors also apply to progress bars in status mode.') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="temp-eta-settings-divider"><hr></div>
+
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Sound alerts') }}</h4>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_sound_enabled">{{ _('Enable sound alerts') }}</label>
+                <div class="controls">
+                    <input type="checkbox" id="temp_eta_sound_enabled"
+                           data-bind="checked: settings.plugins.temp_eta.sound_enabled, enable: settings.plugins.temp_eta.enabled">
+                    <p class="help-block">{{ _('Some browsers require a user interaction before sound can play. Use the Test button to grant permission.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">{{ _('Events') }}</label>
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.sound_target_reached, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled">
+                        {{ _('Target reached') }}
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.sound_cooldown_finished, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled">
+                        {{ _('Cooldown finished') }}
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_sound_volume">{{ _('Volume') }}</label>
+                <div class="controls">
+                    <input type="range" id="temp_eta_sound_volume" min="0" max="1" step="0.05"
+                           data-bind="value: settings.plugins.temp_eta.sound_volume, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled">
+                    <span style="margin-left: 8px;" data-bind="text: Math.round((settings.plugins.temp_eta.sound_volume() || 0) * 100) + '%'">50%</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_sound_min_interval_s">{{ _('Minimum interval (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_sound_min_interval_s"
+                           data-bind="value: settings.plugins.temp_eta.sound_min_interval_s, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled"
+                           min="0" max="300" step="1">
+                    <p class="help-block">{{ _('Rate limit to avoid repeated beeps due to small target/temperature jitter.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">{{ _('Test') }}</label>
+                <div class="controls">
+                    <button type="button" class="btn" data-bind="click: testSound, enable: settings.plugins.temp_eta.enabled">
+                        {{ _('Play test sound') }}
+                    </button>
+                    <p class="help-block" data-bind="visible: soundBlocked">{{ _('Sound is currently blocked by the browser. Click the Test button (or interact with the page) to enable audio playback.') }}</p>
+                </div>
             </div>
         </div>
 

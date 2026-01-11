@@ -2,6 +2,12 @@
 /* Author: Ajimaru */
 /* License: AGPLv3 */
 
+:root {
+    --temp-eta-color-heating: #5cb85c;
+    --temp-eta-color-cooling: #337ab7;
+    --temp-eta-color-idle: #777777;
+}
+
 #navbar_plugin_temp_eta {
     display: flex;
     flex-direction: row;
@@ -90,19 +96,37 @@
 }
 
 #navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
-    color: #337ab7;
+    color: var(--temp-eta-color-cooling, #337ab7);
 }
 
 #sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
-    color: #337ab7;
+    color: var(--temp-eta-color-cooling, #337ab7);
 }
 
 #navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
-    color: #337ab7;
+    color: var(--temp-eta-color-cooling, #337ab7);
 }
 
 #sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
-    color: #337ab7;
+    color: var(--temp-eta-color-cooling, #337ab7);
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value {
+    color: var(--temp-eta-color-heating, #5cb85c);
+    font-weight: bold;
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value {
+    color: var(--temp-eta-color-heating, #5cb85c);
+    font-weight: bold;
+}
+
+#navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i {
+    color: var(--temp-eta-color-heating, #5cb85c);
+}
+
+#sidebar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i {
+    color: var(--temp-eta-color-heating, #5cb85c);
 }
 
 #navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
@@ -251,6 +275,21 @@
     background-color: #5cb85c;
 }
 
+.temp-eta-progress .progress-bar.eta-heating,
+.temp-eta-progress .bar.eta-heating {
+    background-color: var(--temp-eta-color-heating, #5cb85c);
+}
+
+.temp-eta-progress .progress-bar.eta-cooling,
+.temp-eta-progress .bar.eta-cooling {
+    background-color: var(--temp-eta-color-cooling, #337ab7);
+}
+
+.temp-eta-progress .progress-bar.eta-idle,
+.temp-eta-progress .bar.eta-idle {
+    background-color: var(--temp-eta-color-idle, #777777);
+}
+
 #navbar_plugin_temp_eta .temp-eta-value,
 #navbar_plugin_temp_eta .temp-eta-temp {
     min-width: 48px;
@@ -302,11 +341,23 @@
 }
 
 #temp_eta_content .eta-display.eta-cooling {
-    color: #337ab7;
+    color: var(--temp-eta-color-cooling, #337ab7);
 }
 
 #temp_eta_content .eta-display.eta-normal {
     color: #5cb85c;
+}
+
+#temp_eta_content .eta-display.eta-heating {
+    color: var(--temp-eta-color-heating, #5cb85c);
+}
+
+#temp_eta_content .text-muted.eta-idle {
+    color: var(--temp-eta-color-idle, #777777);
+}
+
+#temp_eta_content .text-muted.eta-cooling {
+    color: var(--temp-eta-color-cooling, #337ab7);
 }
 
 #temp_eta_content .panel-body {
