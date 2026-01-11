@@ -26,23 +26,24 @@
   No more guessing how long until your print starts or is ready for maintenance!
 </strong>
 
-#### Heating ETA
+#### Heating
 
 <img src="assets/img/Temperature_ETA_heating.png" alt="Heating ETA" width="666" />
 
-#### Cooling ETA
+#### Cooling
 
 <img src="assets/img/Temperature_ETA_cooling.png" alt="Cooling ETA" width="666" />
 <!-- markdownlint-enable MD033-->
 
 ## Features
 
-- ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating
+- ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating or cooling
 - 🌡️ **Smart calculation algorithms**: Linear (default) and exponential models
 - 📊 **Flexible display**: Show ETA in navbar, sidebar, and/or a dedicated tab
-- 📈 **Heating progress bars** (optional): Show progress to target in the sidebar and tab views
-- 📉 **Historical temperature graphs**: A dedicated history view in the tab with a configurable time window (can be disabled)
-- 🧊 **Cool-down ETA**: Optional ETA estimates when turning heaters off (target set to 0), with two modes: threshold-based and ambient-based
+- 📈 **Progress bars** (optional): Show progress to target in the sidebar and tab views
+- 📉 **Historical temperature graphs**: A dedicated history view in the tab with a configurable time window
+- ⏳ **Heating ETA**: Estimates time remaining until target temperature is reached
+- 🧊 **Cool-down ETA**: Estimates time remaining until cool-down target is reached (target set to 0), with two modes: threshold-based and ambient-based
 - 🎛️ **Configurable thresholds**: Start countdown when within a configurable delta to target
 - 🎨 **Status colors**: Optional color bands for heating/cooling/idle states
 - 🔔 **Sound alerts** (optional): Play a sound when target is reached or cool-down finishes
@@ -50,6 +51,8 @@
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
 - 🌍 **Internationalization**: English and German included, easily extensible
+- 🧮 **Supports °C and °F** based on OctoPrint settings
+- ⚙️ **Highly configurable**: Many settings to tailor behavior and display to your needs
 - 🚀 **Lightweight**: Minimal performance impact (~2Hz monitoring)
 
 ## Installation
@@ -76,53 +79,46 @@ The `releases/latest` URL always points to the newest stable release.
 
 After installation, configure the plugin in **Settings** → **Temperature ETA**:
 
-### Basic Settings
+The settings UI is organized into multiple tabs:
 
-- **Enable Plugin**: Toggle ETA calculation on/off
-- **Heating threshold**: Begin countdown when temperature is within this delta to target (default: 5.0°C)
-- **Threshold unit**: Celsius / Fahrenheit / Follow temperature display (default: Follow temperature display)
-- **Calculation Algorithm**:
-  - **Linear** (default): Assumes constant heating rate, simple and fast
-  - **Exponential**: Accounts for thermal asymptotic behavior, more accurate
+### General
 
-### Display
+- **Enable Temperature ETA**: Master switch for the plugin
+- **Hide ETA while printing**: Optionally suppress ETA during active print jobs
+- **Show in sidebar / navbar / tab**: Independently enable the UI placements
+- **Show progress bars**: Show progress bars in sidebar and tab
+- **Show historical graph** + **Historical graph window (seconds)**: Configure the history graph in the tab
+- **Temperature display**: Use OctoPrint's preference or override it
+- **Status colors**: Configure time-based bands or fixed status colors (heating/cooling/idle)
+- **Update interval / history size**: Control frontend refresh rate and retained samples
+- **Debug logging** (optional): Enables additional log output (may be noisy)
+- **Sound alerts** (optional): Enable per-event sounds, volume, rate limit, and a test button
+- **Browser notifications** (optional): Enable per-event toasts, timeout, and rate limit
 
-- **Show in sidebar / navbar / tab**: Independently toggle UI placement
-- **Tab view layout**: The Temperature ETA tab contains **Real-time Countdown** and (optionally) **Historical graph**
-- **Show progress bars**: Toggle heating progress bars in the sidebar and tab views
-- **Show historical graph**: Toggle the historical temperature graphs in the tab view (when disabled, the **Historical graph** subtab is hidden)
-- **Historical graph window (seconds)**: Time window to display in the historical graphs
-- **Temperature display**:
-  - **Use OctoPrint appearance setting** (default)
-  - **Celsius (°C)**
-  - **Celsius + Fahrenheit (°C/°F)**
+### Heating ETA
+
+- **Enable heating ETA**: Controls whether heating ETAs are shown/calculated
+- **Heating threshold** + **Threshold unit**: Start ETA when within a configured delta to the target
+- **Calculation algorithm**: Linear (default) or exponential
 
 ### Cool-down ETA
 
-If enabled, the plugin can estimate an ETA while heaters are cooling down (target temperature is set to 0 / off). This is useful for quickly answering “how long until it reaches a safe temperature?”.
-
 - **Enable cool-down ETA**: Turn cool-down ETA on/off
 - **Mode**:
-  - **Threshold (default)**: Uses a linear fit of recent temperature history to estimate time until a configurable cool-down target is reached
-  - **Ambient**: Uses a Newton cooling model to estimate time until near ambient temperature (best-effort; depends on stable measurements)
-- **Cool-down targets**: Configure the target temperature per heater (tool0/bed/chamber)
-- **Hysteresis / fit window**: Controls when cool-down ETA appears and how much history is used
-
-### Advanced Settings
-
-- **Update Interval**: Frontend refresh rate (default: 1 second)
-- **History Size**: Number of temperature readings to keep (default: 60)
-
-### Alerts & Notifications
-
-- **Status colors**: Customize the colors used for heating/cooling/idle indicators
-- **Sound alerts** (optional): Enable per-event sounds and configure volume/rate limit
-- **Browser toast notifications** (optional): Enable per-event toasts and configure timeout/rate limit
+  - **Threshold target (default)**: Estimate time until a fixed, per-heater target is reached
+  - **Ambient-based target**: Estimate time until near ambient temperature (best-effort)
+- **Cool-down targets**: Configure per-heater targets (tool0/bed/chamber) for threshold mode
+- **Ambient temperature** (optional): Provide a fixed ambient value for ambient mode
+- **Hysteresis / fit window**: Controls when cool-down ETA disappears and how much recent data is used
 
 ### Maintenance
 
-- **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder).
-- **Restore defaults**: Resets only this plugin's settings back to defaults (does not delete history files).
+- **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder)
+- **Restore defaults**: Resets only this plugin's settings back to defaults (does not delete history files)
+
+### Help
+
+- Quick explanations for the ETA logic and algorithms
 
 <!-- markdownlint-disable MD033 -->
 
@@ -143,6 +139,7 @@ The following defaults apply to the user-editable plugin settings:
 | Setting                  | Key                               | Default     |
 | ------------------------ | --------------------------------- | ----------- |
 | Enable Temperature ETA   | `enabled`                         | `true`      |
+| Enable heating ETA       | `enable_heating_eta`              | `true`      |
 | Hide ETA while printing  | `suppress_while_printing`         | `false`     |
 | Show in sidebar          | `show_in_sidebar`                 | `true`      |
 | Show in navbar           | `show_in_navbar`                  | `true`      |
@@ -168,11 +165,11 @@ The following defaults apply to the user-editable plugin settings:
 | Sound: cool-down done    | `sound_cooldown_finished`         | `false`     |
 | Sound volume             | `sound_volume`                    | `0.5`       |
 | Sound min interval       | `sound_min_interval_s`            | `10.0 s`    |
-| Enable toast alerts      | `notification_enabled`            | `false`     |
-| Toast: target reached    | `notification_target_reached`     | `false`     |
-| Toast: cool-down done    | `notification_cooldown_finished`  | `false`     |
-| Toast timeout            | `notification_timeout_s`          | `6.0 s`     |
-| Toast min interval       | `notification_min_interval_s`     | `10.0 s`    |
+| Enable notifications     | `notification_enabled`            | `false`     |
+| Notify: target reached   | `notification_target_reached`     | `false`     |
+| Notify: cool-down done   | `notification_cooldown_finished`  | `false`     |
+| Notification timeout     | `notification_timeout_s`          | `6.0 s`     |
+| Notification min interval| `notification_min_interval_s`     | `10.0 s`    |
 
 ## How It Works
 
@@ -180,7 +177,7 @@ The following defaults apply to the user-editable plugin settings:
 2. **Rate Calculation**: Analyzes temperature history to determine heating rate (°C/second)
 3. **ETA Estimation**: Uses selected algorithm (linear/exponential) to predict time to target
 4. **Display Update**: Sends countdown to frontend via WebSocket (1Hz default)
-5. **Smart Thresholds**: Only shows ETA when heating and within configured threshold
+5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
 
 ## FAQ
 
@@ -210,7 +207,8 @@ Contributions welcome! Please:
 5. For local development scripts (setup, restart helper, post-commit build hook), see [.development/README.md](.development/README.md).
 6. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 7. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
-   Note: `main` is protected on GitHub, so changes go through PRs.
+
+Note: `main` is protected on GitHub, so changes go through PRs.
 
 ## License
 
@@ -221,7 +219,7 @@ AGPLv3 - See [LICENSE](LICENSE) for details.
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
 - 💬 **Discussion**: [OctoPrint Community Forum](https://community.octoprint.org/)
 
-For logs and troubleshooting, enable "debug logging" in the plugin settings.
+Note: For logs and troubleshooting, enable "debug logging" in the plugin settings.
 
 ## Credits
 

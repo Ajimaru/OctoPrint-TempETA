@@ -100,6 +100,7 @@ def plugin() -> TempETAPlugin:
     p_any._settings = DummySettings(
         {
             "enabled": True,
+            "enable_heating_eta": True,
             "suppress_while_printing": False,
             "threshold_start": 5.0,
             "update_interval": 0.0,
@@ -122,6 +123,7 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
     defaults = plugin.get_settings_defaults()
 
     assert defaults["enabled"] is True
+    assert defaults["enable_heating_eta"] is True
     assert defaults["threshold_start"] == 5.0
     assert defaults["algorithm"] in ("linear", "exponential")
     assert defaults["update_interval"] == 1.0
