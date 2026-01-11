@@ -1126,6 +1126,34 @@ $(function () {
         return;
       }
 
+      var svg = document.getElementById("temp_eta_graph_" + heaterObj.name);
+      if (!svg) {
+        return;
+      }
+
+      // Keep text legible under wide layouts by avoiding non-uniform scaling.
+      // We dynamically adjust the viewBox width to match the viewport aspect ratio.
+      var vbH = 40;
+      var vbW = 100;
+      try {
+        var rect = svg.getBoundingClientRect();
+        var wPx = rect && rect.width ? rect.width : 0;
+        var hPx = rect && rect.height ? rect.height : 0;
+        if (wPx > 0 && hPx > 0) {
+          vbW = vbH * (wPx / hPx);
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // Clamp for sanity: below 100 the labels start to collide.
+      vbW = Math.max(100, Math.min(400, vbW));
+      svg.setAttribute(
+        "viewBox",
+        "0 0 " + vbW.toFixed(2).replace(/\.00$/, "") + " " + vbH,
+      );
+      svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+
       var poly = document.getElementById(
         "temp_eta_graph_actual_" + heaterObj.name,
       );
@@ -1142,15 +1170,29 @@ $(function () {
         return;
       }
 
-      // ViewBox: 0..100 (x), 0..40 (y)
-      var vbW = 100;
-      var vbH = 40;
+      // ViewBox: 0..vbW (x), 0..40 (y)
       var plotLeft = 12;
-      var plotRight = 99;
+      var plotRight = vbW - 1;
       var plotTop = 2;
       var plotBottom = 30;
       var plotW = plotRight - plotLeft;
       var plotH = plotBottom - plotTop;
+
+      // Update static axes geometry to match the dynamic viewBox width.
+      var axisY = svg.querySelector(".temp-eta-graph-axis-y");
+      if (axisY) {
+        axisY.setAttribute("x1", String(plotLeft));
+        axisY.setAttribute("x2", String(plotLeft));
+        axisY.setAttribute("y1", String(plotTop));
+        axisY.setAttribute("y2", String(plotBottom));
+      }
+      var axisX = svg.querySelector(".temp-eta-graph-axis-x");
+      if (axisX) {
+        axisX.setAttribute("x1", String(plotLeft));
+        axisX.setAttribute("x2", String(plotRight));
+        axisX.setAttribute("y1", String(plotBottom));
+        axisX.setAttribute("y2", String(plotBottom));
+      }
 
       var windowSec = self.getHistoricalGraphWindowSeconds();
       var nowSec = hist[hist.length - 1].t;
@@ -1236,6 +1278,8 @@ $(function () {
       );
       if (unitX) {
         unitX.textContent = "mm:ss";
+        unitX.setAttribute("x", String(plotRight));
+        unitX.setAttribute("y", String(plotBottom + 4));
       }
 
       var tickYMax = document.getElementById(
@@ -1266,6 +1310,14 @@ $(function () {
         labelYMid &&
         labelYMin
       ) {
+        var tickX1 = plotLeft - 1.5;
+        tickYMax.setAttribute("x1", tickX1.toFixed(2));
+        tickYMax.setAttribute("x2", String(plotLeft));
+        tickYMid.setAttribute("x1", tickX1.toFixed(2));
+        tickYMid.setAttribute("x2", String(plotLeft));
+        tickYMin.setAttribute("x1", tickX1.toFixed(2));
+        tickYMin.setAttribute("x2", String(plotLeft));
+
         var yTickMaxPos = yForTemp(yMax);
         var yTickMidPos = yForTemp(yMid);
         var yTickMinPos = yForTemp(yMin);
@@ -1300,6 +1352,10 @@ $(function () {
         labelXLeft.textContent = "-" + self._formatAxisTime(windowSec);
         labelXMid.textContent = "-" + self._formatAxisTime(windowSec / 2.0);
         labelXRight.textContent = "0:00";
+
+        labelXLeft.setAttribute("x", String(plotLeft));
+        labelXMid.setAttribute("x", (plotLeft + plotW / 2.0).toFixed(2));
+        labelXRight.setAttribute("x", String(plotRight));
       }
     };
 

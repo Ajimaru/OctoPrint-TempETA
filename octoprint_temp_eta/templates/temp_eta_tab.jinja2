@@ -98,14 +98,14 @@
                         </div>
                         <div class="panel-body">
                             <div class="temp-eta-graph" data-bind="visible: $parent.isHistoricalGraphVisible($data)">
-                                <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="{{ _('Historical graph') }}"
+                                <svg class="temp-eta-graph-svg" viewBox="0 0 100 40" preserveAspectRatio="xMinYMin meet" aria-label="{{ _('Historical graph') }}"
                                      data-bind="attr: { id: 'temp_eta_graph_' + name }">
                                     <g class="temp-eta-graph-axes">
                                         <text class="temp-eta-graph-label temp-eta-graph-unit" x="99" y="34" text-anchor="end" dominant-baseline="alphabetic"
                                             data-bind="attr: { id: 'temp_eta_graph_unit_x_' + name }"></text>
 
-                                        <line class="temp-eta-graph-axis" x1="12" y1="2" x2="12" y2="30"></line>
-                                        <line class="temp-eta-graph-axis" x1="12" y1="30" x2="99" y2="30"></line>
+                                        <line class="temp-eta-graph-axis temp-eta-graph-axis-y" x1="12" y1="2" x2="12" y2="30"></line>
+                                        <line class="temp-eta-graph-axis temp-eta-graph-axis-x" x1="12" y1="30" x2="99" y2="30"></line>
 
                                         <line class="temp-eta-graph-axis-tick" x1="10.5" y1="2" x2="12" y2="2"
                                               data-bind="attr: { id: 'temp_eta_graph_tick_ymax_' + name }"></line>
