@@ -1222,7 +1222,9 @@ $(function () {
       }
 
       // Only show if we have at least a couple of points recorded.
-      if (!heater._history || heater._history.length < 2) {
+      var hist = heater._history || [];
+      var start = heater._historyStart || 0;
+      if (hist.length - start < 2) {
         return false;
       }
 
@@ -1238,9 +1240,14 @@ $(function () {
         heaterObj._history = [];
       }
 
+      if (!heaterObj._historyStart) {
+        heaterObj._historyStart = 0;
+      }
+
       // Only record when the feature is enabled.
       if (!self.isHistoricalGraphEnabled()) {
         heaterObj._history = [];
+        heaterObj._historyStart = 0;
         return;
       }
 
@@ -1253,14 +1260,103 @@ $(function () {
       // Prune to configured window (keep a small margin).
       var windowSec = self.getHistoricalGraphWindowSeconds();
       var cutoff = tsSec - windowSec - 5;
-      while (heaterObj._history.length && heaterObj._history[0].t < cutoff) {
-        heaterObj._history.shift();
+
+      // Avoid O(n) shift() in a hot path by keeping a moving start index.
+      var hist = heaterObj._history;
+      var start = heaterObj._historyStart || 0;
+      while (start < hist.length && hist[start].t < cutoff) {
+        start++;
+      }
+
+      // Compact occasionally to keep memory bounded.
+      if (start > 0 && (start > 200 || start > hist.length / 2)) {
+        heaterObj._history = hist.slice(start);
+        heaterObj._historyStart = 0;
+      } else {
+        heaterObj._historyStart = start;
       }
 
       // Hard cap as a safety net (shouldn't be hit in normal operation).
-      if (heaterObj._history.length > 5000) {
+      var activeLen = heaterObj._history.length - (heaterObj._historyStart || 0);
+      if (activeLen > 5000) {
         heaterObj._history = heaterObj._history.slice(-5000);
+        heaterObj._historyStart = 0;
       }
+    };
+
+    self._getGraphElements = function (heaterName) {
+      if (!heaterName) {
+        return null;
+      }
+
+      if (!self._graphElementCache) {
+        self._graphElementCache = {};
+      }
+
+      function isConnected(el) {
+        if (!el) return false;
+        if (typeof el.isConnected === "boolean") return el.isConnected;
+        return document.documentElement.contains(el);
+      }
+
+      var cached = self._graphElementCache[heaterName] || null;
+      if (cached && isConnected(cached.svg) && isConnected(cached.poly)) {
+        return cached;
+      }
+
+      var svg = document.getElementById("temp_eta_graph_" + heaterName);
+      if (!svg) {
+        self._graphElementCache[heaterName] = null;
+        return null;
+      }
+
+      var poly = document.getElementById("temp_eta_graph_actual_" + heaterName);
+      var targetLine = document.getElementById(
+        "temp_eta_graph_target_" + heaterName
+      );
+      if (!poly || !targetLine) {
+        self._graphElementCache[heaterName] = null;
+        return null;
+      }
+
+      cached = {
+        svg: svg,
+        poly: poly,
+        targetLine: targetLine,
+        axisY: svg.querySelector(".temp-eta-graph-axis-y"),
+        axisX: svg.querySelector(".temp-eta-graph-axis-x"),
+        unitX: document.getElementById("temp_eta_graph_unit_x_" + heaterName),
+        tickYMax: document.getElementById(
+          "temp_eta_graph_tick_ymax_" + heaterName
+        ),
+        tickYMid: document.getElementById(
+          "temp_eta_graph_tick_ymid_" + heaterName
+        ),
+        tickYMin: document.getElementById(
+          "temp_eta_graph_tick_ymin_" + heaterName
+        ),
+        labelYMax: document.getElementById(
+          "temp_eta_graph_label_ymax_" + heaterName
+        ),
+        labelYMid: document.getElementById(
+          "temp_eta_graph_label_ymid_" + heaterName
+        ),
+        labelYMin: document.getElementById(
+          "temp_eta_graph_label_ymin_" + heaterName
+        ),
+        labelXLeft: document.getElementById(
+          "temp_eta_graph_label_xleft_" + heaterName
+        ),
+        labelXMid: document.getElementById(
+          "temp_eta_graph_label_xmid_" + heaterName
+        ),
+        labelXRight: document.getElementById(
+          "temp_eta_graph_label_xright_" + heaterName
+        ),
+      };
+
+      self._graphElementCache[heaterName] = cached;
+      return cached;
     };
 
     self._formatAxisTime = function (seconds) {
@@ -1321,10 +1417,12 @@ $(function () {
         return;
       }
 
-      var svg = document.getElementById("temp_eta_graph_" + heaterObj.name);
-      if (!svg) {
+      var els = self._getGraphElements(heaterObj.name);
+      if (!els) {
         return;
       }
+
+      var svg = els.svg;
 
       // Keep text legible under wide layouts by avoiding non-uniform scaling.
       // We dynamically adjust the viewBox width to match the viewport aspect ratio.
@@ -1332,8 +1430,8 @@ $(function () {
       var vbW = 100;
       try {
         var rect = svg.getBoundingClientRect();
-        var wPx = rect && rect.width ? rect.width : 0;
-        var hPx = rect && rect.height ? rect.height : 0;
+        var wPx = svg.clientWidth || (rect && rect.width ? rect.width : 0);
+        var hPx = svg.clientHeight || (rect && rect.height ? rect.height : 0);
         if (wPx > 0 && hPx > 0) {
           vbW = vbH * (wPx / hPx);
         }
@@ -1343,24 +1441,22 @@ $(function () {
 
       // Clamp for sanity: below 100 the labels start to collide.
       vbW = Math.max(100, Math.min(400, vbW));
-      svg.setAttribute(
-        "viewBox",
-        "0 0 " + vbW.toFixed(2).replace(/\.00$/, "") + " " + vbH,
-      );
-      svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
-      var poly = document.getElementById(
-        "temp_eta_graph_actual_" + heaterObj.name,
-      );
-      var targetLine = document.getElementById(
-        "temp_eta_graph_target_" + heaterObj.name,
-      );
-      if (!poly || !targetLine) {
-        return;
+      if (heaterObj._lastGraphViewBoxW !== vbW) {
+        heaterObj._lastGraphViewBoxW = vbW;
+        svg.setAttribute(
+          "viewBox",
+          "0 0 " + vbW.toFixed(2).replace(/\.00$/, "") + " " + vbH
+        );
+        svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
       }
 
+      var poly = els.poly;
+      var targetLine = els.targetLine;
+
       var hist = heaterObj._history || [];
-      if (hist.length < 2) {
+      var histStart = heaterObj._historyStart || 0;
+      if (hist.length - histStart < 2) {
         poly.setAttribute("points", "");
         return;
       }
@@ -1374,14 +1470,14 @@ $(function () {
       var plotH = plotBottom - plotTop;
 
       // Update static axes geometry to match the dynamic viewBox width.
-      var axisY = svg.querySelector(".temp-eta-graph-axis-y");
+      var axisY = els.axisY;
       if (axisY) {
         axisY.setAttribute("x1", String(plotLeft));
         axisY.setAttribute("x2", String(plotLeft));
         axisY.setAttribute("y1", String(plotTop));
         axisY.setAttribute("y2", String(plotBottom));
       }
-      var axisX = svg.querySelector(".temp-eta-graph-axis-x");
+      var axisX = els.axisX;
       if (axisX) {
         axisX.setAttribute("x1", String(plotLeft));
         axisX.setAttribute("x2", String(plotRight));
@@ -1393,12 +1489,17 @@ $(function () {
       var nowSec = hist[hist.length - 1].t;
       var minT = nowSec - windowSec;
 
+      // Only consider points in the current window.
+      var idxStart = histStart;
+      while (idxStart < hist.length && hist[idxStart].t < minT) {
+        idxStart++;
+      }
+
       // Determine min/max for scaling.
       var minTemp = Infinity;
       var maxTemp = -Infinity;
-      for (var i = 0; i < hist.length; i++) {
+      for (var i = idxStart; i < hist.length; i++) {
         var p = hist[i];
-        if (p.t < minT) continue;
         if (p.a < minTemp) minTemp = p.a;
         if (p.a > maxTemp) maxTemp = p.a;
         if (isFinite(p.tg) && p.tg > 0) {
@@ -1439,13 +1540,26 @@ $(function () {
       }
 
       var points = [];
-      for (var j = 0; j < hist.length; j++) {
+      var count = hist.length - idxStart;
+      var maxPoints = 250;
+      var step = count > maxPoints ? Math.ceil(count / maxPoints) : 1;
+      var lastIncludedIndex = -1;
+
+      for (var j = idxStart; j < hist.length; j += step) {
         var h = hist[j];
-        if (h.t < minT) continue;
 
         var x = xForTime(h.t);
         var y = yForTemp(h.a);
         points.push(x.toFixed(2) + "," + y.toFixed(2));
+        lastIncludedIndex = j;
+      }
+
+      // Always include the most recent point to keep the graph "alive".
+      if (hist.length > idxStart && lastIncludedIndex !== hist.length - 1) {
+        var last = hist[hist.length - 1];
+        points.push(
+          xForTime(last.t).toFixed(2) + "," + yForTemp(last.a).toFixed(2)
+        );
       }
 
       poly.setAttribute("points", points.join(" "));
@@ -1468,34 +1582,20 @@ $(function () {
       var yMax = maxTemp;
       var yMid = (yMin + yMax) / 2.0;
 
-      var unitX = document.getElementById(
-        "temp_eta_graph_unit_x_" + heaterObj.name,
-      );
+      var unitX = els.unitX;
       if (unitX) {
         unitX.textContent = "mm:ss";
         unitX.setAttribute("x", String(plotRight));
         unitX.setAttribute("y", String(plotBottom + 4));
       }
 
-      var tickYMax = document.getElementById(
-        "temp_eta_graph_tick_ymax_" + heaterObj.name,
-      );
-      var tickYMid = document.getElementById(
-        "temp_eta_graph_tick_ymid_" + heaterObj.name,
-      );
-      var tickYMin = document.getElementById(
-        "temp_eta_graph_tick_ymin_" + heaterObj.name,
-      );
+      var tickYMax = els.tickYMax;
+      var tickYMid = els.tickYMid;
+      var tickYMin = els.tickYMin;
 
-      var labelYMax = document.getElementById(
-        "temp_eta_graph_label_ymax_" + heaterObj.name,
-      );
-      var labelYMid = document.getElementById(
-        "temp_eta_graph_label_ymid_" + heaterObj.name,
-      );
-      var labelYMin = document.getElementById(
-        "temp_eta_graph_label_ymin_" + heaterObj.name,
-      );
+      var labelYMax = els.labelYMax;
+      var labelYMid = els.labelYMid;
+      var labelYMin = els.labelYMin;
 
       if (
         tickYMax &&
@@ -1534,15 +1634,9 @@ $(function () {
       }
 
       // X labels are relative time within the window.
-      var labelXLeft = document.getElementById(
-        "temp_eta_graph_label_xleft_" + heaterObj.name,
-      );
-      var labelXMid = document.getElementById(
-        "temp_eta_graph_label_xmid_" + heaterObj.name,
-      );
-      var labelXRight = document.getElementById(
-        "temp_eta_graph_label_xright_" + heaterObj.name,
-      );
+      var labelXLeft = els.labelXLeft;
+      var labelXMid = els.labelXMid;
+      var labelXRight = els.labelXRight;
       if (labelXLeft && labelXMid && labelXRight) {
         labelXLeft.textContent = "-" + self._formatAxisTime(windowSec);
         labelXMid.textContent = "-" + self._formatAxisTime(windowSec / 2.0);
@@ -1811,16 +1905,38 @@ $(function () {
           ? parseFloat(heaterObj.target())
           : NaN;
 
-        // Update heater data
-        heaterObj.eta(eta);
-        heaterObj.etaKind(etaKind);
-        heaterObj.actual(data.actual);
-        heaterObj.target(data.target);
-        heaterObj.cooldownTarget(
+        var prevCooldown = heaterObj.cooldownTarget
+          ? heaterObj.cooldownTarget()
+          : null;
+
+        // Update heater data (avoid redundant KO notifications).
+        if (prevEta !== eta) {
+          heaterObj.eta(eta);
+        }
+        if (prevEtaKind !== etaKind) {
+          heaterObj.etaKind(etaKind);
+        }
+        if (heaterObj.actual() !== data.actual) {
+          heaterObj.actual(data.actual);
+        }
+        if (heaterObj.target() !== data.target) {
+          heaterObj.target(data.target);
+        }
+
+        var normalizedCooldown =
           cooldownTarget !== null && isFinite(cooldownTarget)
             ? cooldownTarget
-            : null,
-        );
+            : null;
+        if (
+          prevCooldown !== normalizedCooldown &&
+          !(
+            isFinite(prevCooldown) &&
+            isFinite(normalizedCooldown) &&
+            Math.abs(prevCooldown - normalizedCooldown) < 1e-9
+          )
+        ) {
+          heaterObj.cooldownTarget(normalizedCooldown);
+        }
 
         // Track start temperature for progress bars.
         // We reset this when a new target is set (or the target changes), so
@@ -1933,11 +2049,12 @@ $(function () {
         }
 
         // Record and render history graph (tab view).
+        var tsSec = Date.now() / 1000.0;
         self._recordHeaterHistory(
           heaterObj,
-          Date.now() / 1000.0,
+          tsSec,
           actualNow,
-          targetNow,
+          targetNow
         );
         self._renderHistoricalGraph(heaterObj);
 
