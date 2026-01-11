@@ -566,6 +566,43 @@ $(function () {
       }
     };
 
+    self._getStaticSoundUrl = function (fileName) {
+      // Prefer OctoPrint's helper if available; fall back to a relative URL.
+      // Static files are served from /plugin/<identifier>/static/...
+      try {
+        if (window.OctoPrint && typeof OctoPrint.getBlueprintUrl === "function") {
+          var base = OctoPrint.getBlueprintUrl("temp_eta");
+          if (base && base.charAt(base.length - 1) !== "/") {
+            base += "/";
+          }
+          return base + "static/sounds/" + encodeURIComponent(fileName);
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      return "/plugin/temp_eta/static/sounds/" + encodeURIComponent(fileName);
+    };
+
+    self._playSoundFile = function (fileName) {
+      // HTMLAudio playback. This may be blocked by autoplay policies.
+      try {
+        var url = self._getStaticSoundUrl(fileName);
+        var a = new Audio(url);
+        a.volume = self._getSoundVolume();
+        var p = a.play();
+        if (p && typeof p.catch === "function") {
+          p.catch(function () {
+            self.soundBlocked(true);
+            // Fallback to WebAudio beep (still may require interaction).
+            self._playBeep({});
+          });
+        }
+      } catch (e) {
+        self._playBeep({});
+      }
+    };
+
     self._playBeep = function (opts) {
       var options = opts || {};
       var force = !!options.force;
@@ -645,13 +682,28 @@ $(function () {
         return;
       }
       self._soundLastPlayedByKey[k] = nowMs;
+
+      if (eventKey === "target_reached") {
+        self._playSoundFile("heating_done.wav");
+        return;
+      }
+      if (eventKey === "cooldown_finished") {
+        self._playSoundFile("cooling_done.wav");
+        return;
+      }
+
       self._playBeep({});
     };
 
     self.testSound = function () {
       // The test button should work regardless of master enable state to help
       // browsers unlock audio playback on user interaction.
-      self._playBeep({ force: true });
+      try {
+        self.soundBlocked(false);
+      } catch (e) {}
+
+      // Try the file-based sound first; it will fall back to WebAudio.
+      self._playSoundFile("heating_done.wav");
     };
 
     function readKoBool(value, defaultValue) {
