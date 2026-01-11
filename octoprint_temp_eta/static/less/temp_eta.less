@@ -6,6 +6,10 @@
     --temp-eta-color-heating: #5cb85c;
     --temp-eta-color-cooling: #337ab7;
     --temp-eta-color-idle: #777777;
+
+    /* Graph colors (overrideable by themes) */
+    --temp-eta-graph-bg: rgba(0, 0, 0, 0.03);
+    --temp-eta-graph-fg: currentColor;
 }
 
 #navbar_plugin_temp_eta {
@@ -217,8 +221,11 @@
     width: 100%;
     height: 60px;
     display: block;
-    background: rgba(0, 0, 0, 0.03);
+    /* Use a subtle overlay that can be overridden by themes */
+    background: var(--temp-eta-graph-bg);
     border-radius: 3px;
+    /* Enable currentColor-based SVG styling */
+    color: var(--temp-eta-graph-fg);
 }
 
 #temp_eta_content .temp-eta-subtab-history .temp-eta-graph-svg {
@@ -227,13 +234,15 @@
 
 #temp_eta_content .temp-eta-graph-axis,
 #temp_eta_content .temp-eta-graph-axis-tick {
-    stroke: rgba(0, 0, 0, 0.28);
+    stroke: currentColor;
+    stroke-opacity: 0.28;
     stroke-width: 0.7;
     vector-effect: non-scaling-stroke;
 }
 
 #temp_eta_content .temp-eta-graph-label {
-    fill: rgba(0, 0, 0, 0.55);
+    fill: currentColor;
+    fill-opacity: 0.55;
     font-size: 4px;
     vector-effect: non-scaling-stroke;
 }
@@ -248,10 +257,17 @@
 }
 
 #temp_eta_content .temp-eta-graph-target {
-    stroke: rgba(0, 0, 0, 0.25);
+    stroke: currentColor;
+    stroke-opacity: 0.25;
     stroke-width: 1;
     stroke-dasharray: 2 2;
     vector-effect: non-scaling-stroke;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --temp-eta-graph-bg: rgba(255, 255, 255, 0.06);
+    }
 }
 
 .temp-eta-progress .progress-bar,
