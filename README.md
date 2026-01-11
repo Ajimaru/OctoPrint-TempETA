@@ -80,11 +80,13 @@ The `releases/latest` URL always points to the newest stable release.
 After installation, configure the plugin in **Settings** → **Temperature ETA**:
 
 <!-- markdownlint-disable MD033 -->
+
 <img
   src="assets/img/Temperature_ETA_settings.png"
   alt="Temperature ETA settings"
   width="666"
 />
+
 <!-- markdownlint-enable MD033 -->
 
 The settings UI is organized into multiple tabs:

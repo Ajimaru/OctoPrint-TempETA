@@ -84,7 +84,12 @@ class DummyPrinterProfileManager:
 
 
 class DummyPrinter:
-    def __init__(self, printing: bool = False, paused: bool = False, state_id: str = "OPERATIONAL") -> None:
+    def __init__(
+        self,
+        printing: bool = False,
+        paused: bool = False,
+        state_id: str = "OPERATIONAL",
+    ) -> None:
         self._printing = printing
         self._paused = paused
         self._state_id = state_id
@@ -240,7 +245,9 @@ def test_debug_log_settings_snapshot_logs_and_throttles(plugin: TempETAPlugin) -
     assert logged == []
 
 
-def test_debug_log_settings_snapshot_handles_settings_exception(plugin: TempETAPlugin) -> None:
+def test_debug_log_settings_snapshot_handles_settings_exception(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
 
     class _RaisingSettings:
@@ -263,13 +270,17 @@ def test_debug_log_settings_snapshot_handles_settings_exception(plugin: TempETAP
     assert plugin_any._last_settings_snapshot_log_time == 100.0
 
 
-def test_is_print_job_active_returns_false_when_printer_missing(plugin: TempETAPlugin) -> None:
+def test_is_print_job_active_returns_false_when_printer_missing(
+    plugin: TempETAPlugin,
+) -> None:
     p_any = cast(Any, plugin)
     p_any._printer = None
     assert plugin._is_print_job_active() is False
 
 
-def test_debug_log_throttled_respects_interval(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_debug_log_throttled_respects_interval(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     p_any = cast(Any, plugin)
     p_any._debug_logging_enabled = True
     p_any._last_debug_log_time = -1e9
@@ -283,13 +294,17 @@ def test_debug_log_throttled_respects_interval(monkeypatch: pytest.MonkeyPatch, 
     assert calls == ["hello", "hello"]
 
 
-def test_suppress_while_printing_enabled_defaults_true_without_settings(plugin: TempETAPlugin) -> None:
+def test_suppress_while_printing_enabled_defaults_true_without_settings(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
     plugin_any._settings = None
     assert plugin._suppress_while_printing_enabled() is True
 
 
-def test_suppress_while_printing_enabled_returns_true_on_settings_error(plugin: TempETAPlugin) -> None:
+def test_suppress_while_printing_enabled_returns_true_on_settings_error(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
 
     class _BadSettings:
@@ -300,7 +315,9 @@ def test_suppress_while_printing_enabled_returns_true_on_settings_error(plugin: 
     assert plugin._suppress_while_printing_enabled() is True
 
 
-def test_is_print_job_active_returns_false_when_printer_methods_raise(plugin: TempETAPlugin) -> None:
+def test_is_print_job_active_returns_false_when_printer_methods_raise(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
 
     class _BadPrinter:
@@ -317,7 +334,9 @@ def test_is_print_job_active_returns_false_when_printer_methods_raise(plugin: Te
     assert plugin._is_print_job_active() is False
 
 
-def test_refresh_debug_logging_flag_handles_settings_error(plugin: TempETAPlugin) -> None:
+def test_refresh_debug_logging_flag_handles_settings_error(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
 
     class _BadSettings:
@@ -351,11 +370,15 @@ def test_is_print_job_active_checks_paused_and_state_id(plugin: TempETAPlugin) -
     plugin_any._printer = DummyPrinter(printing=False, paused=False, state_id="PAUSING")
     assert plugin._is_print_job_active() is True
 
-    plugin_any._printer = DummyPrinter(printing=False, paused=False, state_id="OPERATIONAL")
+    plugin_any._printer = DummyPrinter(
+        printing=False, paused=False, state_id="OPERATIONAL"
+    )
     assert plugin._is_print_job_active() is False
 
 
-def test_get_current_profile_id_returns_default_on_exception(plugin: TempETAPlugin) -> None:
+def test_get_current_profile_id_returns_default_on_exception(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
 
     class _BadProfileMgr:
@@ -379,7 +402,9 @@ def test_read_history_maxlen_setting_sanitizes(plugin: TempETAPlugin) -> None:
     assert plugin._read_history_maxlen_setting() == 42
 
 
-def test_read_history_maxlen_setting_uses_default_on_settings_error(plugin: TempETAPlugin) -> None:
+def test_read_history_maxlen_setting_uses_default_on_settings_error(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
     default_size = int(plugin_any._default_history_size)
 
@@ -409,7 +434,9 @@ def test_set_history_maxlen_rebuilds_and_marks_dirty(plugin: TempETAPlugin) -> N
     assert plugin_any._history_dirty is True
 
 
-def test_read_history_maxlen_setting_returns_default_without_settings(plugin: TempETAPlugin) -> None:
+def test_read_history_maxlen_setting_returns_default_without_settings(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
     default_size = int(plugin_any._default_history_size)
     plugin_any._settings = None
@@ -550,7 +577,11 @@ def test_switch_active_profile_non_forced_clears_live_history_and_sends_clear(
     assert plugin._temp_history == {}
     assert any("Cleared live (RAM) history" in m for m in logs)
 
-    cleared = [m["payload"].get("heater") for m in pm.messages if m["payload"].get("eta") is None]
+    cleared = [
+        m["payload"].get("heater")
+        for m in pm.messages
+        if m["payload"].get("eta") is None
+    ]
     assert set(cleared) >= {"tool0", "bed"}
 
 
@@ -647,7 +678,9 @@ def test_calculate_cooldown_linear_eta_paths(
     plugin_any._settings.set(["cooldown_fit_window_seconds"], 120)
 
     # Happy path: negative slope.
-    plugin_any._cooldown_history["tool0"] = deque([(90.0, 60.0), (100.0, 50.0)], maxlen=60)
+    plugin_any._cooldown_history["tool0"] = deque(
+        [(90.0, 60.0), (100.0, 50.0)], maxlen=60
+    )
     eta = plugin._calculate_cooldown_linear_eta("tool0", goal_c=40.0)
     assert eta is not None
     assert abs(eta - 10.0) < 1e-6
@@ -664,7 +697,9 @@ def test_calculate_cooldown_linear_eta_paths(
     logged.clear()
     _set_time(monkeypatch, 200.0)
     plugin_any._settings.set(["cooldown_fit_window_seconds"], 120)
-    plugin_any._cooldown_history["tool0"] = deque([(90.0, 50.0), (100.0, 55.0)], maxlen=60)
+    plugin_any._cooldown_history["tool0"] = deque(
+        [(90.0, 50.0), (100.0, 55.0)], maxlen=60
+    )
     assert plugin._calculate_cooldown_linear_eta("tool0", goal_c=40.0) is None
     assert logged
 
@@ -693,7 +728,9 @@ def test_calculate_cooldown_eta_seconds_ambient_mode_calls_exponential(
     assert called
 
 
-def test_reset_user_settings_to_defaults_returns_when_no_settings(plugin: TempETAPlugin) -> None:
+def test_reset_user_settings_to_defaults_returns_when_no_settings(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
     plugin_any._settings = None
     plugin._reset_user_settings_to_defaults()
@@ -757,7 +794,9 @@ def test_template_configs_and_autoescape(plugin: TempETAPlugin) -> None:
     }
 
 
-def test_settings_helpers_default_and_exception_paths(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_settings_helpers_default_and_exception_paths(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     p_any = cast(Any, plugin)
 
     # No settings attached: return safe defaults.
@@ -797,7 +836,9 @@ def test_settings_helpers_default_and_exception_paths(monkeypatch: pytest.Monkey
     assert plugin._cooldown_fit_window_seconds() == 120.0
 
 
-def test_load_profile_history_invalid_json_and_shape(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_load_profile_history_invalid_json_and_shape(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     _set_plugin_data_folder(plugin, tmp_path)
     plugin._persist_max_age_seconds = 10.0
     _set_time(monkeypatch, 100.0)
@@ -807,11 +848,15 @@ def test_load_profile_history_invalid_json_and_shape(monkeypatch: pytest.MonkeyP
     assert plugin._load_profile_history("default") == {}
 
     # Wrong top-level shape should be ignored.
-    (tmp_path / "history_default.json").write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+    (tmp_path / "history_default.json").write_text(
+        json.dumps([1, 2, 3]), encoding="utf-8"
+    )
     assert plugin._load_profile_history("default") == {}
 
     # samples not a dict -> ignored.
-    (tmp_path / "history_default.json").write_text(json.dumps({"samples": [1, 2, 3]}), encoding="utf-8")
+    (tmp_path / "history_default.json").write_text(
+        json.dumps({"samples": [1, 2, 3]}), encoding="utf-8"
+    )
     assert plugin._load_profile_history("default") == {}
 
 
@@ -867,7 +912,11 @@ def test_on_settings_save_toggles_debug_updates_history_and_handles_non_dict_sav
         settings.set(["history_size"], 50)
         return "ok"
 
-    monkeypatch.setattr(octoprint_temp_eta.octoprint.plugin.SettingsPlugin, "on_settings_save", _fake_save)
+    monkeypatch.setattr(
+        octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
+        "on_settings_save",
+        _fake_save,
+    )
     result = plugin.on_settings_save({"enabled": False})
 
     assert result == {}
@@ -876,7 +925,10 @@ def test_on_settings_save_toggles_debug_updates_history_and_handles_non_dict_sav
     assert plugin._temp_history["tool0"].maxlen == 50
 
     pm = cast(DummyPluginManager, p_any._plugin_manager)
-    assert any(m["payload"].get("type") == "eta_update" and m["payload"].get("eta") is None for m in pm.messages)
+    assert any(
+        m["payload"].get("type") == "eta_update" and m["payload"].get("eta") is None
+        for m in pm.messages
+    )
 
 
 def test_on_printer_add_temperature_records_sample_and_triggers_update(
@@ -996,14 +1048,20 @@ def test_on_printer_add_temperature_skips_when_holding_or_below_threshold(
     # remaining <= epsilon_hold (0.2) => no history record.
     plugin.on_printer_add_temperature({"tool0": {"actual": 39.9, "target": 40.0}})
     assert calls
-    assert "tool0" not in plugin_any._temp_history or len(plugin_any._temp_history["tool0"]) == 0
+    assert (
+        "tool0" not in plugin_any._temp_history
+        or len(plugin_any._temp_history["tool0"]) == 0
+    )
     assert plugin_any._history_dirty is False
 
     calls.clear()
     # remaining < threshold => no history record.
     plugin.on_printer_add_temperature({"tool0": {"actual": 37.0, "target": 40.0}})
     assert calls
-    assert "tool0" not in plugin_any._temp_history or len(plugin_any._temp_history["tool0"]) == 0
+    assert (
+        "tool0" not in plugin_any._temp_history
+        or len(plugin_any._temp_history["tool0"]) == 0
+    )
     assert plugin_any._history_dirty is False
 
 
@@ -1097,7 +1155,9 @@ def test_on_printer_add_temperature_respects_update_interval(
     assert called == []
 
 
-def test_calculate_and_broadcast_eta_skips_non_dict_and_unsupported(plugin: TempETAPlugin) -> None:
+def test_calculate_and_broadcast_eta_skips_non_dict_and_unsupported(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
 
     plugin_any._plugin_manager.messages.clear()
@@ -1121,7 +1181,9 @@ def test_calculate_and_broadcast_eta_skips_non_dict_and_unsupported(plugin: Temp
     assert last["heater"] == "bed"
 
 
-def test_calculate_and_broadcast_eta_auto_creates_history_for_new_heater(plugin: TempETAPlugin) -> None:
+def test_calculate_and_broadcast_eta_auto_creates_history_for_new_heater(
+    plugin: TempETAPlugin,
+) -> None:
     plugin_any = cast(Any, plugin)
     plugin_any._plugin_manager.messages.clear()
 
@@ -1143,9 +1205,9 @@ def test_calculate_and_broadcast_eta_cooldown_threshold_skips_when_below_hystere
     plugin_any._settings.set(["cooldown_target_tool0"], 50.0)
 
     # If called, the test should fail.
-    plugin_any._calculate_cooldown_eta_seconds = lambda *args, **kwargs: (_ for _ in ()).throw(
-        AssertionError("should not compute cooldown eta")
-    )
+    plugin_any._calculate_cooldown_eta_seconds = lambda *args, **kwargs: (
+        _ for _ in ()
+    ).throw(AssertionError("should not compute cooldown eta"))
 
     plugin_any._plugin_manager.messages.clear()
     plugin._calculate_and_broadcast_eta(
@@ -1197,7 +1259,9 @@ def test_calculate_and_broadcast_eta_cooldown_threshold_under_one_second_logs_in
     plugin_any._settings.set(["cooldown_target_tool0"], 40.0)
 
     debug_calls: List[Any] = []
-    plugin_any._debug_log_throttled = lambda *args, **kwargs: debug_calls.append((args, kwargs))
+    plugin_any._debug_log_throttled = lambda *args, **kwargs: debug_calls.append(
+        (args, kwargs)
+    )
 
     plugin_any._calculate_cooldown_eta_seconds = lambda *args, **kwargs: 0.5
     plugin_any._plugin_manager.messages.clear()
@@ -1219,7 +1283,9 @@ def test_calculate_and_broadcast_eta_cooldown_target_none_triggers_debug_log(
     plugin_any._settings.set(["cooldown_ambient_temp"], None)
 
     calls: List[Any] = []
-    plugin_any._debug_log_throttled = lambda *args, **kwargs: calls.append((args, kwargs))
+    plugin_any._debug_log_throttled = lambda *args, **kwargs: calls.append(
+        (args, kwargs)
+    )
 
     plugin_any._plugin_manager.messages.clear()
     plugin._calculate_and_broadcast_eta(
@@ -1245,7 +1311,9 @@ def test_calculate_and_broadcast_eta_cooldown_eta_under_one_second_logs_insuffic
     plugin_any._settings.set(["cooldown_ambient_temp"], 20.0)
 
     debug_calls: List[Any] = []
-    plugin_any._debug_log_throttled = lambda *args, **kwargs: debug_calls.append((args, kwargs))
+    plugin_any._debug_log_throttled = lambda *args, **kwargs: debug_calls.append(
+        (args, kwargs)
+    )
 
     # Force compute, but return <1s so it is hidden.
     plugin_any._calculate_cooldown_eta_seconds = lambda *args, **kwargs: 0.5
@@ -1269,7 +1337,9 @@ def test_calculate_and_broadcast_eta_cooldown_forced_target_under_one_second_hit
     plugin_any._settings.set(["cooldown_hysteresis_c"], 1.0)
 
     debug_calls: List[Any] = []
-    plugin_any._debug_log_throttled = lambda *args, **kwargs: debug_calls.append((args, kwargs))
+    plugin_any._debug_log_throttled = lambda *args, **kwargs: debug_calls.append(
+        (args, kwargs)
+    )
 
     monkeypatch.setattr(plugin, "_get_cooldown_display_target_c", lambda **_kw: 40.0)
     monkeypatch.setattr(plugin, "_calculate_cooldown_eta_seconds", lambda **_kw: 0.5)
@@ -1344,8 +1414,8 @@ def test_calculate_and_broadcast_eta_cooldown_insufficient_fit_logs_history_len(
     plugin_any._cooldown_history["tool0"] = deque([(0.0, 70.0)], maxlen=60)
 
     debug: List[str] = []
-    plugin_any._debug_log_throttled = lambda now, interval, message, *args: debug.append(
-        str(message)
+    plugin_any._debug_log_throttled = (
+        lambda now, interval, message, *args: debug.append(str(message))
     )
 
     plugin_any._calculate_cooldown_eta_seconds = lambda *args, **kwargs: None
@@ -1478,6 +1548,7 @@ def test_cooldown_helpers_early_return_paths(
         is None
     )
 
+
 def test_calculate_cooldown_linear_eta_dt_nonpositive_and_remaining_nonpositive(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
@@ -1486,11 +1557,15 @@ def test_calculate_cooldown_linear_eta_dt_nonpositive_and_remaining_nonpositive(
     _set_time(monkeypatch, 100.0)
 
     # dt <= 0
-    plugin_any._cooldown_history["tool0"] = deque([(100.0, 60.0), (100.0, 50.0)], maxlen=60)
+    plugin_any._cooldown_history["tool0"] = deque(
+        [(100.0, 60.0), (100.0, 50.0)], maxlen=60
+    )
     assert plugin._calculate_cooldown_linear_eta("tool0", goal_c=40.0) is None
 
     # remaining <= 0
-    plugin_any._cooldown_history["tool0"] = deque([(90.0, 60.0), (100.0, 50.0)], maxlen=60)
+    plugin_any._cooldown_history["tool0"] = deque(
+        [(90.0, 60.0), (100.0, 50.0)], maxlen=60
+    )
     assert plugin._calculate_cooldown_linear_eta("tool0", goal_c=60.0) is None
 
 
@@ -1502,7 +1577,14 @@ def test_calculate_cooldown_exponential_eta_invalid_inputs_return_none(
     _set_time(monkeypatch, 200.0)
 
     plugin_any._cooldown_history["tool0"] = deque(
-        [(150.0, 80.0), (160.0, 65.0), (170.0, 54.0), (180.0, 46.0), (190.0, 40.0), (200.0, 35.0)],
+        [
+            (150.0, 80.0),
+            (160.0, 65.0),
+            (170.0, 54.0),
+            (180.0, 46.0),
+            (190.0, 40.0),
+            (200.0, 35.0),
+        ],
         maxlen=60,
     )
 
@@ -1514,7 +1596,9 @@ def test_calculate_cooldown_exponential_eta_invalid_inputs_return_none(
     )
 
 
-def test_on_api_command_reset_profile_history(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_on_api_command_reset_profile_history(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     # Avoid requiring Flask in unit tests.
     monkeypatch.setattr(octoprint_temp_eta, "jsonify", lambda payload: payload)
 
@@ -1588,7 +1672,9 @@ def test_calculate_linear_eta_simple(
     assert abs(eta - 10.0) < 1e-6
 
 
-def test_calculate_linear_eta_edge_cases(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_calculate_linear_eta_edge_cases(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     _set_time(monkeypatch, 100.0)
 
     # time_diff <= 0
@@ -1792,23 +1878,33 @@ def test_temperature_callback_treats_string_target_off_as_cooldown(
     assert len(plugin._cooldown_history["tool0"]) == 1
 
 
-def test_on_after_startup_registers_callback(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_on_after_startup_registers_callback(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """Startup should register the temperature callback on the printer."""
     p_any = cast(Any, plugin)
     printer = cast(DummyPrinter, p_any._printer)
 
     # Avoid profile/history IO in this unit test.
-    monkeypatch.setattr(plugin, "_switch_active_profile_if_needed", lambda *a, **k: None)
+    monkeypatch.setattr(
+        plugin, "_switch_active_profile_if_needed", lambda *a, **k: None
+    )
 
     plugin.on_after_startup()
     assert plugin in printer.registered_callbacks
 
 
-def test_broadcast_filters_unsupported_heaters(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_broadcast_filters_unsupported_heaters(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """ETA updates should only be sent for heaters supported by the active profile."""
     _set_time(monkeypatch, 100.0)
-    plugin._temp_history["tool0"] = deque([(90.0, 10.0, 50.0), (100.0, 20.0, 50.0)], maxlen=60)
-    plugin._temp_history["bed"] = deque([(90.0, 20.0, 60.0), (100.0, 30.0, 60.0)], maxlen=60)
+    plugin._temp_history["tool0"] = deque(
+        [(90.0, 10.0, 50.0), (100.0, 20.0, 50.0)], maxlen=60
+    )
+    plugin._temp_history["bed"] = deque(
+        [(90.0, 20.0, 60.0), (100.0, 30.0, 60.0)], maxlen=60
+    )
 
     data = {
         "tool0": {"actual": 20.0, "target": 50.0},
@@ -1819,13 +1915,19 @@ def test_broadcast_filters_unsupported_heaters(monkeypatch: pytest.MonkeyPatch, 
     plugin._calculate_and_broadcast_eta(data)
 
     pm = cast(DummyPluginManager, cast(Any, plugin)._plugin_manager)
-    heaters = [m["payload"].get("heater") for m in pm.messages if m["payload"].get("type") == "eta_update"]
+    heaters = [
+        m["payload"].get("heater")
+        for m in pm.messages
+        if m["payload"].get("type") == "eta_update"
+    ]
     assert "tool0" in heaters
     assert "bed" in heaters
     assert "chamber" not in heaters
 
 
-def test_suppress_while_printing_clears_once(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_suppress_while_printing_clears_once(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """When suppression is enabled, the plugin clears UI once and stops sending ETAs."""
     p_any = cast(Any, plugin)
     p_any._printer = DummyPrinter(printing=True)
@@ -1850,7 +1952,9 @@ def test_suppress_while_printing_clears_once(monkeypatch: pytest.MonkeyPatch, pl
     assert len(pm.messages) == before
 
 
-def test_persist_and_restore_profile_history(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_persist_and_restore_profile_history(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     """Persisted history should be restored on startup (force profile switch)."""
     p1 = TempETAPlugin()
     p1_any = cast(Any, p1)
@@ -1860,7 +1964,13 @@ def test_persist_and_restore_profile_history(monkeypatch: pytest.MonkeyPatch, tm
     p1_any._plugin_manager = DummyPluginManager()
     p1_any._printer = DummyPrinter(printing=False)
     p1_any._printer_profile_manager = DummyPrinterProfileManager(
-        {"id": "default", "name": "Default", "heatedBed": True, "heatedChamber": False, "extruder": {"count": 1}}
+        {
+            "id": "default",
+            "name": "Default",
+            "heatedBed": True,
+            "heatedChamber": False,
+            "extruder": {"count": 1},
+        }
     )
     p1_any._settings = DummySettings(
         {
@@ -1917,7 +2027,11 @@ def test_reset_all_profile_histories_deletes_files_and_clears_ui(
     assert deleted == 2
 
     pm = cast(DummyPluginManager, cast(Any, plugin)._plugin_manager)
-    heaters = [m["payload"].get("heater") for m in pm.messages if m["payload"].get("type") == "eta_update"]
+    heaters = [
+        m["payload"].get("heater")
+        for m in pm.messages
+        if m["payload"].get("type") == "eta_update"
+    ]
     assert set(heaters) == {"tool0", "bed"}
 
 
@@ -1937,10 +2051,15 @@ def test_reset_all_profile_histories_handles_delete_failure(
     assert deleted == 0
 
     pm = cast(DummyPluginManager, cast(Any, plugin)._plugin_manager)
-    assert any(m["payload"].get("heater") == "tool0" and m["payload"].get("eta") is None for m in pm.messages)
+    assert any(
+        m["payload"].get("heater") == "tool0" and m["payload"].get("eta") is None
+        for m in pm.messages
+    )
 
 
-def test_on_api_command_reset_settings_defaults(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_on_api_command_reset_settings_defaults(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """API reset should restore defaults and emit a settings_reset message."""
     p_any = cast(Any, plugin)
     settings = cast(DummySettings, p_any._settings)
@@ -1977,7 +2096,9 @@ def test_on_api_command_reset_settings_defaults_swallows_send_errors(
     assert resp.get("success") is True
 
 
-def test_on_settings_save_disabling_plugin_clears_frontend(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_on_settings_save_disabling_plugin_clears_frontend(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """Disabling the plugin via settings save should clear all displayed heaters."""
     p_any = cast(Any, plugin)
     settings = cast(DummySettings, p_any._settings)
@@ -1989,14 +2110,23 @@ def test_on_settings_save_disabling_plugin_clears_frontend(monkeypatch: pytest.M
         settings.set(["enabled"], False)
         return _data
 
-    monkeypatch.setattr(octoprint_temp_eta.octoprint.plugin.SettingsPlugin, "on_settings_save", _fake_save)
+    monkeypatch.setattr(
+        octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
+        "on_settings_save",
+        _fake_save,
+    )
     plugin.on_settings_save({"enabled": False})
 
     pm = cast(DummyPluginManager, p_any._plugin_manager)
-    assert any(m["payload"].get("heater") == "tool0" and m["payload"].get("eta") is None for m in pm.messages)
+    assert any(
+        m["payload"].get("heater") == "tool0" and m["payload"].get("eta") is None
+        for m in pm.messages
+    )
 
 
-def test_debug_log_settings_snapshot_throttles(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_debug_log_settings_snapshot_throttles(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """Settings snapshot logging should be throttled and safe."""
     plugin._debug_logging_enabled = True
     calls: List[str] = []
@@ -2015,7 +2145,9 @@ def test_debug_log_settings_snapshot_throttles(monkeypatch: pytest.MonkeyPatch, 
     assert len(calls) == 2
 
 
-def test_get_profile_history_path_sanitizes(tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_get_profile_history_path_sanitizes(
+    tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     """Profile ids should be sanitized to a safe filename."""
     _set_plugin_data_folder(plugin, tmp_path)
     p = plugin._get_profile_history_path("weird/..\\profile id")
@@ -2025,7 +2157,9 @@ def test_get_profile_history_path_sanitizes(tmp_path: Path, plugin: TempETAPlugi
     assert "\\" not in p.name
 
 
-def test_load_profile_history_filters_old_and_future(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_load_profile_history_filters_old_and_future(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     """Loader should ignore samples outside the allowed time window."""
     _set_plugin_data_folder(plugin, tmp_path)
     plugin._persist_max_age_seconds = 10.0
@@ -2040,21 +2174,25 @@ def test_load_profile_history_filters_old_and_future(monkeypatch: pytest.MonkeyP
         "history_size": 60,
         "samples": {
             "tool0": [
-                [50.0, 10.0, 50.0],   # too old
-                [95.0, 20.0, 50.0],   # ok
-                    [106.0, 30.0, 50.0],  # too far in future (> now+5)
-                ["bad", 1, 2],        # invalid
+                [50.0, 10.0, 50.0],  # too old
+                [95.0, 20.0, 50.0],  # ok
+                [106.0, 30.0, 50.0],  # too far in future (> now+5)
+                ["bad", 1, 2],  # invalid
             ]
         },
     }
-    (tmp_path / "history_default.json").write_text(json.dumps(payload), encoding="utf-8")
+    (tmp_path / "history_default.json").write_text(
+        json.dumps(payload), encoding="utf-8"
+    )
 
     loaded = plugin._load_profile_history("default")
     assert "tool0" in loaded
     assert list(loaded["tool0"]) == [(95.0, 20.0, 50.0)]
 
 
-def test_reset_profile_history_deletes_file_and_clears(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_reset_profile_history_deletes_file_and_clears(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     """Reset profile history should delete file and clear UI."""
     _set_plugin_data_folder(plugin, tmp_path)
     (tmp_path / "history_default.json").write_text("{}", encoding="utf-8")
@@ -2065,10 +2203,15 @@ def test_reset_profile_history_deletes_file_and_clears(monkeypatch: pytest.Monke
     assert not (tmp_path / "history_default.json").exists()
 
     pm = cast(DummyPluginManager, cast(Any, plugin)._plugin_manager)
-    assert any(m["payload"].get("heater") == "tool0" and m["payload"].get("eta") is None for m in pm.messages)
+    assert any(
+        m["payload"].get("heater") == "tool0" and m["payload"].get("eta") is None
+        for m in pm.messages
+    )
 
 
-def test_persist_current_profile_history_early_returns(tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_persist_current_profile_history_early_returns(
+    tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     _set_plugin_data_folder(plugin, tmp_path)
     plugin_any = cast(Any, plugin)
 
@@ -2086,7 +2229,9 @@ def test_persist_current_profile_history_early_returns(tmp_path: Path, plugin: T
     assert not (tmp_path / "history_default.json").exists()
 
 
-def test_on_event_disconnect_persists_then_clears(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_on_event_disconnect_persists_then_clears(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     """Disconnect should persist history (best effort) and clear all heaters."""
     _set_plugin_data_folder(plugin, tmp_path)
     p_any = cast(Any, plugin)
@@ -2103,7 +2248,9 @@ def test_on_event_disconnect_persists_then_clears(monkeypatch: pytest.MonkeyPatc
     assert len(plugin._cooldown_history["tool0"]) == 0
 
 
-def test_on_event_error_persists_then_clears(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin) -> None:
+def test_on_event_error_persists_then_clears(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, plugin: TempETAPlugin
+) -> None:
     _set_plugin_data_folder(plugin, tmp_path)
     p_any = cast(Any, plugin)
     p_any._active_profile_id = "default"
@@ -2135,7 +2282,9 @@ def test_get_update_information_contains_current_version(plugin: TempETAPlugin) 
     assert info["temp_eta"]["repo"] == "OctoPrint-TempETA"
 
 
-def test_on_api_command_unknown_returns_error(monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin) -> None:
+def test_on_api_command_unknown_returns_error(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
     """Unknown API commands should return a structured error."""
     monkeypatch.setattr(octoprint_temp_eta, "jsonify", lambda payload: payload)
     resp = plugin.on_api_command("nope", {})
