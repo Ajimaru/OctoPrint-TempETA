@@ -1,4 +1,12 @@
 <form id="settings_plugin_temp_eta" class="form-horizontal temp-eta-settings">
+    <div id="temp_eta_validation_messages"
+         style="display: none;"
+         data-title="{{ _('Temperature ETA') }}"
+         data-msg-invalid="{{ _('Please enter a valid number.') }}"
+         data-msg-min="{{ _('Please enter a value of at least {min}.') }}"
+         data-msg-max="{{ _('Please enter a value of at most {max}.') }}"
+         data-msg-range="{{ _('Please enter a value between {min} and {max}.') }}"
+         data-msg-fix="{{ _('Please fix the highlighted settings values before saving.') }}"></div>
     <fieldset>
         <legend>{{ _('Temperature ETA Settings') }}</legend>
 
@@ -404,7 +412,7 @@
             <div class="controls">
                 <input type="number" class="input-small" id="temp_eta_cooldown_ambient_temp"
                        data-bind="value: settings.plugins.temp_eta.cooldown_ambient_temp, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'ambient'"
-                       min="-20" max="80" step="0.5">
+                       min="0" max="80" step="0.5" data-allow-empty="true">
                 <p class="help-block">{{ _('If empty, the plugin estimates ambient temperature from recent cooldown data.') }}</p>
             </div>
         </div>

@@ -270,10 +270,205 @@ $(function () {
       try {
         ko.applyBindings(self, rootEl);
         $(rootEl).data("tempEtaKoBound", true);
+
+        // Install validation handlers for numeric inputs in the settings dialog.
+        self._installSettingsValidationHandlers(rootEl);
       } catch (e) {
         // Ignore binding errors; OctoPrint may re-render parts of the dialog.
         // Keeping this quiet avoids spamming the log for transient timing issues.
       }
+    };
+
+    self._getValidationMessages = function () {
+      var $m = $("#temp_eta_validation_messages");
+      return {
+        title: _attrOr($m, "data-title", "TempETA"),
+        invalid: _attrOr(
+          $m,
+          "data-msg-invalid",
+          "Please enter a valid number.",
+        ),
+        min: _attrOr(
+          $m,
+          "data-msg-min",
+          "Please enter a value of at least {min}.",
+        ),
+        max: _attrOr(
+          $m,
+          "data-msg-max",
+          "Please enter a value of at most {max}.",
+        ),
+        range: _attrOr(
+          $m,
+          "data-msg-range",
+          "Please enter a value between {min} and {max}.",
+        ),
+        fix: _attrOr(
+          $m,
+          "data-msg-fix",
+          "Please fix the highlighted settings values before saving.",
+        ),
+      };
+    };
+
+    self._formatValidationMessage = function (template, params) {
+      var msg = String(template || "");
+      params = params || {};
+      Object.keys(params).forEach(function (k) {
+        msg = msg.replace("{" + k + "}", String(params[k]));
+      });
+      return msg;
+    };
+
+    self._clearValidationForInput = function (inputEl) {
+      var $input = $(inputEl);
+      $input.removeAttr("aria-invalid");
+      var $cg = $input.closest(".control-group");
+      $cg.removeClass("error");
+      var $controls = $input.closest(".controls");
+      $controls.find(".temp-eta-validation-error").remove();
+    };
+
+    self._setValidationForInput = function (inputEl, message) {
+      var $input = $(inputEl);
+      $input.attr("aria-invalid", "true");
+      var $cg = $input.closest(".control-group");
+      $cg.addClass("error");
+      var $controls = $input.closest(".controls");
+      $controls.find(".temp-eta-validation-error").remove();
+      $('<p class="help-block temp-eta-validation-error"></p>')
+        .text(String(message || ""))
+        .appendTo($controls);
+    };
+
+    self._isEmptyValue = function (v) {
+      return v === undefined || v === null || String(v).trim() === "";
+    };
+
+    self._parseFiniteNumber = function (v) {
+      var n = parseFloat(v);
+      if (!isFinite(n)) {
+        return null;
+      }
+      return n;
+    };
+
+    self._validateNumberInput = function (inputEl) {
+      var $input = $(inputEl);
+      self._clearValidationForInput(inputEl);
+
+      if (!$input.is(":enabled")) {
+        return true;
+      }
+
+      var allowEmpty =
+        String($input.attr("data-allow-empty") || "").toLowerCase() === "true";
+      var raw = $input.val();
+      if (allowEmpty && self._isEmptyValue(raw)) {
+        return true;
+      }
+
+      var msgs = self._getValidationMessages();
+      var n = self._parseFiniteNumber(raw);
+      if (n === null) {
+        self._setValidationForInput(inputEl, msgs.invalid);
+        return false;
+      }
+
+      // Default rule: numeric settings should never be negative.
+      var minAttr = $input.attr("min");
+      var maxAttr = $input.attr("max");
+      var minVal = self._parseFiniteNumber(minAttr);
+      var maxVal = self._parseFiniteNumber(maxAttr);
+
+      // Special-case: threshold input is displayed in the selected unit and
+      // represents a delta, not an absolute temperature.
+      if ($input.attr("id") === "temp_eta_threshold") {
+        try {
+          if (self._effectiveThresholdUnit() === "f") {
+            minVal = (1.0 * 9.0) / 5.0;
+            maxVal = (50.0 * 9.0) / 5.0;
+          } else {
+            minVal = 1.0;
+            maxVal = 50.0;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (minVal === null) {
+        minVal = 0.0;
+      }
+      minVal = Math.max(0.0, minVal);
+
+      if (n < minVal) {
+        self._setValidationForInput(
+          inputEl,
+          self._formatValidationMessage(msgs.min, { min: minVal }),
+        );
+        return false;
+      }
+
+      if (maxVal !== null && n > maxVal) {
+        self._setValidationForInput(
+          inputEl,
+          self._formatValidationMessage(msgs.max, { max: maxVal }),
+        );
+        return false;
+      }
+
+      return true;
+    };
+
+    self._validateAllSettingsNumbers = function () {
+      var $root = $("#settings_plugin_temp_eta");
+      if (!$root.length) {
+        $root = $(".temp-eta-settings");
+      }
+      if (!$root.length) {
+        return true;
+      }
+
+      var ok = true;
+      var firstInvalid = null;
+
+      $root.find('input[type="number"]').each(function () {
+        var valid = self._validateNumberInput(this);
+        if (!valid) {
+          ok = false;
+          if (!firstInvalid) {
+            firstInvalid = this;
+          }
+        }
+      });
+
+      if (!ok) {
+        var msgs = self._getValidationMessages();
+        _notify("error", msgs.title, msgs.fix);
+        try {
+          if (firstInvalid && typeof firstInvalid.focus === "function") {
+            firstInvalid.focus();
+          }
+        } catch (e) {}
+      }
+
+      return ok;
+    };
+
+    self._installSettingsValidationHandlers = function (rootEl) {
+      if (!rootEl) {
+        return;
+      }
+      var $root = $(rootEl);
+      if ($root.data("tempEtaValidationBound")) {
+        return;
+      }
+      $root.data("tempEtaValidationBound", true);
+
+      $root.on("input change blur", 'input[type="number"]', function () {
+        self._validateNumberInput(this);
+      });
     };
 
     self._unbindSettingsIfBound = function () {
@@ -1451,6 +1646,16 @@ $(function () {
       return ((fahrenheit - 32.0) * 5.0) / 9.0;
     };
 
+    // Delta conversions (used for settings like threshold_start which represent
+    // a temperature difference, not an absolute temperature).
+    self._cDeltaToF = function (deltaC) {
+      return (deltaC * 9.0) / 5.0;
+    };
+
+    self._fDeltaToC = function (deltaF) {
+      return (deltaF * 5.0) / 9.0;
+    };
+
     self._effectiveThresholdUnit = function () {
       var ps = self._pluginSettings();
       if (!ps || !ps.threshold_unit) {
@@ -1495,7 +1700,7 @@ $(function () {
         }
 
         if (self._effectiveThresholdUnit() === "f") {
-          return self._cToF(thresholdC).toFixed(1);
+          return self._cDeltaToF(thresholdC).toFixed(1);
         }
         return thresholdC.toFixed(1);
       },
@@ -1514,13 +1719,26 @@ $(function () {
           return;
         }
 
+        // Clamp to reasonable limits before applying.
+        var minDisplay =
+          self._effectiveThresholdUnit() === "f" ? (1.0 * 9.0) / 5.0 : 1.0;
+        var maxDisplay =
+          self._effectiveThresholdUnit() === "f" ? (50.0 * 9.0) / 5.0 : 50.0;
+        if (numeric < minDisplay) numeric = minDisplay;
+        if (numeric > maxDisplay) numeric = maxDisplay;
+
         var thresholdC =
           self._effectiveThresholdUnit() === "f"
-            ? self._fToC(numeric)
+            ? self._fDeltaToC(numeric)
             : numeric;
         ps.threshold_start(parseFloat(thresholdC.toFixed(3)));
       },
     });
+
+    // Block settings save if any numeric fields are invalid.
+    self.onSettingsBeforeSave = function () {
+      return self._validateAllSettingsNumbers();
+    };
 
     /**
      * Handle plugin messages from backend

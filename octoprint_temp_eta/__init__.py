@@ -1647,6 +1647,8 @@ class TempETAPlugin(
         if not getattr(self, "_settings", None):
             return {}
 
+        self._sanitize_settings_payload(data)
+
         was_enabled = bool(self._settings.get_boolean(["enabled"]))
         old_debug = bool(getattr(self, "_debug_logging_enabled", False))
         old_history_maxlen = self._read_history_maxlen_setting()
@@ -1668,6 +1670,88 @@ class TempETAPlugin(
             self._clear_all_heaters_frontend()
 
         return saved if isinstance(saved, dict) else {}
+
+    def _sanitize_settings_payload(self, data: Dict[str, Any]) -> None:
+        """Sanitize posted settings values in-place.
+
+        This is a safety net in addition to UI validation.
+        """
+
+        def _clamp_float(
+            key: str,
+            min_value: float,
+            max_value: float,
+            allow_none: bool = False,
+        ) -> None:
+            if key not in data:
+                return
+            raw = data.get(key)
+            if raw is None or raw == "":
+                if allow_none:
+                    data[key] = None
+                else:
+                    data[key] = float(min_value)
+                return
+            try:
+                value = float(raw)
+            except Exception:
+                data[key] = None if allow_none else float(min_value)
+                return
+
+            if value < min_value:
+                value = min_value
+            if value > max_value:
+                value = max_value
+            data[key] = float(value)
+
+        def _clamp_int(key: str, min_value: int, max_value: int) -> None:
+            if key not in data:
+                return
+            raw = data.get(key)
+            try:
+                value = int(float(raw))
+            except Exception:
+                data[key] = int(min_value)
+                return
+            if value < min_value:
+                value = min_value
+            if value > max_value:
+                value = max_value
+            data[key] = int(value)
+
+        # General / heating ETA
+        _clamp_float("threshold_start", 1.0, 50.0)
+        _clamp_float("update_interval", 0.1, 5.0)
+        _clamp_int("history_size", 10, 300)
+        _clamp_int("historical_graph_window_seconds", 30, 1800)
+
+        # Sound alerts / notifications
+        _clamp_float("sound_volume", 0.0, 1.0)
+        _clamp_float("sound_min_interval_s", 0.0, 300.0)
+        _clamp_float("notification_timeout_s", 1.0, 60.0)
+        _clamp_float("notification_min_interval_s", 0.0, 300.0)
+
+        # Cool-down ETA
+        _clamp_float("cooldown_target_tool0", 0.0, 400.0)
+        _clamp_float("cooldown_target_bed", 0.0, 200.0)
+        _clamp_float("cooldown_target_chamber", 0.0, 100.0)
+        _clamp_float("cooldown_hysteresis_c", 0.1, 20.0)
+        _clamp_int("cooldown_fit_window_seconds", 10, 1800)
+
+        # Optional ambient: keep None if invalid/out of range.
+        if "cooldown_ambient_temp" in data:
+            raw = data.get("cooldown_ambient_temp")
+            if raw is None or raw == "":
+                data["cooldown_ambient_temp"] = None
+            else:
+                try:
+                    v = float(raw)
+                except Exception:
+                    v = None
+                if v is None or v < 0.0 or v > 80.0:
+                    data["cooldown_ambient_temp"] = None
+                else:
+                    data["cooldown_ambient_temp"] = float(v)
 
     def _clear_all_heaters_frontend(self):
         """Clear ETA display in the frontend for all known heaters."""

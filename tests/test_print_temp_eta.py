@@ -931,6 +931,52 @@ def test_on_settings_save_toggles_debug_updates_history_and_handles_non_dict_sav
     )
 
 
+def test_on_settings_save_sanitizes_numeric_payload_before_delegating(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    p_any = cast(Any, plugin)
+    settings = cast(DummySettings, p_any._settings)
+
+    captured: Dict[str, Any] = {}
+
+    def _fake_save(_self: Any, data: Dict[str, Any]) -> Dict[str, Any]:
+        captured.update(data)
+        # Simulate persisted values.
+        for k, v in data.items():
+            settings.set([k], v)
+        return data
+
+    monkeypatch.setattr(
+        octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
+        "on_settings_save",
+        _fake_save,
+    )
+
+    plugin.on_settings_save(
+        {
+            "threshold_start": -1,
+            "update_interval": 999,
+            "history_size": -50,
+            "historical_graph_window_seconds": 99999,
+            "sound_volume": -5,
+            "notification_timeout_s": 0,
+            "cooldown_target_tool0": -10,
+            "cooldown_ambient_temp": -20,
+            "cooldown_fit_window_seconds": 0,
+        }
+    )
+
+    assert captured["threshold_start"] == 1.0
+    assert captured["update_interval"] == 5.0
+    assert captured["history_size"] == 10
+    assert captured["historical_graph_window_seconds"] == 1800
+    assert captured["sound_volume"] == 0.0
+    assert captured["notification_timeout_s"] == 1.0
+    assert captured["cooldown_target_tool0"] == 0.0
+    assert captured["cooldown_ambient_temp"] is None
+    assert captured["cooldown_fit_window_seconds"] == 10
+
+
 def test_on_printer_add_temperature_records_sample_and_triggers_update(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
