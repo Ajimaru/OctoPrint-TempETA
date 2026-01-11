@@ -44,6 +44,9 @@ msgstr "Temperatur-ETA"
 msgid "Basic Settings"
 msgstr "Grundeinstellungen"
 
+msgid "Update & Logging"
+msgstr "Aktualisierung & Protokollierung"
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:9
 msgid "Enable Temperature ETA"
 msgstr "Temperatur-ETA aktivieren"

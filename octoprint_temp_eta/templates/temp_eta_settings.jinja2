@@ -163,6 +163,9 @@
         <div class="temp-eta-settings-divider"><hr></div>
 
         <div class="temp-eta-settings-group">
+            <h4>{{ _('Update & Logging') }}</h4>
+
+        <div class="temp-eta-settings-group">
             <h4>{{ _('Status colors') }}</h4>
 
             <div class="control-group">
@@ -239,6 +242,8 @@
                 <input type="checkbox" id="temp_eta_debug_logging" data-bind="checked: settings.plugins.temp_eta.debug_logging, enable: settings.plugins.temp_eta.enabled">
                 <p class="help-block">{{ _('Write additional debug information to the OctoPrint log (may be noisy)') }}</p>
             </div>
+        </div>
+
         </div>
 
         <div class="temp-eta-settings-divider"><hr></div>
