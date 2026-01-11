@@ -100,6 +100,7 @@ def plugin() -> TempETAPlugin:
     p_any._settings = DummySettings(
         {
             "enabled": True,
+            "enable_heating_eta": True,
             "suppress_while_printing": False,
             "threshold_start": 5.0,
             "update_interval": 0.0,
@@ -122,6 +123,7 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
     defaults = plugin.get_settings_defaults()
 
     assert defaults["enabled"] is True
+    assert defaults["enable_heating_eta"] is True
     assert defaults["threshold_start"] == 5.0
     assert defaults["algorithm"] in ("linear", "exponential")
     assert defaults["update_interval"] == 1.0
@@ -142,6 +144,23 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
     assert int(cooldown_fit_window_seconds) >= 10
 
     assert defaults["show_historical_graph"] is True
+
+    assert defaults["color_mode"] in ("bands", "status")
+    assert isinstance(defaults["color_heating"], str)
+    assert isinstance(defaults["color_cooling"], str)
+    assert isinstance(defaults["color_idle"], str)
+
+    assert defaults["sound_enabled"] is False
+    assert defaults["sound_target_reached"] is False
+    assert defaults["sound_cooldown_finished"] is False
+    assert 0.0 <= float(defaults["sound_volume"]) <= 1.0
+    assert float(defaults["sound_min_interval_s"]) >= 0.0
+
+    assert defaults["notification_enabled"] is False
+    assert defaults["notification_target_reached"] is False
+    assert defaults["notification_cooldown_finished"] is False
+    assert float(defaults["notification_timeout_s"]) >= 1.0
+    assert float(defaults["notification_min_interval_s"]) >= 0.0
 
 
 def test_calculate_linear_eta_returns_none_with_insufficient_history(

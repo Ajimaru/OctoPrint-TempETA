@@ -1,9 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Thermometer icon -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Temperature ETA (heating/cooling)">
+  <title>Temperature ETA (heating/cooling)</title>
+
+  <!-- Thermometer icon + heating/cooling indicators -->
   <defs>
     <linearGradient id="tempGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#ff4757;stop-opacity:1" />
+      <stop offset="0%" stop-color="#ff6b6b" stop-opacity="1" />
+      <stop offset="100%" stop-color="#ff4757" stop-opacity="1" />
+    </linearGradient>
+
+    <linearGradient id="heatGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffb84d" stop-opacity="1" />
+      <stop offset="100%" stop-color="#ff6a00" stop-opacity="1" />
+    </linearGradient>
+
+    <linearGradient id="coolGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3ff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#2b90d9" stop-opacity="1" />
     </linearGradient>
   </defs>
 
@@ -13,7 +25,7 @@
   <!-- Stem -->
   <rect x="28" y="16" width="8" height="36" fill="url(#tempGradient)"/>
 
-  <!-- Liquid level (90% full) -->
+  <!-- Liquid level -->
   <rect x="30" y="20" width="4" height="30" fill="#ff6b6b" opacity="0.8"/>
 
   <!-- Top cap -->
@@ -26,9 +38,55 @@
     <line x1="24" y1="44" x2="20" y2="44"/>
   </g>
 
-  <!-- Rising arrow (ETA indicator) -->
-  <g fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round">
-    <line x1="46" y1="36" x2="46" y2="20"/>
-    <polyline points="40,26 46,20 52,26" fill="none"/>
+  <!-- Heating (flame) indicator (left) -->
+  <g transform="translate(4 12)">
+    <path
+      d="M14 24 C9.5 21 8.5 16 10.5 12.5 C12 10 12.5 7.5 12.3 5.3 C15 7.2 18.2 11.3 18.2 15.7 C18.2 19.8 16.6 22.6 14 24 Z"
+      fill="url(#heatGradient)"/>
+    <path
+      d="M14 22.3 C12.3 20.8 11.8 18.8 12.7 16.9 C13.4 15.5 13.8 14.1 13.9 13 C15.4 14.4 16.5 16.6 16.5 18.4 C16.5 20.4 15.6 21.6 14 22.3 Z"
+      fill="#ffd08a" opacity="0.9"/>
+  </g>
+
+  <!-- Cooling (snowflake) indicator (right) -->
+  <g transform="translate(50 28)" stroke="url(#coolGradient)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <!-- main arms (6) -->
+    <line x1="0" y1="-9" x2="0" y2="9"/>
+    <line x1="-7.8" y1="-4.5" x2="7.8" y2="4.5"/>
+    <line x1="-7.8" y1="4.5" x2="7.8" y2="-4.5"/>
+
+    <!-- branches on vertical arm -->
+    <line x1="0" y1="-6.5" x2="-2" y2="-5.2"/>
+    <line x1="0" y1="-6.5" x2="2" y2="-5.2"/>
+    <line x1="0" y1="6.5" x2="-2" y2="5.2"/>
+    <line x1="0" y1="6.5" x2="2" y2="5.2"/>
+
+    <!-- branches on diagonal arm (\) -->
+    <line x1="-5.6" y1="-3.2" x2="-5.9" y2="-1"/>
+    <line x1="-5.6" y1="-3.2" x2="-3.7" y2="-2.4"/>
+    <line x1="5.6" y1="3.2" x2="5.9" y2="1"/>
+    <line x1="5.6" y1="3.2" x2="3.7" y2="2.4"/>
+
+    <!-- branches on diagonal arm (/) -->
+    <line x1="-5.6" y1="3.2" x2="-5.9" y2="1"/>
+    <line x1="-5.6" y1="3.2" x2="-3.7" y2="2.4"/>
+    <line x1="5.6" y1="-3.2" x2="5.9" y2="-1"/>
+    <line x1="5.6" y1="-3.2" x2="3.7" y2="-2.4"/>
+
+    <!-- tips -->
+    <line x1="0" y1="-9" x2="-2.2" y2="-7.2"/>
+    <line x1="0" y1="-9" x2="2.2" y2="-7.2"/>
+    <line x1="0" y1="9" x2="-2.2" y2="7.2"/>
+    <line x1="0" y1="9" x2="2.2" y2="7.2"/>
+
+    <line x1="-7.8" y1="-4.5" x2="-5.5" y2="-4.3"/>
+    <line x1="-7.8" y1="-4.5" x2="-6.6" y2="-2.6"/>
+    <line x1="7.8" y1="4.5" x2="5.5" y2="4.3"/>
+    <line x1="7.8" y1="4.5" x2="6.6" y2="2.6"/>
+
+    <line x1="-7.8" y1="4.5" x2="-5.5" y2="4.3"/>
+    <line x1="-7.8" y1="4.5" x2="-6.6" y2="2.6"/>
+    <line x1="7.8" y1="-4.5" x2="5.5" y2="-4.3"/>
+    <line x1="7.8" y1="-4.5" x2="6.6" y2="-2.6"/>
   </g>
 </svg>

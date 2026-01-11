@@ -3,30 +3,22 @@
         <legend>{{ _('Temperature ETA Settings') }}</legend>
 
         <ul class="nav nav-tabs" id="temp_eta_settings_tabs">
-            <li class="active"><a href="#temp_eta_settings_tab_basic" data-toggle="tab">{{ _('Basic Settings') }}</a></li>
-            <li><a href="#temp_eta_settings_tab_display" data-toggle="tab">{{ _('Display') }}</a></li>
+            <li class="active"><a href="#temp_eta_settings_tab_shared" data-toggle="tab">{{ _('General') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_heating" data-toggle="tab">{{ _('Heating ETA') }}</a></li>
             <li><a href="#temp_eta_settings_tab_cooldown" data-toggle="tab">{{ _('Cool-down ETA') }}</a></li>
-            <li><a href="#temp_eta_settings_tab_advanced" data-toggle="tab">{{ _('Advanced Settings') }}</a></li>
             <li><a href="#temp_eta_settings_tab_maintenance" data-toggle="tab">{{ _('Maintenance') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_help" data-toggle="tab">{{ _('Help') }}</a></li>
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane active" id="temp_eta_settings_tab_basic">
-
-        <!-- Enable/Disable Plugin -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_enabled">{{ _('Enable Temperature ETA') }}</label>
-            <div class="controls">
-                <input type="checkbox" id="temp_eta_enabled" data-bind="checked: settings.plugins.temp_eta.enabled">
-            </div>
-        </div>
+            <div class="tab-pane" id="temp_eta_settings_tab_heating">
 
         <div class="control-group">
-            <label class="control-label" for="temp_eta_suppress_while_printing">{{ _('Hide ETA while printing') }}</label>
+            <label class="control-label" for="temp_eta_enable_heating_eta">{{ _('Enable heating ETA') }}</label>
             <div class="controls">
-                <input type="checkbox" id="temp_eta_suppress_while_printing"
-                       data-bind="checked: settings.plugins.temp_eta.suppress_while_printing, enable: settings.plugins.temp_eta.enabled">
-                <p class="help-block">{{ _('If disabled: ETA is shown when the temperature difference to the target is at least the heating threshold. If enabled: ETA is only shown when no print job is active.') }}</p>
+                <input type="checkbox" id="temp_eta_enable_heating_eta"
+                       data-bind="checked: settings.plugins.temp_eta.enable_heating_eta, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show an estimated time to reach the target temperature while heating.') }}</p>
             </div>
         </div>
 
@@ -37,7 +29,7 @@
             </label>
             <div class="controls">
                 <input type="number" class="input-small" id="temp_eta_threshold"
-                       data-bind="value: thresholdStartDisplay, enable: settings.plugins.temp_eta.enabled"
+                       data-bind="value: thresholdStartDisplay, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_heating_eta"
                        min="1" max="50" step="0.5">
                 <p class="help-block">{{ _('Start ETA when target is this many degrees away') }}</p>
             </div>
@@ -47,7 +39,7 @@
             <label class="control-label" for="temp_eta_threshold_unit">{{ _('Threshold unit') }}</label>
             <div class="controls">
                 <select class="input-xlarge" id="temp_eta_threshold_unit"
-                        data-bind="value: settings.plugins.temp_eta.threshold_unit, enable: settings.plugins.temp_eta.enabled">
+                        data-bind="value: settings.plugins.temp_eta.threshold_unit, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_heating_eta">
                     <option value="c">{{ _('Celsius (°C)') }}</option>
                     <option value="f">{{ _('Fahrenheit (°F)') }}</option>
                     <option value="octoprint">{{ _('Follow temperature display') }}</option>
@@ -60,7 +52,7 @@
         <div class="control-group">
             <label class="control-label" for="temp_eta_algorithm">{{ _('Calculation Algorithm') }}</label>
             <div class="controls">
-                <select class="input-xlarge" id="temp_eta_algorithm" data-bind="value: settings.plugins.temp_eta.algorithm">
+                <select class="input-xlarge" id="temp_eta_algorithm" data-bind="value: settings.plugins.temp_eta.algorithm, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_heating_eta">
                     <option value="linear">{{ _('Linear (default)') }}</option>
                     <option value="exponential">{{ _('Exponential') }}</option>
                 </select>
@@ -72,13 +64,32 @@
 
             </div>
 
-            <div class="tab-pane" id="temp_eta_settings_tab_display">
+            <div class="tab-pane active" id="temp_eta_settings_tab_shared">
+
+        <!-- Enable/Disable Plugin -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_enabled">{{ _('Enable Temperature ETA') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_enabled" data-bind="checked: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Enable or disable the Temperature ETA plugin and all of its features.') }}</p>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_suppress_while_printing">{{ _('Hide ETA while printing') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_suppress_while_printing"
+                       data-bind="checked: settings.plugins.temp_eta.suppress_while_printing, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('If disabled: ETA is shown when the temperature difference to the target is at least the heating threshold. If enabled: ETA is only shown when no print job is active.') }}</p>
+            </div>
+        </div>
 
         <div class="control-group">
             <label class="control-label" for="temp_eta_show_in_sidebar">{{ _('Show in sidebar') }}</label>
             <div class="controls">
                 <input type="checkbox" id="temp_eta_show_in_sidebar"
                        data-bind="checked: settings.plugins.temp_eta.show_in_sidebar, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show ETA in OctoPrint\'s sidebar temperature widget.') }}</p>
             </div>
         </div>
 
@@ -87,6 +98,7 @@
             <div class="controls">
                 <input type="checkbox" id="temp_eta_show_in_navbar"
                        data-bind="checked: settings.plugins.temp_eta.show_in_navbar, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show ETA in the top navigation bar.') }}</p>
             </div>
         </div>
 
@@ -95,6 +107,7 @@
             <div class="controls">
                 <input type="checkbox" id="temp_eta_show_in_tab"
                        data-bind="checked: settings.plugins.temp_eta.show_in_tab, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Show ETA in the dedicated Temperature ETA tab.') }}</p>
             </div>
         </div>
 
@@ -139,6 +152,198 @@
             </div>
         </div>
 
+        <div class="temp-eta-settings-divider"><hr></div>
+
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Status colors') }}</h4>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_mode">{{ _('Color mode') }}</label>
+                <div class="controls">
+                    <select class="input-xlarge" id="temp_eta_color_mode"
+                            data-bind="value: settings.plugins.temp_eta.color_mode, enable: settings.plugins.temp_eta.enabled">
+                        <option value="bands">{{ _('Time-based bands (default)') }}</option>
+                        <option value="status">{{ _('Status colors (heating/cooling/idle)') }}</option>
+                    </select>
+                    <p class="help-block">{{ _('Time-based bands use warning/info/normal colors based on remaining time. Status mode uses fixed colors for heating, cooling, and idle.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_heating">{{ _('Heating color') }}</label>
+                <div class="controls">
+                    <input type="color" id="temp_eta_color_heating"
+                           data-bind="value: settings.plugins.temp_eta.color_heating, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <input type="text" class="input-small" style="margin-left: 8px;" data-bind="value: settings.plugins.temp_eta.color_heating, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <p class="help-block">{{ _('Used when a heater is actively heating (status color mode).') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_cooling">{{ _('Cooling color') }}</label>
+                <div class="controls">
+                    <input type="color" id="temp_eta_color_cooling"
+                           data-bind="value: settings.plugins.temp_eta.color_cooling, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <input type="text" class="input-small" style="margin-left: 8px;" data-bind="value: settings.plugins.temp_eta.color_cooling, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <p class="help-block">{{ _('Used when a heater is cooling down (status color mode).') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_color_idle">{{ _('Idle color') }}</label>
+                <div class="controls">
+                    <input type="color" id="temp_eta_color_idle"
+                           data-bind="value: settings.plugins.temp_eta.color_idle, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <input type="text" class="input-small" style="margin-left: 8px;" data-bind="value: settings.plugins.temp_eta.color_idle, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.color_mode() === 'status'">
+                    <p class="help-block">{{ _('Tip: These colors also apply to progress bars in status mode.') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="temp-eta-settings-divider"><hr></div>
+
+        <!-- Update Interval -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_update_interval">{{ _('Update Interval (seconds)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_update_interval"
+                       data-bind="value: settings.plugins.temp_eta.update_interval, enable: settings.plugins.temp_eta.enabled"
+                       min="0.1" max="5" step="0.1">
+                <p class="help-block">{{ _('How often to update ETA display (lower = more responsive, higher = less CPU)') }}</p>
+            </div>
+        </div>
+
+        <!-- History Size -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_history_size">{{ _('Temperature History Size') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_history_size"
+                       data-bind="value: settings.plugins.temp_eta.history_size, enable: settings.plugins.temp_eta.enabled"
+                       min="10" max="300" step="10">
+                <p class="help-block">{{ _('Number of temperature samples to keep in history') }}</p>
+            </div>
+        </div>
+
+        <!-- Debug Logging -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_debug_logging">{{ _('Enable debug logging') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_debug_logging" data-bind="checked: settings.plugins.temp_eta.debug_logging, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Write additional debug information to the OctoPrint log (may be noisy)') }}</p>
+            </div>
+        </div>
+
+        <div class="temp-eta-settings-divider"><hr></div>
+
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Sound alerts') }}</h4>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_sound_enabled">{{ _('Enable sound alerts') }}</label>
+                <div class="controls">
+                    <input type="checkbox" id="temp_eta_sound_enabled"
+                           data-bind="checked: settings.plugins.temp_eta.sound_enabled, enable: settings.plugins.temp_eta.enabled">
+                    <p class="help-block">{{ _('Some browsers require a user interaction before sound can play. Use the Test button to grant permission.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">{{ _('Events') }}</label>
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.sound_target_reached, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled">
+                        {{ _('Target reached') }}
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.sound_cooldown_finished, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled">
+                        {{ _('Cooldown finished') }}
+                    </label>
+                    <p class="help-block">{{ _('Choose which events should play a sound alert.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_sound_volume">{{ _('Volume') }}</label>
+                <div class="controls">
+                    <input type="range" id="temp_eta_sound_volume" min="0" max="1" step="0.05"
+                           data-bind="value: settings.plugins.temp_eta.sound_volume, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled">
+                    <span style="margin-left: 8px;" data-bind="text: Math.round((settings.plugins.temp_eta.sound_volume() || 0) * 100) + '%'">50%</span>
+                    <p class="help-block">{{ _('Adjust the sound alert volume.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_sound_min_interval_s">{{ _('Minimum interval (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_sound_min_interval_s"
+                           data-bind="value: settings.plugins.temp_eta.sound_min_interval_s, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.sound_enabled"
+                           min="0" max="300" step="1">
+                    <p class="help-block">{{ _('Rate limit to avoid repeated beeps due to small target/temperature jitter.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">{{ _('Test') }}</label>
+                <div class="controls">
+                    <button type="button" class="btn" data-bind="click: testSound, enable: settings.plugins.temp_eta.enabled">
+                        {{ _('Play test sound') }}
+                    </button>
+                    <p class="help-block">{{ _('Plays a short test sound using the current volume setting.') }}</p>
+                    <p class="help-block" data-bind="visible: soundBlocked">{{ _('Sound is currently blocked by the browser. Click the Test button (or interact with the page) to enable audio playback.') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="temp-eta-settings-divider"><hr></div>
+
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Browser notifications') }}</h4>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_notification_enabled">{{ _('Enable browser notifications') }}</label>
+                <div class="controls">
+                    <input type="checkbox" id="temp_eta_notification_enabled"
+                           data-bind="checked: settings.plugins.temp_eta.notification_enabled, enable: settings.plugins.temp_eta.enabled">
+                    <p class="help-block">{{ _('Show small toast notifications in the top-right corner of the OctoPrint UI.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">{{ _('Events') }}</label>
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.notification_target_reached, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled">
+                        {{ _('Target reached') }}
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.notification_cooldown_finished, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled">
+                        {{ _('Cooldown finished') }}
+                    </label>
+                    <p class="help-block">{{ _('Choose which events should show a browser notification.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_notification_timeout_s">{{ _('Timeout (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_notification_timeout_s"
+                           data-bind="value: settings.plugins.temp_eta.notification_timeout_s, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled"
+                           min="1" max="60" step="1">
+                    <p class="help-block">{{ _('How long a notification stays visible before it disappears automatically.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_notification_min_interval_s">{{ _('Minimum interval (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_notification_min_interval_s"
+                           data-bind="value: settings.plugins.temp_eta.notification_min_interval_s, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled"
+                           min="0" max="300" step="1">
+                    <p class="help-block">{{ _('Rate limit to avoid repeated notifications due to small target/temperature jitter.') }}</p>
+                </div>
+            </div>
+        </div>
+
             </div>
 
             <div class="tab-pane" id="temp_eta_settings_tab_cooldown">
@@ -170,6 +375,7 @@
                 <input type="number" class="input-small" id="temp_eta_cooldown_target_tool0"
                        data-bind="value: settings.plugins.temp_eta.cooldown_target_tool0, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'threshold'"
                        min="0" max="400" step="1">
+                <p class="help-block">{{ _('Target temperature for tool0 when using threshold mode.') }}</p>
             </div>
         </div>
 
@@ -179,6 +385,7 @@
                 <input type="number" class="input-small" id="temp_eta_cooldown_target_bed"
                        data-bind="value: settings.plugins.temp_eta.cooldown_target_bed, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'threshold'"
                        min="0" max="200" step="1">
+                <p class="help-block">{{ _('Target temperature for the bed when using threshold mode.') }}</p>
             </div>
         </div>
 
@@ -188,6 +395,7 @@
                 <input type="number" class="input-small" id="temp_eta_cooldown_target_chamber"
                        data-bind="value: settings.plugins.temp_eta.cooldown_target_chamber, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'threshold'"
                        min="0" max="100" step="1">
+                <p class="help-block">{{ _('Target temperature for the chamber when using threshold mode.') }}</p>
             </div>
         </div>
 
@@ -218,41 +426,6 @@
                        data-bind="value: settings.plugins.temp_eta.cooldown_fit_window_seconds, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta"
                        min="10" max="1800" step="10">
                 <p class="help-block">{{ _('How many seconds of recent cooldown data to use for the ETA estimate.') }}</p>
-            </div>
-        </div>
-
-            </div>
-
-            <div class="tab-pane" id="temp_eta_settings_tab_advanced">
-
-        <!-- Update Interval -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_update_interval">{{ _('Update Interval (seconds)') }}</label>
-            <div class="controls">
-                <input type="number" class="input-small" id="temp_eta_update_interval"
-                       data-bind="value: settings.plugins.temp_eta.update_interval"
-                       min="0.1" max="5" step="0.1">
-                <p class="help-block">{{ _('How often to update ETA display (lower = more responsive, higher = less CPU)') }}</p>
-            </div>
-        </div>
-
-        <!-- History Size -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_history_size">{{ _('Temperature History Size') }}</label>
-            <div class="controls">
-                <input type="number" class="input-small" id="temp_eta_history_size"
-                       data-bind="value: settings.plugins.temp_eta.history_size"
-                       min="10" max="300" step="10">
-                <p class="help-block">{{ _('Number of temperature samples to keep in history') }}</p>
-            </div>
-        </div>
-
-        <!-- Debug Logging -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_debug_logging">{{ _('Enable debug logging') }}</label>
-            <div class="controls">
-                <input type="checkbox" id="temp_eta_debug_logging" data-bind="checked: settings.plugins.temp_eta.debug_logging">
-                <p class="help-block">{{ _('Write additional debug information to the OctoPrint log (may be noisy)') }}</p>
             </div>
         </div>
 
@@ -303,25 +476,54 @@
         </div>
 
             </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_help">
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-info-circle"></i> {{ _('How it works') }}
+                </h4>
+            </div>
+            <div class="panel-body">
+                <ul>
+                    <li>{{ _('Monitors temperature changes in real-time') }}</li>
+                    <li>{{ _('Calculates heating rate (°C/second)') }}</li>
+                    <li>{{ _('Estimates time to reach target temperature') }}</li>
+                    <li>{{ _('Displays countdown in MM:SS format') }}</li>
+                </ul>
+
+                <p>
+                    <small>{{ _('Adjust the algorithm, threshold, and update interval above to tune the ETA calculation for your printer.') }}</small>
+                </p>
+
+                <hr>
+
+                <h5>{{ _('Notes') }}</h5>
+                <ul>
+                    <li>{{ _('ETAs are only shown when the target temperature is above the current temperature and the configured threshold is met.') }}</li>
+                    <li>{{ _('If the heating rate cannot be determined (e.g. too little data or temperature jitter), the ETA may stay hidden until it stabilizes.') }}</li>
+                    <li>{{ _('Supported heaters depend on your firmware and OctoPrint: tool0, bed, and chamber (if available).') }}</li>
+                    <li>{{ _('Optional alerts (sound/toast) can notify you when the target is reached or when the cool-down finishes.') }}</li>
+                </ul>
+
+                <h5>{{ _('Algorithms') }}</h5>
+                <p>
+                    <strong>{{ _('Linear') }}</strong>: {{ _('Assumes a roughly constant heating rate over the recent samples. Best for quick, stable estimates and slower/steady heaters.') }}
+                </p>
+                <p>
+                    <strong>{{ _('Exponential') }}</strong>: {{ _('Models the typical slow-down as the heater approaches the target temperature. Best when your heater ramps fast initially but tapers off near the target.') }}
+                </p>
+
+                <h5>{{ _('FAQ') }}</h5>
+                <p>
+                    <strong>{{ _('Why do I see --:--?') }}</strong>
+                    {{ _('This usually means an ETA is not available yet. Common reasons: the target is not high enough above the current temperature, the heating threshold is not met, or there is not enough stable data to calculate a rate.') }}
+                </p>
+            </div>
+        </div>
+
+            </div>
         </div>
     </fieldset>
 </form>
-
-<div class="panel panel-info">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            <i class="fa fa-info-circle"></i> {{ _('How it works') }}
-        </h4>
-    </div>
-    <div class="panel-body">
-        <ul>
-            <li>{{ _('Monitors temperature changes in real-time') }}</li>
-            <li>{{ _('Calculates heating rate (°C/second)') }}</li>
-            <li>{{ _('Estimates time to reach target temperature') }}</li>
-            <li>{{ _('Displays countdown in MM:SS format') }}</li>
-        </ul>
-        <p>
-            <small>{{ _('Adjust the algorithm, threshold, and polling interval above to tune the ETA calculation for your printer.') }}</small>
-        </p>
-    </div>
-</div>

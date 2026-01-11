@@ -223,6 +223,7 @@ class TempETAPlugin(
 
         try:
             enabled = bool(self._settings.get_boolean(["enabled"]))
+            heating_enabled = bool(self._settings.get_boolean(["enable_heating_eta"]))
             show_hist = bool(self._settings.get_boolean(["show_historical_graph"]))
             show_sidebar = bool(self._settings.get_boolean(["show_in_sidebar"]))
             show_tab = bool(self._settings.get_boolean(["show_in_tab"]))
@@ -233,8 +234,10 @@ class TempETAPlugin(
             return
 
         self._debug_log(
-            "Settings snapshot enabled=%s show_hist=%s show_tab=%s show_sidebar=%s show_navbar=%s cooldown=%s mode=%s",
+            "Settings snapshot enabled=%s heating=%s show_hist=%s show_tab=%s "
+            "show_sidebar=%s show_navbar=%s cooldown=%s mode=%s",
             str(enabled),
+            str(heating_enabled),
             str(show_hist),
             str(show_tab),
             str(show_sidebar),
@@ -788,6 +791,7 @@ class TempETAPlugin(
         self._debug_log_settings_snapshot(current_time)
 
         threshold = self._settings.get_float(["threshold_start"])
+        heating_enabled = self._heating_enabled()
 
         # Log all heaters received from OctoPrint
         heaters_in_data = [k for k, v in data.items() if isinstance(v, dict)]
@@ -869,6 +873,9 @@ class TempETAPlugin(
                             prev = self._cooldown_ambient_baseline.get(heater)
                             if prev is None or actual < prev:
                                 self._cooldown_ambient_baseline[heater] = actual
+                    continue
+
+                if not heating_enabled:
                     continue
 
                 remaining = target - actual
@@ -965,6 +972,8 @@ class TempETAPlugin(
         """
         algorithm = self._settings.get(["algorithm"])
         threshold = self._settings.get_float(["threshold_start"])
+
+        heating_enabled = self._heating_enabled()
 
         cooldown_enabled = self._cooldown_enabled()
         cooldown_mode = self._cooldown_mode()
@@ -1072,7 +1081,7 @@ class TempETAPlugin(
                     eta = None
                     eta_kind = None
                     cooldown_target = None
-                elif (target - actual) >= threshold:
+                elif (target - actual) >= threshold and heating_enabled:
                     # Still far from target - calculate ETA
                     if algorithm == "exponential":
                         eta = self._calculate_exponential_eta(heater, target)
@@ -1104,6 +1113,15 @@ class TempETAPlugin(
                         "cooldown_mode": cooldown_mode if cooldown_enabled else None,
                     },
                 )
+
+    def _heating_enabled(self) -> bool:
+        """Return whether heating ETA is enabled."""
+        if not getattr(self, "_settings", None):
+            return True
+        try:
+            return bool(self._settings.get_boolean(["enable_heating_eta"]))
+        except Exception:
+            return True
 
     def _cooldown_enabled(self) -> bool:
         """Return whether cooldown ETA is enabled."""
@@ -1542,6 +1560,7 @@ class TempETAPlugin(
         """
         return dict(
             enabled=True,
+            enable_heating_eta=True,
             suppress_while_printing=False,
             show_in_sidebar=True,
             show_in_navbar=True,
@@ -1565,6 +1584,23 @@ class TempETAPlugin(
             cooldown_ambient_temp=None,
             cooldown_hysteresis_c=1.0,
             cooldown_fit_window_seconds=120,
+            # Extended settings: status colors
+            color_mode="bands",
+            color_heating="#5cb85c",
+            color_cooling="#337ab7",
+            color_idle="#777777",
+            # Extended settings: sound alerts
+            sound_enabled=False,
+            sound_target_reached=False,
+            sound_cooldown_finished=False,
+            sound_volume=0.5,
+            sound_min_interval_s=10.0,
+            # Extended settings: browser notifications (toast)
+            notification_enabled=False,
+            notification_target_reached=False,
+            notification_cooldown_finished=False,
+            notification_timeout_s=6.0,
+            notification_min_interval_s=10.0,
         )
 
     # TemplatePlugin mixin

@@ -22,6 +22,31 @@ $(function () {
     }
   }
 
+  function _toast(type, title, text, delayMs, extraClass) {
+    if (window.PNotify) {
+      var delay =
+        typeof delayMs === "number" && isFinite(delayMs) ? delayMs : 6000;
+      delay = Math.max(1000, Math.min(60000, delay));
+      var extra = typeof extraClass === "string" ? extraClass : "";
+      if (extra && extra.charAt(0) !== " ") {
+        extra = " " + extra;
+      }
+      new PNotify({
+        title: title,
+        text: text,
+        type: type,
+        icon: false,
+        hide: true,
+        delay: delay,
+        addclass: "temp-eta-toast" + extra,
+        buttons: { closer: true, sticker: false },
+        history: { history: false },
+      });
+    } else {
+      _notify(type, title, text);
+    }
+  }
+
   function _confirmAction(title, text, onYes, onNo) {
     try {
       if (typeof window.showConfirmationDialog === "function") {
@@ -420,6 +445,412 @@ $(function () {
         } catch (e) {}
       };
     })();
+
+    // Extended settings: sound alerts
+    self.soundBlocked = ko.observable(false);
+    self._audioContext = null;
+    self._soundLastPlayedByKey = {};
+
+    self._getColorMode = function () {
+      var ps = self._pluginSettings();
+      if (!ps || !ps.color_mode) {
+        return "bands";
+      }
+      try {
+        var mode =
+          typeof ps.color_mode === "function" ? ps.color_mode() : ps.color_mode;
+        return mode === "status" ? "status" : "bands";
+      } catch (e) {
+        return "bands";
+      }
+    };
+
+    self._readKoString = function (value, defaultValue) {
+      try {
+        if (typeof value === "function") {
+          value = value();
+        }
+      } catch (e) {
+        value = null;
+      }
+      if (typeof value === "string" && value.length) {
+        return value;
+      }
+      return defaultValue;
+    };
+
+    self._applyStatusColorVariables = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return;
+      }
+
+      try {
+        var heating = self._readKoString(ps.color_heating, "#5cb85c");
+        var cooling = self._readKoString(ps.color_cooling, "#337ab7");
+        var idle = self._readKoString(ps.color_idle, "#777777");
+        var root = document && document.documentElement;
+        if (!root || !root.style) {
+          return;
+        }
+
+        root.style.setProperty("--temp-eta-color-heating", heating);
+        root.style.setProperty("--temp-eta-color-cooling", cooling);
+        root.style.setProperty("--temp-eta-color-idle", idle);
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    self._setupExtendedSettingsSubscriptions = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        self._applyStatusColorVariables();
+        return;
+      }
+
+      ["color_mode", "color_heating", "color_cooling", "color_idle"].forEach(
+        function (key) {
+          try {
+            var obs = ps[key];
+            if (obs && typeof obs.subscribe === "function") {
+              obs.subscribe(self._applyStatusColorVariables);
+            }
+          } catch (e) {}
+        },
+      );
+
+      self._applyStatusColorVariables();
+    };
+
+    self._i18nAttrOr = function (attrName, fallback) {
+      try {
+        return _attrOr($("#temp_eta_i18n"), attrName, fallback);
+      } catch (e) {
+        return fallback;
+      }
+    };
+
+    self._isSoundEnabled = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return false;
+      }
+      if (!readKoBool(ps.enabled, true)) {
+        return false;
+      }
+      return readKoBool(ps.sound_enabled, false);
+    };
+
+    self._isNotificationEnabled = function () {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return false;
+      }
+      if (!readKoBool(ps.enabled, true)) {
+        return false;
+      }
+      return readKoBool(ps.notification_enabled, false);
+    };
+
+    self._isNotificationEventEnabled = function (eventKey) {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return false;
+      }
+      if (eventKey === "target_reached") {
+        return readKoBool(ps.notification_target_reached, false);
+      }
+      if (eventKey === "cooldown_finished") {
+        return readKoBool(ps.notification_cooldown_finished, false);
+      }
+      return false;
+    };
+
+    self._getNotificationTimeoutMs = function () {
+      var ps = self._pluginSettings();
+      var s = 6.0;
+      if (ps) {
+        s = readKoNumber(ps.notification_timeout_s, 6.0);
+      }
+      if (!isFinite(s) || s <= 0) {
+        s = 6.0;
+      }
+      return Math.max(1000, Math.min(60000, s * 1000.0));
+    };
+
+    self._getNotificationMinIntervalMs = function () {
+      var ps = self._pluginSettings();
+      var s = 10.0;
+      if (ps) {
+        s = readKoNumber(ps.notification_min_interval_s, 10.0);
+      }
+      if (!isFinite(s) || s < 0) {
+        s = 10.0;
+      }
+      return s * 1000.0;
+    };
+
+    self._notifyEvent = function (heaterName, eventKey, displayTargetC) {
+      if (!self._isNotificationEnabled()) {
+        return;
+      }
+      if (!self._isNotificationEventEnabled(eventKey)) {
+        return;
+      }
+
+      var nowMs = Date.now();
+      var k = String(heaterName) + ":" + String(eventKey);
+      var last = self._notificationLastShownByKey[k] || 0;
+      var minIntervalMs = self._getNotificationMinIntervalMs();
+      if (nowMs - last < minIntervalMs) {
+        return;
+      }
+      self._notificationLastShownByKey[k] = nowMs;
+
+      var pluginTitle = self._i18nAttrOr(
+        "data-notify-plugin-title",
+        "Temperature ETA",
+      );
+      var heaterLabel = self.getHeaterLabel(heaterName);
+      var targetText = self.formatTempDisplay(displayTargetC);
+
+      var type = "info";
+      var title = pluginTitle;
+      var tpl = "";
+      var toastClass = "temp-eta-toast-generic";
+
+      if (eventKey === "target_reached") {
+        type = "success";
+        toastClass = "temp-eta-toast-target";
+        title = self._i18nAttrOr(
+          "data-notify-target-reached-title",
+          "Target reached",
+        );
+        tpl = self._i18nAttrOr(
+          "data-notify-target-reached-text",
+          "{heater}: reached {target}",
+        );
+      } else if (eventKey === "cooldown_finished") {
+        type = "info";
+        toastClass = "temp-eta-toast-cooldown";
+        title = self._i18nAttrOr(
+          "data-notify-cooldown-finished-title",
+          "Cooldown finished",
+        );
+        tpl = self._i18nAttrOr(
+          "data-notify-cooldown-finished-text",
+          "{heater}: cooled down to {target}",
+        );
+      }
+
+      var text = String(tpl)
+        .replace("{heater}", String(heaterLabel))
+        .replace("{target}", String(targetText));
+
+      _toast(type, title, text, self._getNotificationTimeoutMs(), toastClass);
+    };
+
+    self._isSoundEventEnabled = function (eventKey) {
+      var ps = self._pluginSettings();
+      if (!ps) {
+        return false;
+      }
+      if (eventKey === "target_reached") {
+        return readKoBool(ps.sound_target_reached, false);
+      }
+      if (eventKey === "cooldown_finished") {
+        return readKoBool(ps.sound_cooldown_finished, false);
+      }
+      return false;
+    };
+
+    self._getSoundVolume = function () {
+      var ps = self._pluginSettings();
+      var v = 0.5;
+      if (ps) {
+        v = readKoNumber(ps.sound_volume, 0.5);
+      }
+      if (!isFinite(v)) {
+        v = 0.5;
+      }
+      return Math.max(0, Math.min(1, v));
+    };
+
+    self._getSoundMinIntervalMs = function () {
+      var ps = self._pluginSettings();
+      var s = 10.0;
+      if (ps) {
+        s = readKoNumber(ps.sound_min_interval_s, 10.0);
+      }
+      if (!isFinite(s) || s < 0) {
+        s = 10.0;
+      }
+      return s * 1000.0;
+    };
+
+    self._ensureAudioContext = function () {
+      if (self._audioContext) {
+        return self._audioContext;
+      }
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) {
+        return null;
+      }
+      try {
+        self._audioContext = new Ctx();
+        return self._audioContext;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    self._getStaticSoundUrl = function (fileName) {
+      // Prefer OctoPrint's helper if available; fall back to a relative URL.
+      // Static files are served from /plugin/<identifier>/static/...
+      try {
+        if (
+          window.OctoPrint &&
+          typeof OctoPrint.getBlueprintUrl === "function"
+        ) {
+          var base = OctoPrint.getBlueprintUrl("temp_eta");
+          if (base && base.charAt(base.length - 1) !== "/") {
+            base += "/";
+          }
+          return base + "static/sounds/" + encodeURIComponent(fileName);
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      return "/plugin/temp_eta/static/sounds/" + encodeURIComponent(fileName);
+    };
+
+    self._playSoundFile = function (fileName) {
+      // HTMLAudio playback. This may be blocked by autoplay policies.
+      try {
+        var url = self._getStaticSoundUrl(fileName);
+        var a = new Audio(url);
+        a.volume = self._getSoundVolume();
+        var p = a.play();
+        if (p && typeof p.catch === "function") {
+          p.catch(function () {
+            self.soundBlocked(true);
+            // Fallback to WebAudio beep (still may require interaction).
+            self._playBeep({});
+          });
+        }
+      } catch (e) {
+        self._playBeep({});
+      }
+    };
+
+    self._playBeep = function (opts) {
+      var options = opts || {};
+      var force = !!options.force;
+      var volume =
+        typeof options.volume === "number"
+          ? options.volume
+          : self._getSoundVolume();
+
+      if (!force && !self._isSoundEnabled()) {
+        return;
+      }
+
+      var ctx = self._ensureAudioContext();
+      if (!ctx) {
+        return;
+      }
+
+      var resumePromise = null;
+      try {
+        if (ctx.state === "suspended" && typeof ctx.resume === "function") {
+          resumePromise = ctx.resume();
+        }
+      } catch (e) {
+        resumePromise = null;
+      }
+
+      var doBeep = function () {
+        try {
+          if (ctx.state === "suspended") {
+            self.soundBlocked(true);
+            return;
+          }
+
+          self.soundBlocked(false);
+
+          var now = ctx.currentTime;
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = 880;
+
+          var v = Math.max(0, Math.min(1, volume));
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(
+            Math.max(0.0002, v),
+            now + 0.02,
+          );
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } catch (e) {
+          // ignore
+        }
+      };
+
+      if (resumePromise && typeof resumePromise.then === "function") {
+        resumePromise
+          .then(function () {
+            doBeep();
+          })
+          .catch(function () {
+            self.soundBlocked(true);
+          });
+      } else {
+        doBeep();
+      }
+    };
+
+    self._playSoundEvent = function (heaterName, eventKey) {
+      var nowMs = Date.now();
+      var k = String(heaterName) + ":" + String(eventKey);
+      var last = self._soundLastPlayedByKey[k] || 0;
+      var minIntervalMs = self._getSoundMinIntervalMs();
+      if (nowMs - last < minIntervalMs) {
+        return;
+      }
+      self._soundLastPlayedByKey[k] = nowMs;
+
+      if (eventKey === "target_reached") {
+        self._playSoundFile("heating_done.wav");
+        return;
+      }
+      if (eventKey === "cooldown_finished") {
+        self._playSoundFile("cooling_done.wav");
+        return;
+      }
+
+      self._playBeep({});
+    };
+
+    self.testSound = function () {
+      // The test button should work regardless of master enable state to help
+      // browsers unlock audio playback on user interaction.
+      try {
+        self.soundBlocked(false);
+      } catch (e) {}
+
+      // Try the file-based sound first; it will fall back to WebAudio.
+      self._playSoundFile("heating_done.wav");
+    };
+
+    self._notificationLastShownByKey = {};
 
     function readKoBool(value, defaultValue) {
       try {
@@ -1083,6 +1514,8 @@ $(function () {
             startTarget: ko.observable(null),
             _history: [],
             _lastGraphRenderMs: 0,
+            _targetReachedNotifiedFor: null,
+            _targetReachedNotifiedForNotification: null,
           };
           self.heaters.push(self.heaterData[heater]);
           self._debugLog(
@@ -1093,12 +1526,23 @@ $(function () {
           );
         }
 
+        // Capture previous state for sound/event transitions.
+        var heaterObj = self.heaterData[heater];
+        var prevEta = heaterObj.eta();
+        var prevEtaKind = heaterObj.etaKind();
+        var prevActual = heaterObj.actual
+          ? parseFloat(heaterObj.actual())
+          : NaN;
+        var prevTarget = heaterObj.target
+          ? parseFloat(heaterObj.target())
+          : NaN;
+
         // Update heater data
-        self.heaterData[heater].eta(eta);
-        self.heaterData[heater].etaKind(etaKind);
-        self.heaterData[heater].actual(data.actual);
-        self.heaterData[heater].target(data.target);
-        self.heaterData[heater].cooldownTarget(
+        heaterObj.eta(eta);
+        heaterObj.etaKind(etaKind);
+        heaterObj.actual(data.actual);
+        heaterObj.target(data.target);
+        heaterObj.cooldownTarget(
           cooldownTarget !== null && isFinite(cooldownTarget)
             ? cooldownTarget
             : null,
@@ -1109,34 +1553,119 @@ $(function () {
         // progress represents the fraction from startTemp -> target.
         var actualNow = parseFloat(data.actual);
         var targetNow = parseFloat(data.target);
-        var prevTarget = parseFloat(self.heaterData[heater].startTarget());
+        var prevStartTarget = parseFloat(heaterObj.startTarget());
 
         var heatingNow = self._isHeaterHeatingNow(eta, actualNow, targetNow);
         if (!heatingNow) {
           // Reset when the heater returns to "Idle" (e.g. reached target).
-          self.heaterData[heater].startTemp(null);
-          self.heaterData[heater].startTarget(null);
+          heaterObj.startTemp(null);
+          heaterObj.startTarget(null);
         } else {
           var needsReset =
-            !isFinite(prevTarget) ||
-            Math.abs(prevTarget - targetNow) > 1e-6 ||
-            self.heaterData[heater].startTemp() === null ||
-            self.heaterData[heater].startTemp() === undefined;
+            !isFinite(prevStartTarget) ||
+            Math.abs(prevStartTarget - targetNow) > 1e-6 ||
+            heaterObj.startTemp() === null ||
+            heaterObj.startTemp() === undefined;
 
           if (needsReset) {
-            self.heaterData[heater].startTemp(actualNow);
-            self.heaterData[heater].startTarget(targetNow);
+            heaterObj.startTemp(actualNow);
+            heaterObj.startTarget(targetNow);
           }
+        }
+
+        // Sound alert transitions.
+        try {
+          var prevHeating = self._isHeaterHeatingNow(
+            prevEta,
+            prevActual,
+            prevTarget,
+          );
+
+          // Reset target-reached marker if the target changes significantly.
+          if (
+            isFinite(prevTarget) &&
+            isFinite(targetNow) &&
+            Math.abs(prevTarget - targetNow) > 0.2
+          ) {
+            heaterObj._targetReachedNotifiedFor = null;
+            heaterObj._targetReachedNotifiedForNotification = null;
+          }
+
+          if (
+            self._isSoundEnabled() &&
+            self._isSoundEventEnabled("target_reached") &&
+            prevHeating &&
+            !heatingNow &&
+            isFinite(targetNow) &&
+            targetNow > 0
+          ) {
+            var notifiedFor = heaterObj._targetReachedNotifiedFor;
+            if (
+              !isFinite(notifiedFor) ||
+              notifiedFor === null ||
+              Math.abs(notifiedFor - targetNow) > 0.1
+            ) {
+              heaterObj._targetReachedNotifiedFor = targetNow;
+              self._playSoundEvent(heater, "target_reached");
+            }
+          }
+
+          if (
+            self._isNotificationEnabled() &&
+            self._isNotificationEventEnabled("target_reached") &&
+            prevHeating &&
+            !heatingNow &&
+            isFinite(targetNow) &&
+            targetNow > 0
+          ) {
+            var notifiedForN = heaterObj._targetReachedNotifiedForNotification;
+            if (
+              !isFinite(notifiedForN) ||
+              notifiedForN === null ||
+              Math.abs(notifiedForN - targetNow) > 0.1
+            ) {
+              heaterObj._targetReachedNotifiedForNotification = targetNow;
+              self._notifyEvent(heater, "target_reached", targetNow);
+            }
+          }
+
+          var prevCooling = prevEtaKind === "cooling";
+          var nowCooling = etaKind === "cooling";
+          if (
+            self._isSoundEnabled() &&
+            self._isSoundEventEnabled("cooldown_finished") &&
+            prevCooling &&
+            !nowCooling
+          ) {
+            self._playSoundEvent(heater, "cooldown_finished");
+          }
+
+          if (
+            self._isNotificationEnabled() &&
+            self._isNotificationEventEnabled("cooldown_finished") &&
+            prevCooling &&
+            !nowCooling
+          ) {
+            // Prefer the explicit cooldown target if provided, otherwise fall back
+            // to the current "effective" target.
+            var t = cooldownTarget;
+            if (!isFinite(t) || t === null) {
+              t = targetNow;
+            }
+            self._notifyEvent(heater, "cooldown_finished", t);
+          }
+        } catch (e) {
+          // ignore
         }
 
         // Record and render history graph (tab view).
         self._recordHeaterHistory(
-          self.heaterData[heater],
+          heaterObj,
           Date.now() / 1000.0,
           actualNow,
           targetNow,
         );
-        self._renderHistoricalGraph(self.heaterData[heater]);
+        self._renderHistoricalGraph(heaterObj);
 
         // Ensure sidebar becomes visible even if it was injected late.
         self._throttledEnsureSidebarBound();
@@ -1280,6 +1809,10 @@ $(function () {
       if (heater.etaKind && heater.etaKind() === "cooling") {
         return "eta-cooling";
       }
+
+      if (self._getColorMode() === "status") {
+        return "eta-heating";
+      }
       if (eta < 60) {
         return "eta-warning";
       } else if (eta < 300) {
@@ -1369,6 +1902,20 @@ $(function () {
     };
 
     self.getProgressBarClass = function (heater) {
+      if (self._getColorMode() === "status") {
+        if (heater && heater.etaKind && heater.etaKind() === "cooling") {
+          return "eta-cooling";
+        }
+        var eta = heater && heater.eta ? heater.eta() : null;
+        var actual =
+          heater && heater.actual ? parseFloat(heater.actual()) : NaN;
+        var target =
+          heater && heater.target ? parseFloat(heater.target()) : NaN;
+        return self._isHeaterHeatingNow(eta, actual, target)
+          ? "eta-heating"
+          : "eta-idle";
+      }
+
       // Reuse the ETA coloring bands. When ETA is hidden, use a neutral style.
       var c = self.getETAClass(heater);
       if (!c || c === "hidden") {
@@ -1401,6 +1948,13 @@ $(function () {
         return _gettext("Cooling");
       }
       return _gettext("Idle");
+    };
+
+    self.getHeaterIdleClass = function (heater) {
+      if (heater && heater.etaKind && heater.etaKind() === "cooling") {
+        return "eta-cooling";
+      }
+      return "eta-idle";
     };
 
     /**
@@ -1550,6 +2104,9 @@ $(function () {
       // Called after the view model is bound to the DOM
       self._setupVisibilitySubscriptions();
       self._installSettingsDialogHooks();
+
+      // Extended settings (colors + sound)
+      self._setupExtendedSettingsSubscriptions();
 
       // Try binding the sidebar root even if it gets injected after startup.
       self._ensureSidebarBound();
