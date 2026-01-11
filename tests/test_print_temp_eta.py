@@ -154,6 +154,12 @@ def test_settings_defaults_shape(plugin: TempETAPlugin) -> None:
     assert 0.0 <= float(defaults["sound_volume"]) <= 1.0
     assert float(defaults["sound_min_interval_s"]) >= 0.0
 
+    assert defaults["notification_enabled"] is False
+    assert defaults["notification_target_reached"] is False
+    assert defaults["notification_cooldown_finished"] is False
+    assert float(defaults["notification_timeout_s"]) >= 1.0
+    assert float(defaults["notification_min_interval_s"]) >= 0.0
+
 
 def test_calculate_linear_eta_returns_none_with_insufficient_history(
     plugin: TempETAPlugin,

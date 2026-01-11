@@ -449,3 +449,64 @@
 .temp-eta-settings select {
     width: 280px;
 }
+
+/* Toast notifications (PNotify) */
+.ui-pnotify.temp-eta-toast {
+    z-index: 10050;
+}
+
+.ui-pnotify.temp-eta-toast .ui-pnotify-icon {
+    display: none;
+}
+
+.ui-pnotify.temp-eta-toast .ui-pnotify-container {
+    border-radius: 3px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    padding: 10px 12px;
+    border-left: 4px solid rgba(0, 0, 0, 0.12);
+}
+
+.ui-pnotify.temp-eta-toast .ui-pnotify-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 2px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.ui-pnotify.temp-eta-toast .ui-pnotify-text {
+    font-size: 12px;
+    line-height: 1.35;
+    padding-left: 20px;
+}
+
+.ui-pnotify.temp-eta-toast .ui-pnotify-title:before {
+    font-family: FontAwesome;
+    font-size: 14px;
+    line-height: 14px;
+    position: absolute;
+    left: 0;
+    top: 1px;
+    opacity: 0.9;
+    content: "\f05a"; /* info-circle */
+}
+
+/* Per-event accent + icon */
+.ui-pnotify.temp-eta-toast-target .ui-pnotify-container {
+    border-left-color: var(--temp-eta-color-heating, #5cb85c) !important;
+}
+
+.ui-pnotify.temp-eta-toast-target .ui-pnotify-title:before {
+    content: "\f00c"; /* check */
+    color: var(--temp-eta-color-heating, #5cb85c);
+}
+
+.ui-pnotify.temp-eta-toast-cooldown .ui-pnotify-container {
+    border-left-color: var(--temp-eta-color-cooling, #337ab7) !important;
+}
+
+.ui-pnotify.temp-eta-toast-cooldown .ui-pnotify-title:before {
+    content: "\f2dc"; /* snowflake-o (FA 4.7) */
+    color: var(--temp-eta-color-cooling, #337ab7);
+}

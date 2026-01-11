@@ -1576,6 +1576,12 @@ class TempETAPlugin(
             sound_cooldown_finished=False,
             sound_volume=0.5,
             sound_min_interval_s=10.0,
+            # Extended settings: browser notifications (toast)
+            notification_enabled=False,
+            notification_target_reached=False,
+            notification_cooldown_finished=False,
+            notification_timeout_s=6.0,
+            notification_min_interval_s=10.0,
         )
 
     # TemplatePlugin mixin

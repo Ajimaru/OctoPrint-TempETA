@@ -44,6 +44,9 @@
 - 📉 **Historical temperature graphs**: A dedicated history view in the tab with a configurable time window (can be disabled)
 - 🧊 **Cool-down ETA**: Optional ETA estimates when turning heaters off (target set to 0), with two modes: threshold-based and ambient-based
 - 🎛️ **Configurable thresholds**: Start countdown when within a configurable delta to target
+- 🎨 **Status colors**: Optional color bands for heating/cooling/idle states
+- 🔔 **Sound alerts** (optional): Play a sound when target is reached or cool-down finishes
+- 🖥️ **Browser toast notifications** (optional): Small top-right notifications for key events (default off)
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
 - 🌍 **Internationalization**: English and German included, easily extensible
@@ -110,6 +113,12 @@ If enabled, the plugin can estimate an ETA while heaters are cooling down (targe
 - **Update Interval**: Frontend refresh rate (default: 1 second)
 - **History Size**: Number of temperature readings to keep (default: 60)
 
+### Alerts & Notifications
+
+- **Status colors**: Customize the colors used for heating/cooling/idle indicators
+- **Sound alerts** (optional): Enable per-event sounds and configure volume/rate limit
+- **Browser toast notifications** (optional): Enable per-event toasts and configure timeout/rate limit
+
 ### Maintenance
 
 - **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder).
@@ -131,25 +140,39 @@ If enabled, the plugin can estimate an ETA while heaters are cooling down (targe
 
 The following defaults apply to the user-editable plugin settings:
 
-| Setting                 | Key                               | Default     |
-| ----------------------- | --------------------------------- | ----------- |
-| Enable Temperature ETA  | `enabled`                         | `true`      |
-| Hide ETA while printing | `suppress_while_printing`         | `false`     |
-| Show in sidebar         | `show_in_sidebar`                 | `true`      |
-| Show in navbar          | `show_in_navbar`                  | `true`      |
-| Show in tab             | `show_in_tab`                     | `true`      |
-| Show progress bars      | `show_progress_bars`              | `true`      |
-| Show historical graph   | `show_historical_graph`           | `true`      |
-| Graph window (seconds)  | `historical_graph_window_seconds` | `180`       |
-| Temperature display     | `temp_display`                    | `octoprint` |
-| Heating threshold       | `threshold_start`                 | `5.0 °C`    |
-| Threshold unit          | `threshold_unit`                  | `octoprint` |
-| Algorithm               | `algorithm`                       | `linear`    |
-| Update Interval         | `update_interval`                 | `1.0 s`     |
-| History Size            | `history_size`                    | `60`        |
-| Enable cool-down ETA    | `enable_cooldown_eta`             | `true`      |
-| Cool-down mode          | `cooldown_mode`                   | `threshold` |
-| Enable debug logging    | `debug_logging`                   | `false`     |
+| Setting                  | Key                               | Default     |
+| ------------------------ | --------------------------------- | ----------- |
+| Enable Temperature ETA   | `enabled`                         | `true`      |
+| Hide ETA while printing  | `suppress_while_printing`         | `false`     |
+| Show in sidebar          | `show_in_sidebar`                 | `true`      |
+| Show in navbar           | `show_in_navbar`                  | `true`      |
+| Show in tab              | `show_in_tab`                     | `true`      |
+| Show progress bars       | `show_progress_bars`              | `true`      |
+| Show historical graph    | `show_historical_graph`           | `true`      |
+| Graph window (seconds)   | `historical_graph_window_seconds` | `180`       |
+| Temperature display      | `temp_display`                    | `octoprint` |
+| Heating threshold        | `threshold_start`                 | `5.0 °C`    |
+| Threshold unit           | `threshold_unit`                  | `octoprint` |
+| Algorithm                | `algorithm`                       | `linear`    |
+| Update Interval          | `update_interval`                 | `1.0 s`     |
+| History Size             | `history_size`                    | `60`        |
+| Enable cool-down ETA     | `enable_cooldown_eta`             | `true`      |
+| Cool-down mode           | `cooldown_mode`                   | `threshold` |
+| Enable debug logging     | `debug_logging`                   | `false`     |
+| Color mode               | `color_mode`                      | `bands`     |
+| Heating color            | `color_heating`                   | `#5cb85c`   |
+| Cooling color            | `color_cooling`                   | `#337ab7`   |
+| Idle color               | `color_idle`                      | `#777777`   |
+| Enable sound alerts      | `sound_enabled`                   | `false`     |
+| Sound: target reached    | `sound_target_reached`            | `false`     |
+| Sound: cool-down done    | `sound_cooldown_finished`         | `false`     |
+| Sound volume             | `sound_volume`                    | `0.5`       |
+| Sound min interval       | `sound_min_interval_s`            | `10.0 s`    |
+| Enable toast alerts      | `notification_enabled`            | `false`     |
+| Toast: target reached    | `notification_target_reached`     | `false`     |
+| Toast: cool-down done    | `notification_cooldown_finished`  | `false`     |
+| Toast timeout            | `notification_timeout_s`          | `6.0 s`     |
+| Toast min interval       | `notification_min_interval_s`     | `10.0 s`    |
 
 ## How It Works
 

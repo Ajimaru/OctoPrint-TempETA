@@ -8,6 +8,7 @@
             <li><a href="#temp_eta_settings_tab_cooldown" data-toggle="tab">{{ _('Cool-down ETA') }}</a></li>
             <li><a href="#temp_eta_settings_tab_advanced" data-toggle="tab">{{ _('Advanced Settings') }}</a></li>
             <li><a href="#temp_eta_settings_tab_maintenance" data-toggle="tab">{{ _('Maintenance') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_help" data-toggle="tab">{{ _('Help') }}</a></li>
         </ul>
 
         <div class="tab-content">
@@ -360,6 +361,55 @@
             </div>
         </div>
 
+        <div class="temp-eta-settings-divider"><hr></div>
+
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Browser notifications') }}</h4>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_notification_enabled">{{ _('Enable browser notifications') }}</label>
+                <div class="controls">
+                    <input type="checkbox" id="temp_eta_notification_enabled"
+                           data-bind="checked: settings.plugins.temp_eta.notification_enabled, enable: settings.plugins.temp_eta.enabled">
+                    <p class="help-block">{{ _('Show small toast notifications in the top-right corner of the OctoPrint UI.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">{{ _('Events') }}</label>
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.notification_target_reached, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled">
+                        {{ _('Target reached') }}
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.temp_eta.notification_cooldown_finished, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled">
+                        {{ _('Cooldown finished') }}
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_notification_timeout_s">{{ _('Timeout (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_notification_timeout_s"
+                           data-bind="value: settings.plugins.temp_eta.notification_timeout_s, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled"
+                           min="1" max="60" step="1">
+                    <p class="help-block">{{ _('How long a notification stays visible before it disappears automatically.') }}</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_notification_min_interval_s">{{ _('Minimum interval (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_notification_min_interval_s"
+                           data-bind="value: settings.plugins.temp_eta.notification_min_interval_s, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.notification_enabled"
+                           min="0" max="300" step="1">
+                    <p class="help-block">{{ _('Rate limit to avoid repeated notifications due to small target/temperature jitter.') }}</p>
+                </div>
+            </div>
+        </div>
+
             </div>
 
             <div class="tab-pane" id="temp_eta_settings_tab_maintenance">
@@ -407,25 +457,54 @@
         </div>
 
             </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_help">
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-info-circle"></i> {{ _('How it works') }}
+                </h4>
+            </div>
+            <div class="panel-body">
+                <ul>
+                    <li>{{ _('Monitors temperature changes in real-time') }}</li>
+                    <li>{{ _('Calculates heating rate (°C/second)') }}</li>
+                    <li>{{ _('Estimates time to reach target temperature') }}</li>
+                    <li>{{ _('Displays countdown in MM:SS format') }}</li>
+                </ul>
+
+                <p>
+                    <small>{{ _('Adjust the algorithm, threshold, and update interval above to tune the ETA calculation for your printer.') }}</small>
+                </p>
+
+                <hr>
+
+                <h5>{{ _('Notes') }}</h5>
+                <ul>
+                    <li>{{ _('ETAs are only shown when the target temperature is above the current temperature and the configured threshold is met.') }}</li>
+                    <li>{{ _('If the heating rate cannot be determined (e.g. too little data or temperature jitter), the ETA may stay hidden until it stabilizes.') }}</li>
+                    <li>{{ _('Supported heaters depend on your firmware and OctoPrint: tool0, bed, and chamber (if available).') }}</li>
+                    <li>{{ _('Optional alerts (sound/toast) can notify you when the target is reached or when the cool-down finishes.') }}</li>
+                </ul>
+
+                <h5>{{ _('Algorithms') }}</h5>
+                <p>
+                    <strong>{{ _('Linear') }}</strong>: {{ _('Assumes a roughly constant heating rate over the recent samples. Best for quick, stable estimates and slower/steady heaters.') }}
+                </p>
+                <p>
+                    <strong>{{ _('Exponential') }}</strong>: {{ _('Models the typical slow-down as the heater approaches the target temperature. Best when your heater ramps fast initially but tapers off near the target.') }}
+                </p>
+
+                <h5>{{ _('FAQ') }}</h5>
+                <p>
+                    <strong>{{ _('Why do I see --:--?') }}</strong>
+                    {{ _('This usually means an ETA is not available yet. Common reasons: the target is not high enough above the current temperature, the heating threshold is not met, or there is not enough stable data to calculate a rate.') }}
+                </p>
+            </div>
+        </div>
+
+            </div>
         </div>
     </fieldset>
 </form>
-
-<div class="panel panel-info">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            <i class="fa fa-info-circle"></i> {{ _('How it works') }}
-        </h4>
-    </div>
-    <div class="panel-body">
-        <ul>
-            <li>{{ _('Monitors temperature changes in real-time') }}</li>
-            <li>{{ _('Calculates heating rate (°C/second)') }}</li>
-            <li>{{ _('Estimates time to reach target temperature') }}</li>
-            <li>{{ _('Displays countdown in MM:SS format') }}</li>
-        </ul>
-        <p>
-            <small>{{ _('Adjust the algorithm, threshold, and polling interval above to tune the ETA calculation for your printer.') }}</small>
-        </p>
-    </div>
-</div>
