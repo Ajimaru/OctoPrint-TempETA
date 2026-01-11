@@ -24,7 +24,8 @@ $(function () {
 
   function _toast(type, title, text, delayMs, extraClass) {
     if (window.PNotify) {
-      var delay = typeof delayMs === "number" && isFinite(delayMs) ? delayMs : 6000;
+      var delay =
+        typeof delayMs === "number" && isFinite(delayMs) ? delayMs : 6000;
       delay = Math.max(1000, Math.min(60000, delay));
       var extra = typeof extraClass === "string" ? extraClass : "";
       if (extra && extra.charAt(0) !== " ") {
@@ -508,19 +509,16 @@ $(function () {
         return;
       }
 
-      [
-        "color_mode",
-        "color_heating",
-        "color_cooling",
-        "color_idle",
-      ].forEach(function (key) {
-        try {
-          var obs = ps[key];
-          if (obs && typeof obs.subscribe === "function") {
-            obs.subscribe(self._applyStatusColorVariables);
-          }
-        } catch (e) {}
-      });
+      ["color_mode", "color_heating", "color_cooling", "color_idle"].forEach(
+        function (key) {
+          try {
+            var obs = ps[key];
+            if (obs && typeof obs.subscribe === "function") {
+              obs.subscribe(self._applyStatusColorVariables);
+            }
+          } catch (e) {}
+        },
+      );
 
       self._applyStatusColorVariables();
     };
@@ -711,7 +709,10 @@ $(function () {
       // Prefer OctoPrint's helper if available; fall back to a relative URL.
       // Static files are served from /plugin/<identifier>/static/...
       try {
-        if (window.OctoPrint && typeof OctoPrint.getBlueprintUrl === "function") {
+        if (
+          window.OctoPrint &&
+          typeof OctoPrint.getBlueprintUrl === "function"
+        ) {
           var base = OctoPrint.getBlueprintUrl("temp_eta");
           if (base && base.charAt(base.length - 1) !== "/") {
             base += "/";
@@ -748,7 +749,9 @@ $(function () {
       var options = opts || {};
       var force = !!options.force;
       var volume =
-        typeof options.volume === "number" ? options.volume : self._getSoundVolume();
+        typeof options.volume === "number"
+          ? options.volume
+          : self._getSoundVolume();
 
       if (!force && !self._isSoundEnabled()) {
         return;
@@ -1527,8 +1530,12 @@ $(function () {
         var heaterObj = self.heaterData[heater];
         var prevEta = heaterObj.eta();
         var prevEtaKind = heaterObj.etaKind();
-        var prevActual = heaterObj.actual ? parseFloat(heaterObj.actual()) : NaN;
-        var prevTarget = heaterObj.target ? parseFloat(heaterObj.target()) : NaN;
+        var prevActual = heaterObj.actual
+          ? parseFloat(heaterObj.actual())
+          : NaN;
+        var prevTarget = heaterObj.target
+          ? parseFloat(heaterObj.target())
+          : NaN;
 
         // Update heater data
         heaterObj.eta(eta);
@@ -1900,8 +1907,10 @@ $(function () {
           return "eta-cooling";
         }
         var eta = heater && heater.eta ? heater.eta() : null;
-        var actual = heater && heater.actual ? parseFloat(heater.actual()) : NaN;
-        var target = heater && heater.target ? parseFloat(heater.target()) : NaN;
+        var actual =
+          heater && heater.actual ? parseFloat(heater.actual()) : NaN;
+        var target =
+          heater && heater.target ? parseFloat(heater.target()) : NaN;
         return self._isHeaterHeatingNow(eta, actual, target)
           ? "eta-heating"
           : "eta-idle";

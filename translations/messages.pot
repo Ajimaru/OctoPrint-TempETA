@@ -656,4 +656,3 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 msgid "{heater}: reached {target}"
 msgstr ""
-

@@ -234,7 +234,8 @@ class TempETAPlugin(
             return
 
         self._debug_log(
-            "Settings snapshot enabled=%s heating=%s show_hist=%s show_tab=%s show_sidebar=%s show_navbar=%s cooldown=%s mode=%s",
+            "Settings snapshot enabled=%s heating=%s show_hist=%s show_tab=%s "
+            "show_sidebar=%s show_navbar=%s cooldown=%s mode=%s",
             str(enabled),
             str(heating_enabled),
             str(show_hist),

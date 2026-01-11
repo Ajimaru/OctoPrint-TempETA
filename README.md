@@ -136,40 +136,40 @@ The settings UI is organized into multiple tabs:
 
 The following defaults apply to the user-editable plugin settings:
 
-| Setting                  | Key                               | Default     |
-| ------------------------ | --------------------------------- | ----------- |
-| Enable Temperature ETA   | `enabled`                         | `true`      |
-| Enable heating ETA       | `enable_heating_eta`              | `true`      |
-| Hide ETA while printing  | `suppress_while_printing`         | `false`     |
-| Show in sidebar          | `show_in_sidebar`                 | `true`      |
-| Show in navbar           | `show_in_navbar`                  | `true`      |
-| Show in tab              | `show_in_tab`                     | `true`      |
-| Show progress bars       | `show_progress_bars`              | `true`      |
-| Show historical graph    | `show_historical_graph`           | `true`      |
-| Graph window (seconds)   | `historical_graph_window_seconds` | `180`       |
-| Temperature display      | `temp_display`                    | `octoprint` |
-| Heating threshold        | `threshold_start`                 | `5.0 °C`    |
-| Threshold unit           | `threshold_unit`                  | `octoprint` |
-| Algorithm                | `algorithm`                       | `linear`    |
-| Update Interval          | `update_interval`                 | `1.0 s`     |
-| History Size             | `history_size`                    | `60`        |
-| Enable cool-down ETA     | `enable_cooldown_eta`             | `true`      |
-| Cool-down mode           | `cooldown_mode`                   | `threshold` |
-| Enable debug logging     | `debug_logging`                   | `false`     |
-| Color mode               | `color_mode`                      | `bands`     |
-| Heating color            | `color_heating`                   | `#5cb85c`   |
-| Cooling color            | `color_cooling`                   | `#337ab7`   |
-| Idle color               | `color_idle`                      | `#777777`   |
-| Enable sound alerts      | `sound_enabled`                   | `false`     |
-| Sound: target reached    | `sound_target_reached`            | `false`     |
-| Sound: cool-down done    | `sound_cooldown_finished`         | `false`     |
-| Sound volume             | `sound_volume`                    | `0.5`       |
-| Sound min interval       | `sound_min_interval_s`            | `10.0 s`    |
-| Enable notifications     | `notification_enabled`            | `false`     |
-| Notify: target reached   | `notification_target_reached`     | `false`     |
-| Notify: cool-down done   | `notification_cooldown_finished`  | `false`     |
-| Notification timeout     | `notification_timeout_s`          | `6.0 s`     |
-| Notification min interval| `notification_min_interval_s`     | `10.0 s`    |
+| Setting                   | Key                               | Default     |
+| ------------------------- | --------------------------------- | ----------- |
+| Enable Temperature ETA    | `enabled`                         | `true`      |
+| Enable heating ETA        | `enable_heating_eta`              | `true`      |
+| Hide ETA while printing   | `suppress_while_printing`         | `false`     |
+| Show in sidebar           | `show_in_sidebar`                 | `true`      |
+| Show in navbar            | `show_in_navbar`                  | `true`      |
+| Show in tab               | `show_in_tab`                     | `true`      |
+| Show progress bars        | `show_progress_bars`              | `true`      |
+| Show historical graph     | `show_historical_graph`           | `true`      |
+| Graph window (seconds)    | `historical_graph_window_seconds` | `180`       |
+| Temperature display       | `temp_display`                    | `octoprint` |
+| Heating threshold         | `threshold_start`                 | `5.0 °C`    |
+| Threshold unit            | `threshold_unit`                  | `octoprint` |
+| Algorithm                 | `algorithm`                       | `linear`    |
+| Update Interval           | `update_interval`                 | `1.0 s`     |
+| History Size              | `history_size`                    | `60`        |
+| Enable cool-down ETA      | `enable_cooldown_eta`             | `true`      |
+| Cool-down mode            | `cooldown_mode`                   | `threshold` |
+| Enable debug logging      | `debug_logging`                   | `false`     |
+| Color mode                | `color_mode`                      | `bands`     |
+| Heating color             | `color_heating`                   | `#5cb85c`   |
+| Cooling color             | `color_cooling`                   | `#337ab7`   |
+| Idle color                | `color_idle`                      | `#777777`   |
+| Enable sound alerts       | `sound_enabled`                   | `false`     |
+| Sound: target reached     | `sound_target_reached`            | `false`     |
+| Sound: cool-down done     | `sound_cooldown_finished`         | `false`     |
+| Sound volume              | `sound_volume`                    | `0.5`       |
+| Sound min interval        | `sound_min_interval_s`            | `10.0 s`    |
+| Enable notifications      | `notification_enabled`            | `false`     |
+| Notify: target reached    | `notification_target_reached`     | `false`     |
+| Notify: cool-down done    | `notification_cooldown_finished`  | `false`     |
+| Notification timeout      | `notification_timeout_s`          | `6.0 s`     |
+| Notification min interval | `notification_min_interval_s`     | `10.0 s`    |
 
 ## How It Works
 
