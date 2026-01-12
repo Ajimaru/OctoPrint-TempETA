@@ -120,6 +120,30 @@ If your working tree is not clean, the script will refuse to run unless you pass
 .development/run_ci_locally.sh
 ```
 
+### monitor_octoprint_performance.sh
+
+Lightweight performance monitoring for long-running OctoPrint/plugin tests.
+
+It samples OctoPrint process metrics (CPU, RSS, threads, open FDs), watches the plugin data directory
+(`~/.octoprint/data/temp_eta/` by default), and records basic log growth stats.
+
+Logs are written to the repo-local `.logs/` folder (gitignored).
+
+Examples:
+
+```bash
+# run until Ctrl+C (sample every 10s)
+.development/monitor_octoprint_performance.sh
+
+# sample every 5s for 10 hours
+.development/monitor_octoprint_performance.sh --interval 5 --duration 36000
+
+# take a single snapshot
+.development/monitor_octoprint_performance.sh --once
+```
+
+If PID auto-detection fails (e.g. non-default port), pass `--pid` or `--port`.
+
 ## Git hooks
 
 The repo uses a versioned hooks directory:
