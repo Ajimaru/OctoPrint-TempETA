@@ -11,6 +11,22 @@ None of these scripts contain hardcoded, machine-specific absolute paths. Wherev
 .development/setup_dev.sh
 ```
 
+If you downloaded the repository as a ZIP from GitHub, your unzip tool may have dropped executable bits.
+In that case, run the script explicitly via bash:
+
+```bash
+bash .development/setup_dev.sh
+```
+
+Alternatively, you can restore the executable bit and run it directly:
+
+```bash
+chmod +x .development/setup_dev.sh
+.development/setup_dev.sh
+```
+
+`setup_dev.sh` will also try to restore executable permissions for repo scripts and hooks (best-effort).
+
 ## Scripts
 
 ### setup_dev.sh
@@ -23,8 +39,16 @@ Creates/uses a local Python virtual environment in `./venv`, installs the plugin
 
 Notes:
 
+- The helper scripts target a Python 3.10+ development environment. The plugin itself supports Python 3.7+ as declared in `pyproject.toml`.
 - It automatically sets `git config core.hooksPath .githooks` (if the repo is a git checkout).
 - `pre-commit` is optional: if it is not installed, it will be skipped with a warning.
+- To use a specific Python interpreter for the venv (e.g. Python 3.12), set `PYTHON_BIN`: `PYTHON_BIN=python3.12 .development/setup_dev.sh`.
+- To run an initial `pre-commit run --all-files` during setup, set `RUN_PRE_COMMIT_ALL_FILES=1`.
+
+Git hooks behavior:
+
+- `pre-commit` hook: runs from `./venv/bin/pre-commit` and requires the venv Python to be 3.10+. If unavailable, it fails with an error and instructs you to run `.development/setup_dev.sh`.
+- `post-commit` hook: builds dist artifacts on version bumps using Python 3.10+ (prefers `./venv/bin/python`, otherwise `python3`). If Python/build tooling is unavailable, it fails with an error.
 
 ### restart_octoprint_dev.sh
 
