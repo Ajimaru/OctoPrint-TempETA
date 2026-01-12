@@ -24,7 +24,7 @@ Default behavior runs:
   - pytest
   - pre-commit
   - i18n catalog check + compile
-  - python -m build
+    - python -m build (wheel + sdist + zip)
 
 Usage:
   .development/run_ci_locally.sh [options]
@@ -224,6 +224,65 @@ if [[ "$RUN_BUILD" == "1" ]]; then
     rm -rf dist
     mkdir -p dist
     "$PYTHON_BIN" -m build
+
+    log "Building ZIP artifacts from sdist"
+    "$PYTHON_BIN" - <<'PY'
+import re
+import shutil
+import sys
+import tarfile
+import zipfile
+from pathlib import Path, PurePosixPath
+
+
+def newest(paths):
+    return max(paths, key=lambda p: p.stat().st_mtime)
+
+
+sdists = list(Path("dist").glob("octoprint_tempeta-*.tar.gz"))
+if not sdists:
+    print("ERROR: Expected an sdist matching dist/octoprint_tempeta-*.tar.gz", file=sys.stderr)
+    raise SystemExit(1)
+
+sdist = newest(sdists)
+match = re.match(r"octoprint_tempeta-(.+)\.tar\.gz$", sdist.name)
+if not match:
+    print(f"ERROR: Could not parse version from {sdist.name}", file=sys.stderr)
+    raise SystemExit(1)
+
+version = match.group(1)
+zip_versioned = Path("dist") / f"octoprint_tempeta-{version}.zip"
+zip_latest = Path("dist") / "octoprint_tempeta-latest.zip"
+
+with tarfile.open(sdist, "r:gz") as tf, zipfile.ZipFile(
+    zip_versioned, "w", compression=zipfile.ZIP_DEFLATED
+) as zf:
+    for member in tf.getmembers():
+        if not member.isfile():
+            continue
+
+        member_path = PurePosixPath(member.name)
+        if (
+            member_path.is_absolute()
+            or ".." in member_path.parts
+            or ":" in member.name
+            or member.name.startswith("\\")
+        ):
+            continue
+
+        extracted = tf.extractfile(member)
+        if extracted is None:
+            continue
+
+        data = extracted.read()
+        zi = zipfile.ZipInfo(str(member_path))
+        zi.external_attr = (member.mode & 0o777) << 16
+        zf.writestr(zi, data)
+
+shutil.copyfile(zip_versioned, zip_latest)
+print(f"Wrote {zip_versioned}")
+print(f"Wrote {zip_latest}")
+PY
 fi
 
 log "Done"
