@@ -250,15 +250,20 @@ $(function () {
     self.printerState = parameters[1];
     self.printerProfiles = parameters[2];
 
-    self._bindSettingsIfNeeded = function () {
-      // With custom_bindings=True the settings template is injected lazily when the
-      // settings dialog opens. Bind it then, and guard against double-binding.
-      self.settings = self._resolveSettingsRoot();
+    self._getSettingsDialogRoot = function () {
       var $root = $("#settings_plugin_temp_eta");
       if (!$root.length) {
         $root = $(".temp-eta-settings");
       }
-      if (!$root.length) {
+      return $root.length ? $root : null;
+    };
+
+    self._bindSettingsIfNeeded = function () {
+      // With custom_bindings=True the settings template is injected lazily when the
+      // settings dialog opens. Bind it then, and guard against double-binding.
+      self.settings = self._resolveSettingsRoot();
+      var $root = self._getSettingsDialogRoot();
+      if (!$root) {
         return;
       }
 
@@ -422,11 +427,8 @@ $(function () {
     };
 
     self._validateAllSettingsNumbers = function () {
-      var $root = $("#settings_plugin_temp_eta");
-      if (!$root.length) {
-        $root = $(".temp-eta-settings");
-      }
-      if (!$root.length) {
+      var $root = self._getSettingsDialogRoot();
+      if (!$root) {
         return true;
       }
 
@@ -472,11 +474,8 @@ $(function () {
     };
 
     self._unbindSettingsIfBound = function () {
-      var $root = $("#settings_plugin_temp_eta");
-      if (!$root.length) {
-        $root = $(".temp-eta-settings");
-      }
-      if (!$root.length) {
+      var $root = self._getSettingsDialogRoot();
+      if (!$root) {
         return;
       }
       var rootEl = $root.get(0);
@@ -499,11 +498,8 @@ $(function () {
         attempts += 1;
         self._bindSettingsIfNeeded();
 
-        var $root = $("#settings_plugin_temp_eta");
-        if (!$root.length) {
-          $root = $(".temp-eta-settings");
-        }
-        if ($root.length && $root.data("tempEtaKoBound")) {
+        var $root = self._getSettingsDialogRoot();
+        if ($root && $root.data("tempEtaKoBound")) {
           return;
         }
 
@@ -1633,7 +1629,6 @@ $(function () {
         labelYMin.setAttribute("y", yTickMinPos.toFixed(2));
       }
 
-      // X labels are relative time within the window.
       var labelXLeft = els.labelXLeft;
       var labelXMid = els.labelXMid;
       var labelXRight = els.labelXRight;
@@ -1648,11 +1643,6 @@ $(function () {
       }
     };
 
-    /**
-     * Format seconds to MM:SS format
-     * @param {number} seconds - Seconds to format
-     * @returns {string} Formatted time string
-     */
     self.formatETA = function (seconds) {
       if (!seconds || seconds <= 0) {
         return "--:--";
@@ -1660,18 +1650,6 @@ $(function () {
       var mins = Math.floor(seconds / 60);
       var secs = Math.floor(seconds % 60);
       return mins + ":" + (secs < 10 ? "0" : "") + secs;
-    };
-
-    /**
-     * Format temperature with one decimal place
-     * @param {number} temp - Temperature value
-     * @returns {string} Formatted temperature
-     */
-    self.formatTemp = function (temp) {
-      if (!temp && temp !== 0) {
-        return "--";
-      }
-      return Math.round(temp * 10) / 10;
     };
 
     self._getTempDisplayMode = function () {
@@ -1813,7 +1791,6 @@ $(function () {
           return;
         }
 
-        // Clamp to reasonable limits before applying.
         var minDisplay =
           self._effectiveThresholdUnit() === "f" ? (1.0 * 9.0) / 5.0 : 1.0;
         var maxDisplay =
@@ -1834,11 +1811,6 @@ $(function () {
       return self._validateAllSettingsNumbers();
     };
 
-    /**
-     * Handle plugin messages from backend
-     * @param {string} plugin - Plugin identifier
-     * @param {object} data - Message data
-     */
     self.onDataUpdaterPluginMessage = function (plugin, data) {
       if (plugin !== "temp_eta") {
         return;
@@ -1869,7 +1841,6 @@ $(function () {
             ? parseFloat(data.cooldown_target)
             : null;
 
-        // Dynamically register heaters as they appear
         if (!self.heaterData[heater]) {
           self.heaterData[heater] = {
             name: heater,
@@ -2106,89 +2077,10 @@ $(function () {
       );
     };
 
-    /**
-     * Check if ETA should be shown
-     * @param {number} eta - ETA value in seconds
-     * @returns {boolean} True if ETA is valid and should be shown
-     */
     self.isETAVisible = function (eta) {
       return eta !== null && eta !== undefined && eta >= 1;
     };
 
-    function toBoolFlag(value) {
-      if (value === true || value === false) return value;
-      if (typeof value === "string") {
-        return value.toLowerCase() === "true" || value === "1";
-      }
-      if (typeof value === "number") {
-        return value === 1;
-      }
-      return false;
-    }
-
-    /**
-     * Check if heater is part of the active printer profile
-     * @param {string} heaterName
-     * @returns {boolean}
-     */
-    self.isHeaterSupported = function (heaterName) {
-      var profile = null;
-
-      // Prefer printerProfilesViewModel (authoritative for current profile)
-      if (self.printerProfiles && self.printerProfiles.currentProfileData) {
-        profile = self.printerProfiles.currentProfileData();
-      }
-
-      // Fallback to printerStateViewModel if needed
-      if (
-        !profile &&
-        self.printerState &&
-        typeof self.printerState.printerProfile === "function"
-      ) {
-        profile = self.printerState.printerProfile();
-      } else if (
-        !profile &&
-        self.printerState &&
-        typeof self.printerState.currentPrinterProfileData === "function"
-      ) {
-        profile = self.printerState.currentPrinterProfileData();
-      }
-
-      if (!profile) {
-        return true; // no profile info available, do not hide
-      }
-
-      var rawCount = profile.extruder && profile.extruder.count;
-      var extruderCount = parseInt(rawCount, 10);
-      if (isNaN(extruderCount) || extruderCount <= 0) {
-        extruderCount = 1;
-      }
-      var hasBed =
-        profile.heatedBed === undefined ? true : toBoolFlag(profile.heatedBed);
-      var hasChamber = toBoolFlag(profile.heatedChamber);
-
-      if (heaterName === "bed") {
-        return hasBed;
-      }
-
-      if (heaterName === "chamber") {
-        return hasChamber;
-      }
-
-      if (heaterName && heaterName.indexOf("tool") === 0) {
-        var idx = parseInt(heaterName.replace("tool", ""), 10);
-        if (isNaN(idx)) {
-          return true;
-        }
-        return idx < extruderCount;
-      }
-
-      return true;
-    };
-
-    /**
-     * Computed: CSS class for ETA display based on time
-     */
     self.getETAClass = function (heater) {
       if (!heater || !heater.eta) return "hidden";
 
@@ -2315,9 +2207,6 @@ $(function () {
       return c;
     };
 
-    /**
-     * Get display name for heater (friendly name)
-     */
     self.getHeaterLabel = function (heaterName) {
       var labels = {
         bed: _gettext("Bed"),
@@ -2326,12 +2215,7 @@ $(function () {
       if (labels[heaterName]) {
         return labels[heaterName];
       }
-      // Default for tool0, tool1, tool2, etc
       return heaterName.charAt(0).toUpperCase() + heaterName.slice(1);
-    };
-
-    self.getNotHeatingText = function () {
-      return _gettext("Idle");
     };
 
     self.getHeaterIdleText = function (heater) {
@@ -2348,9 +2232,6 @@ $(function () {
       return "eta-idle";
     };
 
-    /**
-     * Sort heaters in logical order: tools first, then bed, then chamber
-     */
     self.sortHeaters = function (heaters) {
       return heaters.slice().sort(function (a, b) {
         var nameA = a.name;
@@ -2359,7 +2240,6 @@ $(function () {
         var orderA = 999;
         var orderB = 999;
 
-        // Tools: tool0=0, tool1=1, tool2=2, etc
         if (nameA.indexOf("tool") === 0) {
           orderA = parseInt(nameA.replace("tool", ""), 10);
         } else if (nameA === "bed") {
@@ -2380,9 +2260,6 @@ $(function () {
       });
     };
 
-    /**
-     * Get icon class for heater type
-     */
     self.getHeaterIcon = function (heaterName) {
       if (heaterName === "bed") {
         return "fa-bed";
@@ -2393,7 +2270,6 @@ $(function () {
       }
     };
 
-    // Show only heaters with actual data from backend
     self.displayHeaters = ko.computed(function () {
       var heaters = self.heaters().filter(function (h) {
         return (
@@ -2413,7 +2289,6 @@ $(function () {
       });
     });
 
-    // Navbar visibility (used by template binding)
     self.showETA = ko.pureComputed(function () {
       return (
         self.isComponentEnabled("navbar") && self.visibleHeaters().length > 0
@@ -2421,12 +2296,10 @@ $(function () {
     });
 
     self._applyComponentVisibility = function () {
-      // Sidebar: hide whole box wrapper if disabled or no ETA to show.
       var showSidebar =
         self.isComponentEnabled("sidebar") && self.displayHeaters().length > 0;
       $("#sidebar_plugin_temp_eta_wrapper").toggle(!!showSidebar);
 
-      // Tab: hide nav entry and content wrapper if disabled.
       var showTab = self.isComponentEnabled("tab");
       $("#tab_plugin_temp_eta_link").toggle(!!showTab);
 
@@ -2477,7 +2350,6 @@ $(function () {
       self._applyComponentVisibility();
     };
 
-    // Group heaters into columns of 2 (each column has max 2 rows)
     self.heaterColumns = ko.computed(function () {
       var visible = self.visibleHeaters();
       var columns = [];
@@ -2488,18 +2360,13 @@ $(function () {
     });
 
     self.onBeforeBinding = function () {
-      // Called before the view model is bound to the DOM
     };
 
     self.onAfterBinding = function () {
-      // Called after the view model is bound to the DOM
       self._setupVisibilitySubscriptions();
       self._installSettingsDialogHooks();
 
-      // Extended settings (colors + sound)
       self._setupExtendedSettingsSubscriptions();
-
-      // Try binding the sidebar root even if it gets injected after startup.
       self._ensureSidebarBound();
     };
 
@@ -2512,7 +2379,6 @@ $(function () {
     };
   }
 
-  // This is how our plugin registers itself with the application
   OCTOPRINT_VIEWMODELS.push({
     construct: TempETAViewModel,
     dependencies: [
