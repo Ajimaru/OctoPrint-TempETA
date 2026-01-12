@@ -434,6 +434,23 @@ class TempETAPlugin(
             float(self._persist_backoff_current_s),
         )
 
+    def _enter_persist_phase(self, now: float, reason: str) -> None:
+        """Enter an active heating phase for persistence backoff.
+
+        In an active heating phase we use the backoff sequence starting at
+        persist_backoff_initial_s.
+        """
+        self._persist_phase_active = True
+        self._persist_backoff_current_s = float(self._persist_backoff_initial_s)
+        self._next_persist_time = float(now) + float(self._persist_backoff_current_s)
+        self._debug_log_throttled(
+            now,
+            10.0,
+            "Persist phase enter reason=%s next_in=%.1fs",
+            str(reason),
+            float(self._persist_backoff_current_s),
+        )
+
     def _get_current_profile_id(self) -> str:
         """Return current printer profile id or a stable fallback."""
         try:
@@ -756,6 +773,12 @@ class TempETAPlugin(
             self._persist_current_profile_history()
 
         self._active_profile_id = profile_id
+
+        # Reset persistence scheduling on profile switch so a new profile does not
+        # inherit a long next-persist delay from the previous profile.
+        self._persist_phase_active = False
+        self._persist_backoff_current_s = float(self._persist_backoff_initial_s)
+        self._next_persist_time = 0.0
         # On startup we restore persisted history for the active profile.
         # On runtime profile switches we intentionally start with an empty history
         # so the ETA uses only live samples from the new profile.
@@ -1009,11 +1032,11 @@ class TempETAPlugin(
 
         epsilon_hold = 0.2
 
-        # Detect phase transitions to reset persistence backoff.
-        # We reset when: target goes OFF, target is reached/holding, heating disabled,
-        # target changes meaningfully, or on disconnect/error events.
-        reset_persist_backoff = False
-        any_active_heating = False
+        # Track whether we are in an active heating phase (at least one heater
+        # is above the threshold window and not holding). This drives persistence
+        # backoff scheduling.
+        phase_active_now = False
+        target_changed_in_active_phase = False
 
         recorded_count = 0
         recorded_cooldown_count = 0
@@ -1053,19 +1076,6 @@ class TempETAPlugin(
                 prev_target = self._last_target_by_heater.get(str(heater))
                 self._last_target_by_heater[heater_key] = float(target)
 
-                # Target changes are treated as new phases for persistence backoff.
-                if (
-                    prev_target is not None
-                    and math.isfinite(prev_target)
-                    and math.isfinite(target)
-                ):
-                    if (
-                        prev_target > 0.0
-                        and target > 0.0
-                        and abs(prev_target - target) >= 0.5
-                    ):
-                        reset_persist_backoff = True
-
                 if target <= 0:
                     # Cooldown tracking (target==0).
                     if cooldown_enabled:
@@ -1103,20 +1113,26 @@ class TempETAPlugin(
                     continue
 
                 if not heating_enabled:
-                    # Heating disabled: treat as phase end for persistence.
-                    reset_persist_backoff = True
                     continue
 
                 remaining = target - actual
                 # Avoid recording while holding near target to prevent constant churn.
                 if remaining <= epsilon_hold:
-                    # Consider this phase ended for persistence purposes.
-                    reset_persist_backoff = True
                     continue
-
-                any_active_heating = True
                 if remaining < threshold:
                     continue
+
+                # This heater is actively heating within the ETA window.
+                phase_active_now = True
+                if (
+                    prev_target is not None
+                    and math.isfinite(prev_target)
+                    and math.isfinite(target)
+                    and prev_target > 0.0
+                    and target > 0.0
+                    and abs(prev_target - target) >= 0.5
+                ):
+                    target_changed_in_active_phase = True
 
                 if heater_key not in self._temp_history:
                     self._temp_history[heater_key] = deque(maxlen=self._history_maxlen)
@@ -1143,16 +1159,15 @@ class TempETAPlugin(
             self._last_update_time = current_time
             self._calculate_and_broadcast_eta(data)
 
-            # Reset persistence backoff when the heating phase ended or changed.
-            if reset_persist_backoff or (not any_active_heating):
-                self._reset_persist_backoff(
-                    current_time,
-                    (
-                        "target_change_or_phase_end"
-                        if reset_persist_backoff
-                        else "no_active_heating"
-                    ),
-                )
+            # Update persistence phase state based on transitions.
+            if target_changed_in_active_phase:
+                self._enter_persist_phase(current_time, "target_change")
+            elif self._persist_phase_active and (not phase_active_now):
+                # Active -> inactive transition: schedule a shorter persist.
+                self._reset_persist_backoff(current_time, "phase_end")
+            elif (not self._persist_phase_active) and phase_active_now:
+                # Inactive -> active transition: start backoff sequence.
+                self._enter_persist_phase(current_time, "phase_start")
 
             self._maybe_persist_history(current_time)
 
