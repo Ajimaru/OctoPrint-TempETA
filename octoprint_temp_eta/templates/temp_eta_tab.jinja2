@@ -12,21 +12,6 @@
 
     <div class="tab-content temp-eta-subtab-content">
         <div class="tab-pane active" id="temp_eta_subtab_overview">
-            <div class="alert alert-info temp-eta-tab-info">
-                <div class="temp-eta-tab-info-inner">
-                    <div class="temp-eta-tab-info-logo">
-                        <img class="temp-eta-tab-info-logo-img"
-                             src="{{ url_for('plugin.temp_eta.static', filename='img/temp_eta.svg') }}"
-                             alt="{{ _('Temperature ETA') }}">
-                    </div>
-                    <div class="temp-eta-tab-info-text">
-                        <strong>{{ _('Real-time Countdown') }}</strong>
-                        <p>{{ _('Watch the estimated time remaining for your printer to heat up the bed, hotend, or chamber.') }}</p>
-                        <p>{{ _('Configure algorithm and threshold in Settings → Temperature ETA') }}</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="row">
                 <!-- Dynamically generated Heater Cards -->
                 <!-- ko foreach: displayHeaters -->
@@ -67,10 +52,8 @@
                 </div>
                 <!-- /ko -->
             </div>
-        </div>
 
-        <div class="tab-pane temp-eta-subtab-history" id="temp_eta_subtab_history" data-bind="visible: isHistoricalGraphEnabled()">
-            <div class="alert alert-info temp-eta-tab-info temp-eta-tab-history-info">
+            <div class="alert alert-info temp-eta-tab-info">
                 <div class="temp-eta-tab-info-inner">
                     <div class="temp-eta-tab-info-logo">
                         <img class="temp-eta-tab-info-logo-img"
@@ -78,13 +61,15 @@
                              alt="{{ _('Temperature ETA') }}">
                     </div>
                     <div class="temp-eta-tab-info-text">
-                        <strong>{{ _('Historical temperature graphs') }}</strong>
-                        <p>{{ _('Shows recent temperature history for each heater.') }}</p>
-                        <p>{{ _('Adjust the time window in Settings → Temperature ETA.') }}</p>
+                        <strong>{{ _('Real-time Countdown') }}</strong>
+                        <p>{{ _('Watch the estimated time remaining for your printer to heat up the bed, hotend, or chamber.') }}</p>
+                        <p>{{ _('Configure algorithm and threshold in Settings → Temperature ETA') }}</p>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="tab-pane temp-eta-subtab-history" id="temp_eta_subtab_history" data-bind="visible: isHistoricalGraphEnabled()">
             <div class="row">
                 <!-- Dynamically generated Heater Graphs -->
                 <!-- ko foreach: displayHeaters -->
@@ -143,6 +128,21 @@
                     </div>
                 </div>
                 <!-- /ko -->
+            </div>
+
+            <div class="alert alert-info temp-eta-tab-info temp-eta-tab-history-info">
+                <div class="temp-eta-tab-info-inner">
+                    <div class="temp-eta-tab-info-logo">
+                        <img class="temp-eta-tab-info-logo-img"
+                             src="{{ url_for('plugin.temp_eta.static', filename='img/temp_eta.svg') }}"
+                             alt="{{ _('Temperature ETA') }}">
+                    </div>
+                    <div class="temp-eta-tab-info-text">
+                        <strong>{{ _('Historical temperature graphs') }}</strong>
+                        <p>{{ _('Shows recent temperature history for each heater.') }}</p>
+                        <p>{{ _('Adjust the time window in Settings → Temperature ETA.') }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
