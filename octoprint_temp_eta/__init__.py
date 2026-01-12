@@ -327,7 +327,6 @@ class TempETAPlugin(
     def on_after_startup(self):
         """Called after OctoPrint startup, register for temperature updates."""
         self._logger.info("Temperature ETA Plugin started")
-        # Register for temperature callbacks
         self._printer.register_callback(self)
 
         self._refresh_debug_logging_flag()
@@ -784,7 +783,6 @@ class TempETAPlugin(
                 self._debug_log("Heater support error heater=%s", str(heater_name))
             return False
 
-    # Temperature callback handler
     def on_printer_add_temperature(self, data):
         """Called when new temperature data is available (~2Hz).
 
@@ -848,17 +846,13 @@ class TempETAPlugin(
         recorded_cooldown_count = 0
         heaters_seen = 0
         with self._lock:
-            # Update temperature history for each heater (dynamically register new heizers)
+            # Protect shared history state (OctoPrint may call callbacks from worker threads).
             for heater, temps in data.items():
-                # Skip non-dict values (like timestamps)
                 if not isinstance(temps, dict):
                     continue
                 heaters_seen += 1
 
-                # Only record history while ETA could be shown:
-                # - target must be set
-                # - we must be below target
-                # - remaining must be >= configured threshold
+                # Record samples only while ETA could be shown (active target and above threshold).
                 target_raw = temps.get("target", 0)
                 actual_raw = temps.get("actual")
                 if actual_raw is None:
@@ -923,14 +917,12 @@ class TempETAPlugin(
                     continue
 
                 remaining = target - actual
-                # Don't record while holding temperature at/near target.
-                # This avoids persistent history updates when the printer keeps a target set.
+                # Avoid recording while holding near target to prevent constant churn.
                 if remaining <= epsilon_hold:
                     continue
                 if remaining < threshold:
                     continue
 
-                # Auto-create history for new heizers
                 if heater not in self._temp_history:
                     self._temp_history[heater] = deque(maxlen=self._history_maxlen)
 
@@ -952,7 +944,6 @@ class TempETAPlugin(
             float(threshold),
         )
 
-        # Update frontend at configurable interval (default 1Hz)
         if (current_time - self._last_update_time) >= update_interval:
             self._last_update_time = current_time
             self._calculate_and_broadcast_eta(data)
@@ -966,7 +957,6 @@ class TempETAPlugin(
         """Stub: Called when log entry is added (required by callback interface)."""
         pass
 
-    # EventHandlerPlugin
     def on_event(self, event, payload):
         """Handle OctoPrint events to keep UI state consistent.
 
@@ -1023,17 +1013,11 @@ class TempETAPlugin(
 
         payloads = []
         with self._lock:
-            # Process all heaters in data (dynamically support tool0, tool1, tool2, etc)
             for heater, heater_data in data.items():
-                # Skip non-dict values (like timestamps)
                 if not isinstance(heater_data, dict):
                     continue
-
-                # Filter by printer profile - only send supported heaters to frontend
                 if not self._is_heater_supported(heater):
                     continue
-
-                # Auto-create history for new heizers if not exists
                 if heater not in self._temp_history:
                     self._temp_history[heater] = deque(maxlen=self._history_maxlen)
 
@@ -1052,9 +1036,7 @@ class TempETAPlugin(
                 except Exception:
                     actual = 0.0
 
-                # Only calculate ETA if heating and within threshold
                 if target <= 0:
-                    # No target set -> optionally show cooldown ETA.
                     eta = None
                     eta_kind = None
                     cooldown_target = None
@@ -1120,24 +1102,20 @@ class TempETAPlugin(
                                     int(hist_len),
                                 )
                 elif actual >= target:
-                    # Already at or above target
                     eta = None
                     eta_kind = None
                     cooldown_target = None
                 elif (target - actual) >= threshold and heating_enabled:
-                    # Still far from target - calculate ETA
                     if algorithm == "exponential":
                         eta = self._calculate_exponential_eta(heater, target)
                     else:
                         eta = self._calculate_linear_eta(heater, target)
 
-                    # Hide ETA if less than 1 second (avoid flashing 0:00)
                     if eta is not None and eta < 1:
                         eta = None
                     eta_kind = "heating" if eta is not None else None
                     cooldown_target = None
                 else:
-                    # Very close to target
                     eta = None
                     eta_kind = None
                     cooldown_target = None
@@ -1156,7 +1134,7 @@ class TempETAPlugin(
                     }
                 )
 
-        # Send message to frontend (ALWAYS, even when eta is None to clear display)
+        # Always send updates so the frontend can clear stale values.
         for payload in payloads:
             self._plugin_manager.send_plugin_message(self._identifier, payload)
 
@@ -1755,6 +1733,9 @@ class TempETAPlugin(
             if key not in data:
                 return
             raw = data.get(key)
+            if raw is None or raw == "":
+                data[key] = int(min_value)
+                return
             try:
                 value = int(float(raw))
             except Exception:
