@@ -86,7 +86,7 @@ msgstr "Wähle, welche Ereignisse eine Browser-Benachrichtigung anzeigen sollen.
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:169
 msgid "Color mode"
-msgstr ""
+msgstr "Farbmodus"
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:66
 msgid "Configure algorithm and threshold in Settings → Temperature ETA"
@@ -135,7 +135,7 @@ msgstr "Cooldown abgeschlossen"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:191
 msgid "Cooling color"
-msgstr ""
+msgstr "Abkühlfarbe"
 
 #: octoprint_temp_eta/__init__.py:1907
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:481
@@ -195,7 +195,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:255
 msgid "Enable sound alerts"
-msgstr ""
+msgstr "Sound-Alarme aktivieren"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:505
 msgid "Estimates time to reach target temperature"
@@ -233,7 +233,7 @@ msgstr "Heiz-ETA"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:181
 msgid "Heating color"
-msgstr ""
+msgstr "Heizfarbe"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:36
 msgid "Heating threshold"
@@ -294,7 +294,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:201
 msgid "Idle color"
-msgstr ""
+msgstr "Leerlauffarbe"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:91
 msgid ""
@@ -398,7 +398,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:302
 msgid "Play test sound"
-msgstr ""
+msgstr "Testton abspielen"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:304
 msgid "Plays a short test sound using the current volume setting."
@@ -426,7 +426,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:294
 msgid "Rate limit to avoid repeated beeps due to small target/temperature jitter."
-msgstr ""
+msgstr "Begrenzt die Häufigkeit, um wiederholte Pieptöne durch kleine Schwankungen von Ziel/Temperatur zu vermeiden."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:355
 msgid ""
@@ -546,10 +546,11 @@ msgid ""
 "Some browsers require a user interaction before sound can play. Use the "
 "Test button to grant permission."
 msgstr ""
+"Einige Browser benötigen eine Nutzerinteraktion, bevor Sound abgespielt werden kann. Nutze die Schaltfläche „Test“, um die Berechtigung zu erteilen."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:252
 msgid "Sound alerts"
-msgstr ""
+msgstr "Sound-Alarme"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:305
 msgid ""
@@ -563,11 +564,11 @@ msgstr "ETA anzeigen, wenn Zieltemperatur um diesen Wert entfernt ist"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:166
 msgid "Status colors"
-msgstr ""
+msgstr "Statusfarben"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:174
 msgid "Status colors (heating/cooling/idle)"
-msgstr ""
+msgstr "Statusfarben (Heizen/Abkühlen/Leerlauf)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:431
 msgid ""
@@ -635,7 +636,7 @@ msgstr "Temperaturanzeige"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:299
 msgid "Test"
-msgstr ""
+msgstr "Test"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:534
 msgid ""
@@ -669,13 +670,14 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:173
 msgid "Time-based bands (default)"
-msgstr ""
+msgstr "Zeitbasierte Stufen (Standard)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:176
 msgid ""
 "Time-based bands use warning/info/normal colors based on remaining time. "
 "Status mode uses fixed colors for heating, cooling, and idle."
 msgstr ""
+"Zeitbasierte Stufen verwenden Warn-/Info-/Normalfarben basierend auf der verbleibenden Zeit. Der Statusmodus verwendet feste Farben für Heizen, Abkühlen und Leerlauf."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:340
 msgid "Timeout (seconds)"
@@ -693,7 +695,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:206
 msgid "Tip: These colors also apply to progress bars in status mode."
-msgstr ""
+msgstr "Tipp: Diese Farben gelten im Statusmodus auch für Fortschrittsbalken."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:214
 #, fuzzy
@@ -718,7 +720,7 @@ msgstr "Wird verwendet, wenn ein Heizer abkühlt (Status-Farbmodus)."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:279
 msgid "Volume"
-msgstr ""
+msgstr "Lautstärke"
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:65
 msgid ""
