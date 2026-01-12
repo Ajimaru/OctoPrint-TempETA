@@ -499,6 +499,10 @@ class TempETAPlugin(
             self._history_dirty = False
 
         self._send_clear_messages(heaters)
+        self._send_history_reset_message(
+            reason="profile_history_reset",
+            profile_id=profile_id,
+        )
         return deleted
 
     def _reset_all_profile_histories(self) -> int:
@@ -533,6 +537,7 @@ class TempETAPlugin(
             self._history_dirty = False
 
         self._send_clear_messages(heaters)
+        self._send_history_reset_message(reason="all_profile_histories_reset")
         return deleted_count
 
     def _reset_user_settings_to_defaults(self) -> None:
@@ -838,6 +843,12 @@ class TempETAPlugin(
 
         # Clear any stale UI values that might linger across profile switches.
         self._send_clear_messages(old_heaters)
+        # Clear frontend-only state like the historical graph buffer.
+        self._send_history_reset_message(
+            reason="profile_switch",
+            old_profile_id=old_profile_id,
+            profile_id=profile_id,
+        )
 
     def _read_history_maxlen_setting(self) -> int:
         """Read and sanitize history size setting.
@@ -2048,6 +2059,29 @@ class TempETAPlugin(
                     "actual": None,
                 },
             )
+
+    def _send_history_reset_message(
+        self,
+        reason: str,
+        old_profile_id: Optional[str] = None,
+        profile_id: Optional[str] = None,
+    ) -> None:
+        """Tell the frontend to clear any client-side history/graph state.
+
+        The historical graph keeps a client-side buffer separate from the backend's
+        persisted history. When profiles change (or histories are reset), we must
+        explicitly clear that buffer to avoid showing points from a previous profile.
+        """
+        if not getattr(self, "_plugin_manager", None):
+            return
+
+        payload: Dict[str, Any] = {"type": "history_reset", "reason": str(reason)}
+        if old_profile_id is not None:
+            payload["old_profile_id"] = str(old_profile_id)
+        if profile_id is not None:
+            payload["profile_id"] = str(profile_id)
+
+        self._plugin_manager.send_plugin_message(self._identifier, payload)
 
     # AssetPlugin mixin
     def get_assets(self):

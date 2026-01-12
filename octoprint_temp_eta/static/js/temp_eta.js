@@ -1281,6 +1281,56 @@ $(function () {
       }
     };
 
+    self._resetHistoricalGraphState = function (info) {
+      try {
+        self._graphElementCache = {};
+      } catch (e) {
+        // ignore
+      }
+
+      var heaterKeys = [];
+      try {
+        heaterKeys = Object.keys(self.heaterData || {});
+      } catch (e) {
+        heaterKeys = [];
+      }
+
+      for (var i = 0; i < heaterKeys.length; i++) {
+        var heaterName = heaterKeys[i];
+        var h = self.heaterData[heaterName];
+        if (h) {
+          h._history = [];
+          h._historyStart = 0;
+          h._lastGraphRenderMs = 0;
+          h._lastGraphViewBoxW = null;
+        }
+
+        // Best-effort clear of currently visible SVG graph elements.
+        try {
+          var els = self._getGraphElements(heaterName);
+          if (els && els.poly && typeof els.poly.setAttribute === "function") {
+            els.poly.setAttribute("points", "");
+          }
+          if (
+            els &&
+            els.targetLine &&
+            typeof els.targetLine.setAttribute === "function"
+          ) {
+            els.targetLine.setAttribute("points", "");
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      self._debugLog(
+        "history_reset",
+        "[TempETA] Cleared historical graph state",
+        info,
+        5000,
+      );
+    };
+
     self._getGraphElements = function (heaterName) {
       if (!heaterName) {
         return null;
@@ -1814,6 +1864,11 @@ $(function () {
 
     self.onDataUpdaterPluginMessage = function (plugin, data) {
       if (plugin !== "temp_eta") {
+        return;
+      }
+
+      if (data.type === "history_reset") {
+        self._resetHistoricalGraphState(data);
         return;
       }
 
