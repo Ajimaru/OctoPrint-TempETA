@@ -158,6 +158,7 @@ class TempETAPlugin(
         self._debug_logging_enabled = False
         self._last_debug_log_time = 0.0
         self._last_heater_support_decision = {}
+        self._heater_supported_cache: Dict[str, bool] = {}
 
         # Number of temperature samples to keep per heater.
         # This is configurable via settings (history_size). We cache the active
@@ -656,6 +657,7 @@ class TempETAPlugin(
 
         # Reset cached heater support decisions for the new profile.
         self._last_heater_support_decision = {}
+        self._heater_supported_cache = {}
 
         # Clear any stale UI values that might linger across profile switches.
         self._send_clear_messages(old_heaters)
@@ -697,7 +699,7 @@ class TempETAPlugin(
 
             self._debug_log("Updated history_size maxlen=%d", self._history_maxlen)
 
-            for heater, history in list(self._temp_history.items()):
+            for heater, history in self._temp_history.items():
                 new_history = deque(history, maxlen=maxlen)
                 self._temp_history[heater] = new_history
 
@@ -716,13 +718,17 @@ class TempETAPlugin(
             bool: True if heater is supported by current profile
         """
 
+        heater_key = str(heater_name)
+        cached = self._heater_supported_cache.get(heater_key)
+        if cached is not None:
+            return bool(cached)
+
         def _log_support_if_changed(supported: bool, details: str) -> None:
             if not self._debug_logging_enabled:
                 return
-            key = str(heater_name)
-            prev = self._last_heater_support_decision.get(key)
+            prev = self._last_heater_support_decision.get(heater_key)
             if prev is None or bool(prev) != bool(supported):
-                self._last_heater_support_decision[key] = bool(supported)
+                self._last_heater_support_decision[heater_key] = bool(supported)
                 self._debug_log(
                     "Heater support heater=%s supported=%s %s",
                     str(heater_name),
@@ -734,6 +740,7 @@ class TempETAPlugin(
             profile = self._printer_profile_manager.get_current_or_default()
             if not isinstance(profile, dict) or not profile:
                 _log_support_if_changed(False, "(no profile)")
+                self._heater_supported_cache[heater_key] = False
                 return False
 
             profile_name = profile.get("name", "unknown")
@@ -751,6 +758,7 @@ class TempETAPlugin(
                 _log_support_if_changed(
                     supported, f"profile={profile_name} heatedBed={heated_bed}"
                 )
+                self._heater_supported_cache[heater_key] = bool(supported)
                 return supported
 
             if heater_name == "chamber":
@@ -758,6 +766,7 @@ class TempETAPlugin(
                 _log_support_if_changed(
                     supported, f"profile={profile_name} heatedChamber={heated_chamber}"
                 )
+                self._heater_supported_cache[heater_key] = bool(supported)
                 return supported
 
             if isinstance(heater_name, str) and heater_name.startswith("tool"):
@@ -767,6 +776,7 @@ class TempETAPlugin(
                     _log_support_if_changed(
                         False, f"profile={profile_name} invalid_tool_index"
                     )
+                    self._heater_supported_cache[heater_key] = False
                     return False
 
                 supported = tool_idx < extruder_count
@@ -774,13 +784,16 @@ class TempETAPlugin(
                     supported,
                     f"profile={profile_name} tool_idx={tool_idx} extruder_count={extruder_count}",
                 )
+                self._heater_supported_cache[heater_key] = bool(supported)
                 return supported
 
             _log_support_if_changed(False, f"profile={profile_name} unknown_heater")
+            self._heater_supported_cache[heater_key] = False
             return False
         except Exception:
             if self._debug_logging_enabled:
                 self._debug_log("Heater support error heater=%s", str(heater_name))
+            self._heater_supported_cache[heater_key] = False
             return False
 
     def on_printer_add_temperature(self, data):
@@ -850,6 +863,7 @@ class TempETAPlugin(
             for heater, temps in data.items():
                 if not isinstance(temps, dict):
                     continue
+                heater_key = str(heater)
                 heaters_seen += 1
 
                 # Record samples only while ETA could be shown (active target and above threshold).
@@ -877,13 +891,13 @@ class TempETAPlugin(
                     )
 
                 prev_target = self._last_target_by_heater.get(str(heater))
-                self._last_target_by_heater[str(heater)] = float(target)
+                self._last_target_by_heater[heater_key] = float(target)
 
                 if target <= 0:
                     # Cooldown tracking (target==0).
                     if cooldown_enabled:
-                        if heater not in self._cooldown_history:
-                            self._cooldown_history[heater] = deque(
+                        if heater_key not in self._cooldown_history:
+                            self._cooldown_history[heater_key] = deque(
                                 maxlen=self._history_maxlen
                             )
 
@@ -891,7 +905,7 @@ class TempETAPlugin(
                         # cooldown history so our linear cooldown fit doesn't include
                         # old OFF samples from before the heat-up phase.
                         if prev_target is not None and prev_target > 0:
-                            self._cooldown_history[heater].clear()
+                            self._cooldown_history[heater_key].clear()
                             self._debug_log_throttled(
                                 current_time,
                                 10.0,
@@ -901,16 +915,16 @@ class TempETAPlugin(
                                 float(actual),
                             )
 
-                        self._cooldown_history[heater].append((current_time, actual))
+                        self._cooldown_history[heater_key].append((current_time, actual))
                         recorded_cooldown_count += 1
 
                         # Track a baseline ambient temp while OFF.
                         # We only learn baseline values in a sane range to
                         # avoid "ambient" being polluted by still-hot cooldown.
                         if math.isfinite(actual) and actual < 120.0:
-                            prev = self._cooldown_ambient_baseline.get(heater)
+                            prev = self._cooldown_ambient_baseline.get(heater_key)
                             if prev is None or actual < prev:
-                                self._cooldown_ambient_baseline[heater] = actual
+                                self._cooldown_ambient_baseline[heater_key] = actual
                     continue
 
                 if not heating_enabled:
@@ -923,10 +937,10 @@ class TempETAPlugin(
                 if remaining < threshold:
                     continue
 
-                if heater not in self._temp_history:
-                    self._temp_history[heater] = deque(maxlen=self._history_maxlen)
+                if heater_key not in self._temp_history:
+                    self._temp_history[heater_key] = deque(maxlen=self._history_maxlen)
 
-                self._temp_history[heater].append((current_time, actual, target))
+                self._temp_history[heater_key].append((current_time, actual, target))
                 self._history_dirty = True
                 recorded_count += 1
 
@@ -1446,26 +1460,37 @@ class TempETAPlugin(
         Returns:
             float: Estimated seconds to target, or None if insufficient data
         """
-        history = self._temp_history.get(heater, deque())
-        if len(history) < 2:
+        history = self._temp_history.get(heater)
+        if not history or len(history) < 2:
             return None
 
         # Use last 10 seconds of data for rate calculation
         now = time.time()
-        recent = [h for h in history if h[0] > now - 10]
+        cutoff = now - 10.0
+        t0 = None
+        temp0 = None
+        t1 = None
+        temp1 = None
 
-        if len(recent) < 2:
+        for ts, actual, _target in history:
+            if ts <= cutoff:
+                continue
+            if t0 is None:
+                t0 = ts
+                temp0 = actual
+            t1 = ts
+            temp1 = actual
+
+        if t0 is None or t1 is None or temp0 is None or temp1 is None:
             return None
 
-        # rate = ΔT / Δt (°C per second)
-        time_diff = recent[-1][0] - recent[0][0]
-        temp_diff = recent[-1][1] - recent[0][1]
-
+        time_diff = t1 - t0
+        temp_diff = temp1 - temp0
         if time_diff <= 0 or temp_diff <= 0:
             return None
 
         rate = temp_diff / time_diff
-        remaining = target - recent[-1][1]
+        remaining = target - temp1
 
         if remaining <= 0:
             return None
