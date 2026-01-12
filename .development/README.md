@@ -108,6 +108,18 @@ Prints a human-readable quick checklist (versions, file presence, rough counts).
 .development/test_checklist.sh
 ```
 
+### run_ci_locally.sh
+
+Runs a fast, CI-like verification locally (pytest, pre-commit, i18n check, build).
+
+By default it will **not** keep auto-fixes made by pre-commit (it reverts them and fails). Use `--apply-fixes` if you want it to apply changes.
+
+If your working tree is not clean, the script will refuse to run unless you pass `--allow-dirty`.
+
+```bash
+.development/run_ci_locally.sh
+```
+
 ## Git hooks
 
 The repo uses a versioned hooks directory:
