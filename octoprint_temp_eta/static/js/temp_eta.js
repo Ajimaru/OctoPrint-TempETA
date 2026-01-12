@@ -1273,7 +1273,8 @@ $(function () {
       }
 
       // Hard cap as a safety net (shouldn't be hit in normal operation).
-      var activeLen = heaterObj._history.length - (heaterObj._historyStart || 0);
+      var activeLen =
+        heaterObj._history.length - (heaterObj._historyStart || 0);
       if (activeLen > 5000) {
         heaterObj._history = heaterObj._history.slice(-5000);
         heaterObj._historyStart = 0;
@@ -1308,7 +1309,7 @@ $(function () {
 
       var poly = document.getElementById("temp_eta_graph_actual_" + heaterName);
       var targetLine = document.getElementById(
-        "temp_eta_graph_target_" + heaterName
+        "temp_eta_graph_target_" + heaterName,
       );
       if (!poly || !targetLine) {
         self._graphElementCache[heaterName] = null;
@@ -1323,31 +1324,31 @@ $(function () {
         axisX: svg.querySelector(".temp-eta-graph-axis-x"),
         unitX: document.getElementById("temp_eta_graph_unit_x_" + heaterName),
         tickYMax: document.getElementById(
-          "temp_eta_graph_tick_ymax_" + heaterName
+          "temp_eta_graph_tick_ymax_" + heaterName,
         ),
         tickYMid: document.getElementById(
-          "temp_eta_graph_tick_ymid_" + heaterName
+          "temp_eta_graph_tick_ymid_" + heaterName,
         ),
         tickYMin: document.getElementById(
-          "temp_eta_graph_tick_ymin_" + heaterName
+          "temp_eta_graph_tick_ymin_" + heaterName,
         ),
         labelYMax: document.getElementById(
-          "temp_eta_graph_label_ymax_" + heaterName
+          "temp_eta_graph_label_ymax_" + heaterName,
         ),
         labelYMid: document.getElementById(
-          "temp_eta_graph_label_ymid_" + heaterName
+          "temp_eta_graph_label_ymid_" + heaterName,
         ),
         labelYMin: document.getElementById(
-          "temp_eta_graph_label_ymin_" + heaterName
+          "temp_eta_graph_label_ymin_" + heaterName,
         ),
         labelXLeft: document.getElementById(
-          "temp_eta_graph_label_xleft_" + heaterName
+          "temp_eta_graph_label_xleft_" + heaterName,
         ),
         labelXMid: document.getElementById(
-          "temp_eta_graph_label_xmid_" + heaterName
+          "temp_eta_graph_label_xmid_" + heaterName,
         ),
         labelXRight: document.getElementById(
-          "temp_eta_graph_label_xright_" + heaterName
+          "temp_eta_graph_label_xright_" + heaterName,
         ),
       };
 
@@ -1442,7 +1443,7 @@ $(function () {
         heaterObj._lastGraphViewBoxW = vbW;
         svg.setAttribute(
           "viewBox",
-          "0 0 " + vbW.toFixed(2).replace(/\.00$/, "") + " " + vbH
+          "0 0 " + vbW.toFixed(2).replace(/\.00$/, "") + " " + vbH,
         );
         svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
       }
@@ -1554,7 +1555,7 @@ $(function () {
       if (hist.length > idxStart && lastIncludedIndex !== hist.length - 1) {
         var last = hist[hist.length - 1];
         points.push(
-          xForTime(last.t).toFixed(2) + "," + yForTemp(last.a).toFixed(2)
+          xForTime(last.t).toFixed(2) + "," + yForTemp(last.a).toFixed(2),
         );
       }
 
@@ -2021,12 +2022,7 @@ $(function () {
 
         // Record and render history graph (tab view).
         var tsSec = Date.now() / 1000.0;
-        self._recordHeaterHistory(
-          heaterObj,
-          tsSec,
-          actualNow,
-          targetNow
-        );
+        self._recordHeaterHistory(heaterObj, tsSec, actualNow, targetNow);
         self._renderHistoricalGraph(heaterObj);
 
         // Ensure sidebar becomes visible even if it was injected late.
@@ -2359,8 +2355,7 @@ $(function () {
       return columns;
     });
 
-    self.onBeforeBinding = function () {
-    };
+    self.onBeforeBinding = function () {};
 
     self.onAfterBinding = function () {
       self._setupVisibilitySubscriptions();

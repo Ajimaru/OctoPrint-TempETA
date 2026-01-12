@@ -915,7 +915,9 @@ class TempETAPlugin(
                                 float(actual),
                             )
 
-                        self._cooldown_history[heater_key].append((current_time, actual))
+                        self._cooldown_history[heater_key].append(
+                            (current_time, actual)
+                        )
                         recorded_cooldown_count += 1
 
                         # Track a baseline ambient temp while OFF.
