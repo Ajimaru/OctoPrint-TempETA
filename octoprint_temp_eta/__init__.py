@@ -89,6 +89,8 @@ class LoggerLike(Protocol):
 
     def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
 
+    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
 
 @runtime_checkable
 class SettingsLike(Protocol):
@@ -170,8 +172,17 @@ class TempETAPlugin(
         # Note: ETA uses only the most recent seconds of history, so we keep
         # persistence bounded by both maxlen and a max-age filter on load.
         self._active_profile_id: Optional[str] = None
-        self._persist_interval = 10.0
-        self._last_persist_time = 0.0
+        # Persistence backoff to reduce SD card wear in long-running phases
+        # where the target is never reached.
+        # Backoff sequence after phase reset: 30s -> 60s -> 120s -> 240s -> 300s (cap).
+        self._persist_backoff_reset_s = 30.0
+        self._persist_backoff_initial_s = 60.0
+        self._persist_backoff_max_s = 300.0
+        self._persist_backoff_current_s = self._persist_backoff_initial_s
+        self._next_persist_time = 0.0
+        self._persist_phase_active = False
+        self._last_persist_size_warning_time = 0.0
+        self._persist_max_json_bytes = 256 * 1024
         self._persist_max_age_seconds = 180.0
         self._history_dirty = False
 
@@ -360,6 +371,68 @@ class TempETAPlugin(
                 self._update_interval_s = v
         except Exception:
             pass
+
+        # Persistence tuning (advanced settings; safe defaults apply).
+        # These values are not exposed in the UI, but can be configured via config.yaml.
+        try:
+            v = float(self._settings.get_float(["persist_backoff_reset_s"]))
+            if math.isfinite(v) and 1.0 <= v <= 600.0:
+                self._persist_backoff_reset_s = v
+        except Exception:
+            pass
+
+        try:
+            v = float(self._settings.get_float(["persist_backoff_initial_s"]))
+            if math.isfinite(v) and 1.0 <= v <= 600.0:
+                self._persist_backoff_initial_s = v
+        except Exception:
+            pass
+
+        try:
+            v = float(self._settings.get_float(["persist_backoff_max_s"]))
+            if math.isfinite(v) and 10.0 <= v <= 3600.0:
+                self._persist_backoff_max_s = v
+        except Exception:
+            pass
+
+        # Ensure ordering and keep current interval within bounds.
+        if self._persist_backoff_max_s < self._persist_backoff_initial_s:
+            self._persist_backoff_max_s = self._persist_backoff_initial_s
+        if self._persist_backoff_initial_s < self._persist_backoff_reset_s:
+            # Reset interval may be shorter than initial.
+            pass
+        self._persist_backoff_current_s = max(
+            1.0,
+            min(
+                float(self._persist_backoff_current_s),
+                float(self._persist_backoff_max_s),
+            ),
+        )
+
+        try:
+            v = int(self._settings.get_int(["persist_max_json_bytes"]))
+            if 16 * 1024 <= v <= 10 * 1024 * 1024:
+                self._persist_max_json_bytes = v
+        except Exception:
+            pass
+
+    def _reset_persist_backoff(self, now: float, reason: str) -> None:
+        """Reset persistence backoff schedule.
+
+        Args:
+            now (float): Current epoch time.
+            reason (str): Debug reason for reset.
+        """
+        self._persist_phase_active = False
+        self._persist_backoff_current_s = float(self._persist_backoff_reset_s)
+        self._next_persist_time = float(now) + float(self._persist_backoff_current_s)
+        self._debug_log_throttled(
+            now,
+            10.0,
+            "Persist backoff reset reason=%s next_in=%.1fs",
+            str(reason),
+            float(self._persist_backoff_current_s),
+        )
 
     def _get_current_profile_id(self) -> str:
         """Return current printer profile id or a stable fallback."""
@@ -564,7 +637,63 @@ class TempETAPlugin(
                 "history_size": self._history_maxlen,
                 "samples": samples,
             }
-            path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+            # Serialize first so we can enforce a hard size cap.
+            # This is a safety net; primary size bounding happens via maxlen.
+            json_text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+            json_bytes = json_text.encode("utf-8")
+
+            max_bytes = int(getattr(self, "_persist_max_json_bytes", 256 * 1024))
+            if max_bytes > 0 and len(json_bytes) > max_bytes:
+                now = time.time()
+                # Throttle warnings to avoid log spam in pathological cases.
+                if (
+                    now - float(getattr(self, "_last_persist_size_warning_time", 0.0))
+                ) >= 300.0:
+                    self._last_persist_size_warning_time = now
+                    self._logger.warning(
+                        "Persisted history JSON exceeds cap (%d > %d bytes); trimming history",
+                        int(len(json_bytes)),
+                        int(max_bytes),
+                    )
+
+                # Aggressively trim older samples while keeping most recent data for ETA.
+                # Limit to a few iterations to keep this bounded.
+                for _ in range(5):
+                    trimmed_any = False
+                    for heater, points in list(samples.items()):
+                        if not isinstance(points, list) or len(points) <= 2:
+                            continue
+                        # Keep at least 2 points, otherwise ETA cannot work reliably.
+                        keep = max(2, int(len(points) * 0.5))
+                        if keep < len(points):
+                            samples[heater] = points[-keep:]
+                            trimmed_any = True
+
+                    if not trimmed_any:
+                        break
+
+                    payload["samples"] = samples
+                    json_text = json.dumps(
+                        payload, ensure_ascii=False, separators=(",", ":")
+                    )
+                    json_bytes = json_text.encode("utf-8")
+                    if len(json_bytes) <= max_bytes:
+                        break
+
+            # Atomic write: write to tmp file in same directory and replace.
+            tmp_path = path.with_name(path.name + ".tmp")
+            try:
+                tmp_path.write_bytes(json_bytes)
+                tmp_path.replace(path)
+            finally:
+                # Best-effort cleanup if something went wrong before replace.
+                try:
+                    if tmp_path.exists():
+                        tmp_path.unlink()
+                except Exception:
+                    pass
+
             self._history_dirty = False
             self._debug_log(
                 "Persisted history profile=%s samples=%d path=%s",
@@ -580,11 +709,36 @@ class TempETAPlugin(
             )
 
     def _maybe_persist_history(self, now: float) -> None:
-        """Persist history occasionally to avoid frequent disk writes."""
-        if (now - self._last_persist_time) < self._persist_interval:
+        """Persist history using backoff to reduce disk wear."""
+        if not self._history_dirty:
             return
-        self._last_persist_time = now
+
+        # If we never scheduled a persist (startup), do it with current interval.
+        if float(getattr(self, "_next_persist_time", 0.0)) <= 0.0:
+            self._next_persist_time = float(now) + float(
+                self._persist_backoff_current_s
+            )
+
+        if float(now) < float(self._next_persist_time):
+            return
+
         self._persist_current_profile_history()
+
+        # Increase interval (backoff) for ongoing phases.
+        current = float(
+            getattr(self, "_persist_backoff_current_s", self._persist_backoff_initial_s)
+        )
+        initial = float(getattr(self, "_persist_backoff_initial_s", 60.0))
+        maximum = float(getattr(self, "_persist_backoff_max_s", 300.0))
+
+        if current < initial:
+            current = initial
+        else:
+            current = min(current * 2.0, maximum)
+
+        self._persist_backoff_current_s = current
+        self._persist_phase_active = True
+        self._next_persist_time = float(now) + float(current)
 
     def _switch_active_profile_if_needed(self, force: bool = False) -> None:
         """Persist + swap history when active printer profile changes."""
@@ -855,6 +1009,12 @@ class TempETAPlugin(
 
         epsilon_hold = 0.2
 
+        # Detect phase transitions to reset persistence backoff.
+        # We reset when: target goes OFF, target is reached/holding, heating disabled,
+        # target changes meaningfully, or on disconnect/error events.
+        reset_persist_backoff = False
+        any_active_heating = False
+
         recorded_count = 0
         recorded_cooldown_count = 0
         heaters_seen = 0
@@ -893,6 +1053,19 @@ class TempETAPlugin(
                 prev_target = self._last_target_by_heater.get(str(heater))
                 self._last_target_by_heater[heater_key] = float(target)
 
+                # Target changes are treated as new phases for persistence backoff.
+                if (
+                    prev_target is not None
+                    and math.isfinite(prev_target)
+                    and math.isfinite(target)
+                ):
+                    if (
+                        prev_target > 0.0
+                        and target > 0.0
+                        and abs(prev_target - target) >= 0.5
+                    ):
+                        reset_persist_backoff = True
+
                 if target <= 0:
                     # Cooldown tracking (target==0).
                     if cooldown_enabled:
@@ -930,12 +1103,18 @@ class TempETAPlugin(
                     continue
 
                 if not heating_enabled:
+                    # Heating disabled: treat as phase end for persistence.
+                    reset_persist_backoff = True
                     continue
 
                 remaining = target - actual
                 # Avoid recording while holding near target to prevent constant churn.
                 if remaining <= epsilon_hold:
+                    # Consider this phase ended for persistence purposes.
+                    reset_persist_backoff = True
                     continue
+
+                any_active_heating = True
                 if remaining < threshold:
                     continue
 
@@ -963,6 +1142,18 @@ class TempETAPlugin(
         if (current_time - self._last_update_time) >= update_interval:
             self._last_update_time = current_time
             self._calculate_and_broadcast_eta(data)
+
+            # Reset persistence backoff when the heating phase ended or changed.
+            if reset_persist_backoff or (not any_active_heating):
+                self._reset_persist_backoff(
+                    current_time,
+                    (
+                        "target_change_or_phase_end"
+                        if reset_persist_backoff
+                        else "no_active_heating"
+                    ),
+                )
+
             self._maybe_persist_history(current_time)
 
     def on_printer_send_current_data(self, data):
@@ -990,6 +1181,7 @@ class TempETAPlugin(
         ):  # clear UI on connection loss
             # Persist what we have before clearing.
             self._persist_current_profile_history()
+            self._reset_persist_backoff(time.time(), "disconnect_or_error")
             with self._lock:
                 heaters = list(self._temp_history.keys())
                 for h in heaters:
@@ -1626,6 +1818,11 @@ class TempETAPlugin(
             algorithm="linear",
             update_interval=1.0,
             history_size=60,
+            # Persistence (advanced; protects SD cards on long-running phases)
+            persist_backoff_reset_s=30.0,
+            persist_backoff_initial_s=60.0,
+            persist_backoff_max_s=300.0,
+            persist_max_json_bytes=256 * 1024,
             # Cool Down ETA
             enable_cooldown_eta=True,
             cooldown_mode="threshold",
