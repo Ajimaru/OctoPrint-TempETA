@@ -365,7 +365,9 @@ class TempETAPlugin(
             "mqtt_base_topic": self._settings.get(["mqtt_base_topic"]),
             "mqtt_qos": self._settings.get_int(["mqtt_qos"]),
             "mqtt_retain": self._settings.get_boolean(["mqtt_retain"]),
-            "mqtt_publish_interval": self._settings.get_float(["mqtt_publish_interval"]),
+            "mqtt_publish_interval": self._settings.get_float(
+                ["mqtt_publish_interval"]
+            ),
         }
 
         self._mqtt_client.configure(mqtt_settings)
@@ -1168,7 +1170,9 @@ class TempETAPlugin(
                         )
                     except (ConnectionError, OSError) as e:
                         # Connection issues - log at error level
-                        self._logger.error("MQTT publish failed (connection): %s", str(e))
+                        self._logger.error(
+                            "MQTT publish failed (connection): %s", str(e)
+                        )
                     except Exception as e:
                         # Other issues - log at debug level to avoid noise
                         self._logger.debug("MQTT publish failed: %s", str(e))

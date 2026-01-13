@@ -10,7 +10,7 @@ from __future__ import absolute_import
 import json
 import threading
 import time
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
 
 try:
     import paho.mqtt.client as mqtt
@@ -131,11 +131,13 @@ class MQTTClientWrapper:
                     # Try paho-mqtt 2.0+ API with callback version
                     self._client = mqtt.Client(
                         client_id=client_id,
-                        callback_api_version=mqtt.CallbackAPIVersion.VERSION2
+                        callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
                     )
                 except (TypeError, AttributeError) as e:
                     # Fall back to paho-mqtt 1.x API
-                    self._logger.debug("Using paho-mqtt 1.x API (version 2 not available): %s", str(e))
+                    self._logger.debug(
+                        "Using paho-mqtt 1.x API (version 2 not available): %s", str(e)
+                    )
                     self._client = mqtt.Client(client_id=client_id)
 
                 self._client.on_connect = self._on_connect
@@ -158,9 +160,7 @@ class MQTTClientWrapper:
                 broker_host = self._broker_host
                 broker_port = self._broker_port
 
-            self._logger.info(
-                "MQTT connecting to %s:%d", broker_host, broker_port
-            )
+            self._logger.info("MQTT connecting to %s:%d", broker_host, broker_port)
             self._client.connect(broker_host, broker_port, keepalive=60)
             self._client.loop_start()
 
@@ -191,7 +191,9 @@ class MQTTClientWrapper:
             self._connecting = False
             if rc == 0:
                 self._connected = True
-                self._logger.info("MQTT connected to %s:%d", self._broker_host, self._broker_port)
+                self._logger.info(
+                    "MQTT connected to %s:%d", self._broker_host, self._broker_port
+                )
             else:
                 self._connected = False
                 self._logger.error("MQTT connection failed with code %d", rc)
@@ -228,9 +230,13 @@ class MQTTClientWrapper:
             self._disconnect_internal()
 
     def publish_eta_update(
-        self, heater: str, eta: Optional[float], eta_kind: Optional[str],
-        target: Optional[float], actual: Optional[float],
-        cooldown_target: Optional[float] = None
+        self,
+        heater: str,
+        eta: Optional[float],
+        eta_kind: Optional[str],
+        target: Optional[float],
+        actual: Optional[float],
+        cooldown_target: Optional[float] = None,
     ) -> None:
         """Publish ETA update for a heater.
 
@@ -268,7 +274,7 @@ class MQTTClientWrapper:
 
             # Detect state transitions
             last_state = self._last_heater_state.get(heater)
-            state_changed = (last_state != current_state)
+            state_changed = last_state != current_state
             self._last_heater_state[heater] = current_state
 
             # Build payload

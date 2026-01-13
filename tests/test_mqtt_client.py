@@ -5,9 +5,8 @@ Tests MQTT connection management, message publishing, and state transitions.
 
 from __future__ import annotations
 
-import json
 import time
-from typing import Any, Dict, List
+from typing import Any, List
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -317,3 +316,340 @@ def test_mqtt_base_topic_configuration(mqtt_wrapper: MQTTClientWrapper) -> None:
     mqtt_wrapper.configure(settings)
 
     assert mqtt_wrapper._base_topic == "custom/topic/path"
+
+
+def test_mqtt_schedule_connect_logs_when_mqtt_unavailable(
+    mqtt_wrapper: MQTTClientWrapper, logger: DummyLogger
+) -> None:
+    """Schedule connect should log and return if paho-mqtt isn't available."""
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "example"
+
+    with patch("octoprint_temp_eta.mqtt_client.mqtt", None):
+        with mqtt_wrapper._lock:
+            mqtt_wrapper._schedule_connect()
+
+    assert any("MQTT support disabled" in msg for msg in logger.info_calls)
+
+
+def test_mqtt_connect_thread_respects_retry_interval(
+    mqtt_wrapper: MQTTClientWrapper,
+) -> None:
+    """Connect thread should early-return when inside retry interval."""
+    mqtt_wrapper._connect_retry_interval = 30.0
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._last_connect_attempt = 80.0
+        mqtt_wrapper._connect_thread()
+
+    # No side effects expected (still not connecting/connected)
+    assert mqtt_wrapper._client is None
+    assert mqtt_wrapper._connected is False
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_connect_thread_falls_back_to_paho_v1_api(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper, logger: DummyLogger
+) -> None:
+    """If paho-mqtt 2.x callback API isn't available, wrapper should fall back."""
+    mock_client = MagicMock()
+
+    def _client_factory(*_args: Any, **kwargs: Any) -> Any:
+        if "callback_api_version" in kwargs:
+            raise TypeError("no callback API")
+        return mock_client
+
+    mock_mqtt.Client.side_effect = _client_factory
+    mock_mqtt.CallbackAPIVersion.VERSION2 = object()
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "broker"
+    mqtt_wrapper._broker_port = 1883
+    mqtt_wrapper._connect_retry_interval = 0.0
+    mqtt_wrapper._last_connect_attempt = 0.0
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._connect_thread()
+
+    assert any("Using paho-mqtt 1.x API" in msg for msg in logger.debug_calls)
+    assert mock_client.connect.called
+    assert mock_client.loop_start.called
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_connect_thread_tls_insecure(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper
+) -> None:
+    """TLS insecure mode should disable certificate verification."""
+    import ssl
+
+    mock_client = MagicMock()
+    mock_mqtt.Client.return_value = mock_client
+    mock_mqtt.CallbackAPIVersion.VERSION2 = object()
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "broker"
+    mqtt_wrapper._broker_port = 8883
+    mqtt_wrapper._use_tls = True
+    mqtt_wrapper._tls_insecure = True
+    mqtt_wrapper._connect_retry_interval = 0.0
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._connect_thread()
+
+    mock_client.tls_set.assert_called_with(cert_reqs=ssl.CERT_NONE)
+    mock_client.tls_insecure_set.assert_called_with(True)
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_connect_thread_tls_secure(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper
+) -> None:
+    """TLS secure mode should require certificate verification."""
+    import ssl
+
+    mock_client = MagicMock()
+    mock_mqtt.Client.return_value = mock_client
+    mock_mqtt.CallbackAPIVersion.VERSION2 = object()
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "broker"
+    mqtt_wrapper._broker_port = 8883
+    mqtt_wrapper._use_tls = True
+    mqtt_wrapper._tls_insecure = False
+    mqtt_wrapper._connect_retry_interval = 0.0
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._connect_thread()
+
+    mock_client.tls_set.assert_called_with(cert_reqs=ssl.CERT_REQUIRED)
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_connect_thread_handles_connect_error(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper, logger: DummyLogger
+) -> None:
+    """Connection errors should be logged and internal state reset."""
+    mock_client = MagicMock()
+    mock_mqtt.Client.return_value = mock_client
+    mock_mqtt.CallbackAPIVersion.VERSION2 = object()
+    mock_client.connect.side_effect = RuntimeError("boom")
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "broker"
+    mqtt_wrapper._broker_port = 1883
+    mqtt_wrapper._connect_retry_interval = 0.0
+    mqtt_wrapper._connecting = True
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._connect_thread()
+
+    assert any("MQTT connection failed" in msg for msg in logger.error_calls)
+    assert mqtt_wrapper._connected is False
+    assert mqtt_wrapper._connecting is False
+    assert mqtt_wrapper._client is None
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_publish_message_logs_failure_rc(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper, logger: DummyLogger
+) -> None:
+    """Non-success publish rc should produce a debug log."""
+    mock_client = MagicMock()
+    mock_result = MagicMock()
+    mock_result.rc = 7
+    mock_client.publish.return_value = mock_result
+    mock_mqtt.MQTT_ERR_SUCCESS = 0
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._connected = True
+    mqtt_wrapper._client = mock_client
+
+    mqtt_wrapper._publish_message("topic", {"k": "v"})
+    assert any("MQTT publish failed" in msg for msg in logger.debug_calls)
+
+
+def test_mqtt_publish_message_logs_exception(
+    mqtt_wrapper: MQTTClientWrapper, logger: DummyLogger
+) -> None:
+    """Publish exceptions should be caught and logged at debug level."""
+    mock_client = MagicMock()
+    mock_client.publish.side_effect = RuntimeError("boom")
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._connected = True
+    mqtt_wrapper._client = mock_client
+
+    mqtt_wrapper._publish_message("topic", {"k": "v"})
+    assert any("MQTT publish error" in msg for msg in logger.debug_calls)
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_publish_eta_update_sets_cooled_down_state(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper
+) -> None:
+    """Cooldown target proximity should set cooled_down state and publish events."""
+    mock_client = MagicMock()
+    mock_mqtt.MQTT_ERR_SUCCESS = 0
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._connected = True
+    mqtt_wrapper._client = mock_client
+    mqtt_wrapper._base_topic = "test/topic"
+    mqtt_wrapper._last_published_time = 0.0
+    mqtt_wrapper._publish_interval = 0.0
+
+    mock_result = MagicMock()
+    mock_result.rc = 0
+    mock_client.publish.return_value = mock_result
+
+    mqtt_wrapper.publish_eta_update(
+        heater="bed",
+        eta=None,
+        eta_kind=None,
+        target=0.0,
+        actual=20.2,
+        cooldown_target=20.0,
+    )
+
+    assert mqtt_wrapper._last_heater_state.get("bed") == "cooled_down"
+    assert mock_client.publish.call_count >= 2
+
+
+def test_mqtt_configure_disabling_disconnects_existing_client(
+    mqtt_wrapper: MQTTClientWrapper,
+) -> None:
+    """Disabling MQTT should disconnect an existing client."""
+    mock_client = MagicMock()
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._connected = True
+    mqtt_wrapper._client = mock_client
+
+    mqtt_wrapper.configure({"mqtt_enabled": False})
+
+    assert mock_client.loop_stop.called
+    assert mock_client.disconnect.called
+    assert mqtt_wrapper._client is None
+    assert mqtt_wrapper._connected is False
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_connect_thread_disconnects_existing_client(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper
+) -> None:
+    """Connect thread should disconnect an existing client before reconnecting."""
+    old_client = MagicMock()
+    new_client = MagicMock()
+    mock_mqtt.Client.return_value = new_client
+    mock_mqtt.CallbackAPIVersion.VERSION2 = object()
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "broker"
+    mqtt_wrapper._broker_port = 1883
+    mqtt_wrapper._client = old_client
+    mqtt_wrapper._connect_retry_interval = 0.0
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._connect_thread()
+
+    assert old_client.disconnect.called
+    assert mqtt_wrapper._client is new_client
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_connect_thread_cleanup_ignores_loop_stop_errors(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper
+) -> None:
+    """Loop-stop failures during error cleanup should be swallowed."""
+    mock_client = MagicMock()
+    mock_mqtt.Client.return_value = mock_client
+    mock_mqtt.CallbackAPIVersion.VERSION2 = object()
+    mock_client.connect.side_effect = RuntimeError("boom")
+    mock_client.loop_stop.side_effect = RuntimeError("loop stop boom")
+
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._broker_host = "broker"
+    mqtt_wrapper._broker_port = 1883
+    mqtt_wrapper._connect_retry_interval = 0.0
+
+    with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
+        mqtt_wrapper._connect_thread()
+
+    assert mqtt_wrapper._client is None
+
+
+def test_mqtt_on_connect_sets_connected_and_logs(logger: DummyLogger) -> None:
+    """_on_connect should update internal state for success and failure."""
+    wrapper = MQTTClientWrapper(logger, "temp_eta")
+    wrapper._broker_host = "broker"
+    wrapper._broker_port = 1883
+    wrapper._connecting = True
+
+    wrapper._on_connect(client=None, userdata=None, flags={}, rc=0)
+    assert wrapper.is_connected() is True
+    assert any("MQTT connected" in msg for msg in logger.info_calls)
+
+    wrapper._on_connect(client=None, userdata=None, flags={}, rc=1)
+    assert wrapper.is_connected() is False
+    assert any("MQTT connection failed with code" in msg for msg in logger.error_calls)
+
+
+def test_mqtt_on_disconnect_logs_retry(logger: DummyLogger) -> None:
+    """_on_disconnect should log when rc indicates an unexpected disconnect."""
+    wrapper = MQTTClientWrapper(logger, "temp_eta")
+    wrapper._connected = True
+    wrapper._connecting = True
+
+    wrapper._on_disconnect(client=None, userdata=None, rc=1)
+    assert wrapper.is_connected() is False
+    assert any("will retry" in msg for msg in logger.info_calls)
+
+
+def test_mqtt_disconnect_internal_ignores_exceptions(mqtt_wrapper: MQTTClientWrapper) -> None:
+    """Disconnect should swallow client API errors and reset state."""
+    mock_client = MagicMock()
+    mock_client.loop_stop.side_effect = RuntimeError("boom")
+    mock_client.disconnect.side_effect = RuntimeError("boom")
+
+    mqtt_wrapper._client = mock_client
+    mqtt_wrapper._connected = True
+
+    mqtt_wrapper.disconnect()
+    assert mqtt_wrapper._client is None
+    assert mqtt_wrapper._connected is False
+
+
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_publish_eta_update_sets_cooling_state(
+    mock_mqtt: Mock, mqtt_wrapper: MQTTClientWrapper
+) -> None:
+    """Cooling ETA updates should set cooling state."""
+    mock_client = MagicMock()
+    mock_mqtt.MQTT_ERR_SUCCESS = 0
+    mqtt_wrapper._enabled = True
+    mqtt_wrapper._connected = True
+    mqtt_wrapper._client = mock_client
+    mqtt_wrapper._base_topic = "test/topic"
+    mqtt_wrapper._last_published_time = 0.0
+    mqtt_wrapper._publish_interval = 0.0
+
+    mock_result = MagicMock()
+    mock_result.rc = 0
+    mock_client.publish.return_value = mock_result
+
+    mqtt_wrapper.publish_eta_update(
+        heater="bed",
+        eta=30.0,
+        eta_kind="cooling",
+        target=0.0,
+        actual=50.0,
+        cooldown_target=None,
+    )
+
+    assert mqtt_wrapper._last_heater_state.get("bed") == "cooling"
+
+
+def test_mqtt_publish_message_returns_when_not_connected(mqtt_wrapper: MQTTClientWrapper) -> None:
+    """_publish_message should no-op if there is no client or no connection."""
+    mqtt_wrapper._connected = False
+    mqtt_wrapper._client = None
+    mqtt_wrapper._publish_message("topic", {"k": "v"})
