@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=65,<68.1; python_version<'3.8'",
-    "setuptools>=81,<86; python_version>='3.8'",
+    "setuptools>=77,<81; python_version>='3.8'",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -14,7 +14,6 @@ authors = [
     {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
-license = {text = "AGPL-3.0-only"}
 
 requires-python = ">=3.7, <4"
 
