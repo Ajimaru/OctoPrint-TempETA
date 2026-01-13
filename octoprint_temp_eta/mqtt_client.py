@@ -133,8 +133,9 @@ class MQTTClientWrapper:
                         client_id=client_id,
                         callback_api_version=mqtt.CallbackAPIVersion.VERSION2
                     )
-                except (TypeError, AttributeError):
+                except (TypeError, AttributeError) as e:
                     # Fall back to paho-mqtt 1.x API
+                    self._logger.debug("Using paho-mqtt 1.x API (version 2 not available): %s", str(e))
                     self._client = mqtt.Client(client_id=client_id)
 
                 self._client.on_connect = self._on_connect
@@ -146,9 +147,13 @@ class MQTTClientWrapper:
                 if self._use_tls:
                     import ssl
 
-                    self._client.tls_set(cert_reqs=ssl.CERT_NONE if self._tls_insecure else ssl.CERT_REQUIRED)
                     if self._tls_insecure:
+                        # Skip certificate verification (not recommended for production)
+                        self._client.tls_set(cert_reqs=ssl.CERT_NONE)
                         self._client.tls_insecure_set(True)
+                    else:
+                        # Use default certificate verification
+                        self._client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
 
                 broker_host = self._broker_host
                 broker_port = self._broker_port

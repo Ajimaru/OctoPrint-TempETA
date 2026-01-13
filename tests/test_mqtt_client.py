@@ -107,7 +107,8 @@ def test_mqtt_configure_enabled_with_host(
 
     mqtt_wrapper.configure(settings)
 
-    # Give the background thread a moment to start
+    # Brief sleep to allow background thread to start (connection is async)
+    # This is necessary because the actual MQTT connection happens in a daemon thread
     time.sleep(0.1)
 
     # Verify connection attempt was initiated

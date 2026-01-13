@@ -1166,7 +1166,11 @@ class TempETAPlugin(
                             actual=actual,
                             cooldown_target=cooldown_target,
                         )
+                    except (ConnectionError, OSError) as e:
+                        # Connection issues - log at error level
+                        self._logger.error("MQTT publish failed (connection): %s", str(e))
                     except Exception as e:
+                        # Other issues - log at debug level to avoid noise
                         self._logger.debug("MQTT publish failed: %s", str(e))
 
     def _heating_enabled(self) -> bool:
