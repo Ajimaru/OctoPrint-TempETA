@@ -125,7 +125,18 @@ class MQTTClientWrapper:
                         pass
                     self._client = None
 
-                self._client = mqtt.Client(client_id=f"{self._identifier}_{int(now)}")
+                # Create MQTT client with version-specific API
+                client_id = f"{self._identifier}_{int(now)}"
+                try:
+                    # Try paho-mqtt 2.0+ API with callback version
+                    self._client = mqtt.Client(
+                        client_id=client_id,
+                        callback_api_version=mqtt.CallbackAPIVersion.VERSION2
+                    )
+                except (TypeError, AttributeError):
+                    # Fall back to paho-mqtt 1.x API
+                    self._client = mqtt.Client(client_id=client_id)
+
                 self._client.on_connect = self._on_connect
                 self._client.on_disconnect = self._on_disconnect
 

@@ -370,13 +370,6 @@ class TempETAPlugin(
 
         self._mqtt_client.configure(mqtt_settings)
 
-        # Initialize MQTT client
-        if MQTTClientWrapper is not None:
-            self._mqtt_client = MQTTClientWrapper(self._logger, self._identifier)
-            self._configure_mqtt_client()
-        else:
-            self._logger.info("MQTT support disabled: paho-mqtt not available")
-
     def _get_current_profile_id(self) -> str:
         """Return current printer profile id or a stable fallback."""
         try:
