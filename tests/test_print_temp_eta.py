@@ -27,6 +27,9 @@ class DummyLogger:
     def info(self, *args: Any, **kwargs: Any) -> None:
         return
 
+    def warning(self, *args: Any, **kwargs: Any) -> None:
+        return
+
 
 class RecordingLogger(DummyLogger):
     def __init__(self) -> None:
@@ -258,6 +261,7 @@ def test_debug_log_settings_snapshot_handles_settings_exception(
             raise RuntimeError("boom")
 
     plugin_any._settings = _RaisingSettings()
+
     plugin_any._debug_logging_enabled = True
     plugin_any._last_settings_snapshot_log_time = 0.0
 
@@ -268,6 +272,117 @@ def test_debug_log_settings_snapshot_handles_settings_exception(
     assert logged == []
     # Timestamp is updated before reading settings, even if reading fails.
     assert plugin_any._last_settings_snapshot_log_time == 100.0
+
+
+def test_persist_current_profile_history_trims_to_size_cap_and_writes_atomically(
+    plugin: TempETAPlugin,
+    tmp_path: Path,
+) -> None:
+    plugin_any = cast(Any, plugin)
+
+    class _CapturingLogger(DummyLogger):
+        def __init__(self) -> None:
+            self.warning_calls: List[str] = []
+
+        def warning(self, msg: str, *args: Any, **kwargs: Any) -> None:
+            self.warning_calls.append(str(msg))
+
+    plugin_any._logger = _CapturingLogger()
+
+    _set_plugin_data_folder(plugin, tmp_path)
+
+    # Force an aggressive cap to exercise trimming logic.
+    plugin_any._persist_max_json_bytes = 1500
+
+    # Create lots of samples to exceed the cap.
+    with plugin_any._lock:
+        plugin_any._temp_history["tool0"] = deque(maxlen=10_000)
+        plugin_any._temp_history["bed"] = deque(maxlen=10_000)
+
+        for i in range(600):
+            ts = float(i)
+            plugin_any._temp_history["tool0"].append((ts, 20.0 + i * 0.1, 200.0))
+            plugin_any._temp_history["bed"].append((ts, 30.0 + i * 0.05, 60.0))
+
+    plugin_any._history_dirty = True
+
+    plugin._persist_current_profile_history()
+
+    history_path = tmp_path / "history_default.json"
+    assert history_path.exists()
+    assert not (tmp_path / "history_default.json.tmp").exists()
+
+    raw = history_path.read_bytes()
+    assert len(raw) <= int(plugin_any._persist_max_json_bytes)
+
+    payload = json.loads(raw.decode("utf-8"))
+    assert payload["profile_id"] == "default"
+    samples = payload["samples"]
+    assert "tool0" in samples
+    assert "bed" in samples
+
+    # Optional heaters may be present but empty.
+    if "chamber" in samples:
+        assert samples["chamber"] == []
+
+    # Trim logic guarantees at least 2 points per heater.
+    assert len(samples["tool0"]) >= 2
+    assert len(samples["bed"]) >= 2
+
+    # And trimming should have happened (we started with 600 points each).
+    assert len(samples["tool0"]) < 600
+    assert len(samples["bed"]) < 600
+
+
+def test_persist_backoff_phase_transitions_and_maybe_persist(
+    plugin: TempETAPlugin,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    plugin_any = cast(Any, plugin)
+
+    # Keep callback fast: we only want to exercise phase/backoff code paths.
+    plugin_any._calculate_and_broadcast_eta = lambda _data: None
+
+    persisted: List[float] = []
+
+    def _persist_stub() -> None:
+        persisted.append(float(octoprint_temp_eta.time.time()))
+        plugin_any._history_dirty = False
+
+    plugin_any._persist_current_profile_history = _persist_stub
+
+    # Start at a deterministic time.
+    _set_time(monkeypatch, 1000.0)
+
+    # First callback with an active heating phase should enter persist phase and schedule.
+    data = {"tool0": {"actual": 20.0, "target": 40.0}}
+    plugin.on_printer_add_temperature(data)
+
+    assert plugin_any._persist_phase_active is True
+    assert float(plugin_any._persist_backoff_current_s) == float(
+        plugin_any._persist_backoff_initial_s
+    )
+    assert float(plugin_any._next_persist_time) > 1000.0
+    assert persisted == []
+
+    # Advance time to the scheduled persist time and call maybe_persist.
+    _set_time(monkeypatch, float(plugin_any._next_persist_time))
+    plugin_any._history_dirty = True
+    plugin._maybe_persist_history(octoprint_temp_eta.time.time())
+    assert persisted
+
+    # Backoff doubles after persisting (up to max).
+    assert float(plugin_any._persist_backoff_current_s) >= float(
+        plugin_any._persist_backoff_initial_s
+    )
+
+    # Now simulate leaving the active phase (target off), which should reset backoff.
+    _set_time(monkeypatch, 1100.0)
+    data = {"tool0": {"actual": 25.0, "target": 0.0}}
+    plugin.on_printer_add_temperature(data)
+    assert float(plugin_any._persist_backoff_current_s) == float(
+        plugin_any._persist_backoff_reset_s
+    )
 
 
 def test_is_print_job_active_returns_false_when_printer_missing(
