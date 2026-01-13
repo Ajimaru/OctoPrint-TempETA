@@ -8,9 +8,41 @@ log() {
   printf '[temp-eta post-commit] %s\n' "$*"
 }
 
+python_is_at_least_310() {
+  local python_bin="$1"
+  "$python_bin" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 10) else 1)' >/dev/null 2>&1
+}
+
+resolve_python() {
+  local candidate
+
+  for candidate in "./venv/bin/python"; do
+    if [[ -x "$candidate" ]] && python_is_at_least_310 "$candidate"; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  if command -v python3 >/dev/null 2>&1 && python_is_at_least_310 "python3"; then
+    echo "python3"
+    return 0
+  fi
+
+  return 1
+}
+
+PYTHON=""
+if PYTHON="$(resolve_python 2>/dev/null)"; then
+  :
+else
+  log "ERROR: Python 3.10+ not available (expected ./venv/bin/python or python3>=3.10)."
+  log "ERROR: Run: .development/setup_dev.sh"
+  exit 1
+fi
+
 semver_is_lt() {
   # Returns 0 if $1 < $2 for simple x.y.z (or x.y) versions, otherwise 1.
-  python3 -c '
+  "$PYTHON" -c '
 import sys
 
 def parse(v: str):
@@ -34,7 +66,7 @@ sys.exit(0 if a < b else 1)
 
 semver_is_gt() {
   # Returns 0 if $1 > $2 for simple x.y.z (or x.y) versions, otherwise 1.
-  python3 -c '
+  "$PYTHON" -c '
 import sys
 
 def parse(v: str):
@@ -87,7 +119,7 @@ get_previous_version_from_dist() {
 get_version_from_pyproject() {
   local file_path="$1"
 
-  python3 -c '
+  "$PYTHON" -c '
 import sys
 
 path = sys.argv[1]
@@ -109,7 +141,7 @@ print(version)
 }
 
 get_version_from_pyproject_content() {
-  python3 -c '
+  "$PYTHON" -c '
 import sys
 
 raw = sys.stdin.buffer.read()
@@ -133,7 +165,7 @@ create_zip_from_sdist() {
   local tar_path="$1"
   local zip_path="$2"
 
-  python3 - "$tar_path" "$zip_path" <<'PY'
+  "$PYTHON" - "$tar_path" "$zip_path" <<'PY'
 import sys
 import tarfile
 import zipfile
@@ -214,13 +246,14 @@ main() {
 
   log "Detected version bump: ${display_old} -> ${new_version}"
 
-  if ! python3 -m build --help >/dev/null 2>&1; then
-    log "python3 -m build not available; skipping dist build"
-    exit 0
+  if ! "$PYTHON" -m build --help >/dev/null 2>&1; then
+    log "ERROR: python -m build not available in the selected Python environment"
+    log "ERROR: Install with: $PYTHON -m pip install build"
+    exit 1
   fi
 
   log "Building wheel + sdist into dist/"
-  python3 -m build >/dev/null
+  "$PYTHON" -m build >/dev/null
 
   local sdist="dist/octoprint_tempeta-${new_version}.tar.gz"
   local zip="dist/octoprint_tempeta-${new_version}.zip"

@@ -6,6 +6,10 @@
     --temp-eta-color-heating: #5cb85c;
     --temp-eta-color-cooling: #337ab7;
     --temp-eta-color-idle: #777777;
+
+    /* Graph colors (overrideable by themes) */
+    --temp-eta-graph-bg: rgba(0, 0, 0, 0.03);
+    --temp-eta-graph-fg: currentColor;
 }
 
 #navbar_plugin_temp_eta {
@@ -29,30 +33,26 @@
     gap: 4px;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.hidden {
-    display: none;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.hidden,
 #sidebar_plugin_temp_eta .temp-eta-item.hidden {
     display: none;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item {
+#navbar_plugin_temp_eta .temp-eta-item,
+#sidebar_plugin_temp_eta .temp-eta-item {
     display: flex;
-    align-items: center;
     gap: 2px;
     font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
 }
 
+#navbar_plugin_temp_eta .temp-eta-item {
+    align-items: center;
+}
+
 #sidebar_plugin_temp_eta .temp-eta-item {
-    display: flex;
     flex-direction: column;
-    gap: 2px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
 }
 
 #sidebar_plugin_temp_eta .temp-eta-row {
@@ -61,130 +61,84 @@
     gap: 4px;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
-    color: #d9534f;
-    font-weight: bold;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
     color: #d9534f;
     font-weight: bold;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i {
-    color: #d9534f;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i {
     color: #d9534f;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value {
-    color: #5bc0de;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value {
     color: #5bc0de;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i {
-    color: #5bc0de;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i {
     color: #5bc0de;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
-    color: var(--temp-eta-color-cooling, #337ab7);
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
     color: var(--temp-eta-color-cooling, #337ab7);
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
-    color: var(--temp-eta-color-cooling, #337ab7);
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
     color: var(--temp-eta-color-cooling, #337ab7);
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value {
-    color: var(--temp-eta-color-heating, #5cb85c);
-    font-weight: bold;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value {
     color: var(--temp-eta-color-heating, #5cb85c);
     font-weight: bold;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i {
-    color: var(--temp-eta-color-heating, #5cb85c);
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i {
     color: var(--temp-eta-color-heating, #5cb85c);
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
-    color: #5cb85c;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
     color: #5cb85c;
 }
 
-#navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i {
-    color: #5cb85c;
-}
-
+#navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i {
     color: #5cb85c;
 }
 
-#navbar_plugin_temp_eta .temp-eta-label {
-    width: 18px;
-    text-align: center;
-}
-
+#navbar_plugin_temp_eta .temp-eta-label,
 #sidebar_plugin_temp_eta .temp-eta-label {
     width: 18px;
     text-align: center;
 }
 
-#navbar_plugin_temp_eta .temp-eta-label i {
-    font-size: 14px;
-}
-
+#navbar_plugin_temp_eta .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-label i {
     font-size: 14px;
 }
 
-#navbar_plugin_temp_eta .temp-eta-name {
-    font-size: 11px;
-    opacity: 0.85;
-    margin-right: 2px;
-}
-
+#navbar_plugin_temp_eta .temp-eta-name,
 #sidebar_plugin_temp_eta .temp-eta-name {
     font-size: 11px;
     opacity: 0.85;
     margin-right: 2px;
 }
 
-#navbar_plugin_temp_eta .temp-eta-metrics {
+#navbar_plugin_temp_eta .temp-eta-metrics,
+#sidebar_plugin_temp_eta .temp-eta-metrics {
     display: flex;
     align-items: baseline;
     gap: 6px;
 }
 
 #sidebar_plugin_temp_eta .temp-eta-metrics {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
     margin-left: auto;
 }
 
@@ -217,8 +171,11 @@
     width: 100%;
     height: 60px;
     display: block;
-    background: rgba(0, 0, 0, 0.03);
+    /* Use a subtle overlay that can be overridden by themes */
+    background: var(--temp-eta-graph-bg);
     border-radius: 3px;
+    /* Enable currentColor-based SVG styling */
+    color: var(--temp-eta-graph-fg);
 }
 
 #temp_eta_content .temp-eta-subtab-history .temp-eta-graph-svg {
@@ -227,13 +184,15 @@
 
 #temp_eta_content .temp-eta-graph-axis,
 #temp_eta_content .temp-eta-graph-axis-tick {
-    stroke: rgba(0, 0, 0, 0.28);
+    stroke: currentColor;
+    stroke-opacity: 0.28;
     stroke-width: 0.7;
     vector-effect: non-scaling-stroke;
 }
 
 #temp_eta_content .temp-eta-graph-label {
-    fill: rgba(0, 0, 0, 0.55);
+    fill: currentColor;
+    fill-opacity: 0.55;
     font-size: 4px;
     vector-effect: non-scaling-stroke;
 }
@@ -248,10 +207,17 @@
 }
 
 #temp_eta_content .temp-eta-graph-target {
-    stroke: rgba(0, 0, 0, 0.25);
+    stroke: currentColor;
+    stroke-opacity: 0.25;
     stroke-width: 1;
     stroke-dasharray: 2 2;
     vector-effect: non-scaling-stroke;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --temp-eta-graph-bg: rgba(255, 255, 255, 0.06);
+    }
 }
 
 .temp-eta-progress .progress-bar,
@@ -291,12 +257,7 @@
 }
 
 #navbar_plugin_temp_eta .temp-eta-value,
-#navbar_plugin_temp_eta .temp-eta-temp {
-    min-width: 48px;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-}
-
+#navbar_plugin_temp_eta .temp-eta-temp,
 #sidebar_plugin_temp_eta .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-temp {
     min-width: 48px;
@@ -304,11 +265,7 @@
     font-variant-numeric: tabular-nums;
 }
 
-#navbar_plugin_temp_eta .temp-eta-temp {
-    font-size: 10px;
-    opacity: 0.75;
-}
-
+#navbar_plugin_temp_eta .temp-eta-temp,
 #sidebar_plugin_temp_eta .temp-eta-temp {
     font-size: 10px;
     opacity: 0.75;
@@ -466,19 +423,22 @@
     border-left: 4px solid rgba(0, 0, 0, 0.12);
 }
 
+.ui-pnotify.temp-eta-toast .ui-pnotify-title,
+.ui-pnotify.temp-eta-toast .ui-pnotify-text {
+    padding-left: 20px;
+}
+
 .ui-pnotify.temp-eta-toast .ui-pnotify-title {
     font-size: 13px;
     font-weight: 600;
     line-height: 1.25;
     margin-bottom: 2px;
-    padding-left: 20px;
     position: relative;
 }
 
 .ui-pnotify.temp-eta-toast .ui-pnotify-text {
     font-size: 12px;
     line-height: 1.35;
-    padding-left: 20px;
 }
 
 .ui-pnotify.temp-eta-toast .ui-pnotify-title:before {
