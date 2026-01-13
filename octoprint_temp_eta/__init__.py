@@ -83,6 +83,12 @@ except ModuleNotFoundError:  # pragma: no cover
         return message
 
 
+try:
+    from .mqtt_client import MQTTClientWrapper  # type: ignore
+except ImportError:  # pragma: no cover
+    MQTTClientWrapper = None  # type: ignore
+
+
 @runtime_checkable
 class LoggerLike(Protocol):
     def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
@@ -158,6 +164,9 @@ class TempETAPlugin(
         self._debug_logging_enabled = False
         self._last_debug_log_time = 0.0
         self._last_heater_support_decision = {}
+
+        # MQTT client (initialized in on_after_startup when logger is available)
+        self._mqtt_client: Optional[Any] = None
 
         # Number of temperature samples to keep per heater.
         # This is configurable via settings (history_size). We cache the active
@@ -332,6 +341,41 @@ class TempETAPlugin(
 
         # Load persisted history for the active printer profile.
         self._switch_active_profile_if_needed(force=True)
+
+        # Initialize MQTT client
+        if MQTTClientWrapper is not None:
+            self._mqtt_client = MQTTClientWrapper(self._logger, self._identifier)
+            self._configure_mqtt_client()
+        else:
+            self._logger.info("MQTT support disabled: paho-mqtt not available")
+
+    def _configure_mqtt_client(self) -> None:
+        """Configure MQTT client with current settings."""
+        if self._mqtt_client is None:
+            return
+
+        mqtt_settings = {
+            "mqtt_enabled": self._settings.get_boolean(["mqtt_enabled"]),
+            "mqtt_broker_host": self._settings.get(["mqtt_broker_host"]),
+            "mqtt_broker_port": self._settings.get_int(["mqtt_broker_port"]),
+            "mqtt_username": self._settings.get(["mqtt_username"]),
+            "mqtt_password": self._settings.get(["mqtt_password"]),
+            "mqtt_use_tls": self._settings.get_boolean(["mqtt_use_tls"]),
+            "mqtt_tls_insecure": self._settings.get_boolean(["mqtt_tls_insecure"]),
+            "mqtt_base_topic": self._settings.get(["mqtt_base_topic"]),
+            "mqtt_qos": self._settings.get_int(["mqtt_qos"]),
+            "mqtt_retain": self._settings.get_boolean(["mqtt_retain"]),
+            "mqtt_publish_interval": self._settings.get_float(["mqtt_publish_interval"]),
+        }
+
+        self._mqtt_client.configure(mqtt_settings)
+
+        # Initialize MQTT client
+        if MQTTClientWrapper is not None:
+            self._mqtt_client = MQTTClientWrapper(self._logger, self._identifier)
+            self._configure_mqtt_client()
+        else:
+            self._logger.info("MQTT support disabled: paho-mqtt not available")
 
     def _get_current_profile_id(self) -> str:
         """Return current printer profile id or a stable fallback."""
@@ -952,6 +996,10 @@ class TempETAPlugin(
 
             self._send_clear_messages(heaters)
 
+            # Disconnect MQTT on shutdown
+            if event == "Shutdown" and self._mqtt_client is not None:
+                self._mqtt_client.disconnect()
+
         # Reset suppression flag on job lifecycle changes; actual suppression is decided in the temperature callback.
         if event in (
             "PrintStarted",
@@ -1113,6 +1161,20 @@ class TempETAPlugin(
                         "cooldown_mode": cooldown_mode if cooldown_enabled else None,
                     },
                 )
+
+                # Publish to MQTT if enabled
+                if self._mqtt_client is not None:
+                    try:
+                        self._mqtt_client.publish_eta_update(
+                            heater=heater,
+                            eta=eta,
+                            eta_kind=eta_kind,
+                            target=target,
+                            actual=actual,
+                            cooldown_target=cooldown_target,
+                        )
+                    except Exception as e:
+                        self._logger.debug("MQTT publish failed: %s", str(e))
 
     def _heating_enabled(self) -> bool:
         """Return whether heating ETA is enabled."""
@@ -1601,6 +1663,18 @@ class TempETAPlugin(
             notification_cooldown_finished=False,
             notification_timeout_s=6.0,
             notification_min_interval_s=10.0,
+            # MQTT settings
+            mqtt_enabled=False,
+            mqtt_broker_host="",
+            mqtt_broker_port=1883,
+            mqtt_username="",
+            mqtt_password="",
+            mqtt_use_tls=False,
+            mqtt_tls_insecure=False,
+            mqtt_base_topic="octoprint/temp_eta",
+            mqtt_qos=0,
+            mqtt_retain=False,
+            mqtt_publish_interval=1.0,
         )
 
     # TemplatePlugin mixin
@@ -1666,6 +1740,9 @@ class TempETAPlugin(
 
         if was_enabled and not is_enabled:
             self._clear_all_heaters_frontend()
+
+        # Reconfigure MQTT client with new settings
+        self._configure_mqtt_client()
 
         return saved if isinstance(saved, dict) else {}
 
