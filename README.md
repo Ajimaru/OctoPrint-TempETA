@@ -211,8 +211,6 @@ Contributions welcome! Please:
 
 Note: `main` is protected on GitHub, so changes go through PRs.
 
-Note: `main` is protected on GitHub, so changes go through PRs.
-
 ## License
 
 AGPLv3 - See [LICENSE](LICENSE) for details.
