@@ -41,6 +41,35 @@ class RecordingLogger(DummyLogger):
         return
 
 
+class WarningRecordingLogger(DummyLogger):
+    def __init__(self) -> None:
+        self.warning_calls: List[str] = []
+        self.debug_calls: List[str] = []
+
+    def warning(self, *args: Any, **kwargs: Any) -> None:
+        if args:
+            self.warning_calls.append(str(args[0]))
+        return
+
+    def debug(self, *args: Any, **kwargs: Any) -> None:
+        if args:
+            self.debug_calls.append(str(args[0]))
+        return
+
+
+class DebuggableLogger(DummyLogger):
+    def __init__(self, enabled: bool = True) -> None:
+        self._enabled = bool(enabled)
+        self.debug_payloads: List[Any] = []
+
+    def isEnabledFor(self, level: int) -> bool:  # noqa: N802 (OctoPrint/stdlib style)
+        return bool(self._enabled)
+
+    def debug(self, *args: Any, **kwargs: Any) -> None:
+        self.debug_payloads.append((args, kwargs))
+        return
+
+
 class DummyPluginManager:
     def __init__(self) -> None:
         self.messages: List[Dict[str, Any]] = []
@@ -246,6 +275,332 @@ def test_debug_log_settings_snapshot_logs_and_throttles(plugin: TempETAPlugin) -
     logged.clear()
     plugin._debug_log_settings_snapshot(120.0)
     assert logged == []
+
+
+def test_refresh_runtime_caches_applies_valid_settings_and_orders_backoff(
+    plugin: TempETAPlugin,
+) -> None:
+    plugin_any = cast(Any, plugin)
+    settings = cast(DummySettings, plugin_any._settings)
+
+    settings.set(["threshold_start"], 7.5)
+    settings.set(["update_interval"], 0.5)
+    settings.set(["persist_backoff_reset_s"], 5.0)
+    settings.set(["persist_backoff_initial_s"], 20.0)
+    # Intentionally inverted to exercise ordering correction (max must be >= 10 to be accepted).
+    settings.set(["persist_backoff_max_s"], 10.0)
+    settings.set(["persist_max_json_bytes"], 20000)
+
+    plugin_any._threshold_start_c = 5.0
+    plugin_any._update_interval_s = 1.0
+    plugin_any._persist_backoff_current_s = 999.0
+
+    plugin._refresh_runtime_caches()
+
+    assert plugin_any._threshold_start_c == 7.5
+    assert plugin_any._update_interval_s == 0.5
+    assert plugin_any._persist_backoff_reset_s == 5.0
+    assert plugin_any._persist_backoff_initial_s == 20.0
+    assert plugin_any._persist_backoff_max_s == 20.0
+    assert 1.0 <= float(plugin_any._persist_backoff_current_s) <= 20.0
+    assert plugin_any._persist_max_json_bytes == 20000
+
+
+def test_refresh_runtime_caches_handles_missing_or_broken_settings(
+    plugin: TempETAPlugin,
+) -> None:
+    plugin_any = cast(Any, plugin)
+
+    # Missing settings: should return early.
+    plugin_any._settings = None
+    plugin._refresh_runtime_caches()
+
+    class _RaisingSettings:
+        def get_float(self, _path: List[str]) -> float:
+            raise RuntimeError("boom")
+
+        def get_int(self, _path: List[str]) -> int:
+            raise RuntimeError("boom")
+
+    plugin_any._settings = _RaisingSettings()
+
+    # Exercise exception paths and the ordering no-op branch.
+    plugin_any._persist_backoff_initial_s = 1.0
+    plugin_any._persist_backoff_reset_s = 10.0
+    plugin._refresh_runtime_caches()
+
+
+def test_maybe_persist_history_schedules_on_startup_and_backoff_floor(
+    plugin: TempETAPlugin,
+) -> None:
+    plugin_any = cast(Any, plugin)
+
+    called: List[float] = []
+    plugin_any._persist_current_profile_history = lambda: called.append(1.0)
+
+    plugin_any._history_dirty = True
+    plugin_any._next_persist_time = 0.0
+    plugin_any._persist_backoff_current_s = 5.0
+    plugin_any._persist_backoff_initial_s = 10.0
+    plugin_any._persist_backoff_max_s = 40.0
+    plugin_any._persist_phase_active = False
+
+    plugin._maybe_persist_history(100.0)
+    assert called == []
+    assert plugin_any._next_persist_time == 105.0
+
+    # Not due yet.
+    plugin._maybe_persist_history(104.9)
+    assert called == []
+
+    # Due: should persist and lift current to at least initial.
+    plugin._maybe_persist_history(105.0)
+    assert called
+    assert plugin_any._persist_backoff_current_s == 10.0
+    assert plugin_any._persist_phase_active is True
+
+
+def test_persist_current_profile_history_emits_size_warning_and_trims(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    _set_plugin_data_folder(plugin, tmp_path)
+    plugin_any._active_profile_id = "default"
+
+    # Force the size-cap path.
+    plugin_any._persist_max_json_bytes = 1024
+    plugin_any._last_persist_size_warning_time = 0.0
+    plugin_any._logger = WarningRecordingLogger()
+
+    # Lots of points -> large JSON.
+    plugin_any._temp_history = {
+        "tool0": deque(
+            [(float(i), 20.0 + i * 0.01, 200.0) for i in range(500)], maxlen=2000
+        )
+    }
+    plugin_any._history_dirty = True
+
+    _set_time(monkeypatch, 1000.0)
+    plugin._persist_current_profile_history()
+
+    assert plugin_any._logger.warning_calls
+    # Ensure atomic tmp cleanup happens.
+    assert not (tmp_path / "history_default.json.tmp").exists()
+    assert (tmp_path / "history_default.json").exists()
+
+
+def test_persist_current_profile_history_breaks_when_cannot_trim(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    _set_plugin_data_folder(plugin, tmp_path)
+    plugin_any._active_profile_id = "default"
+
+    # Force trimming path even with minimal samples.
+    plugin_any._persist_max_json_bytes = 50
+    plugin_any._logger = WarningRecordingLogger()
+
+    # Exactly 2 points -> trimming cannot reduce below 2.
+    plugin_any._temp_history = {
+        "tool0": deque([(1.0, 20.0, 200.0), (2.0, 21.0, 200.0)], maxlen=60)
+    }
+    plugin_any._history_dirty = True
+
+    _set_time(monkeypatch, 1000.0)
+    plugin._persist_current_profile_history()
+    assert (tmp_path / "history_default.json").exists()
+
+
+def test_persist_current_profile_history_cleans_tmp_when_replace_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    _set_plugin_data_folder(plugin, tmp_path)
+    plugin_any._active_profile_id = "default"
+    plugin_any._logger = WarningRecordingLogger()
+
+    plugin_any._temp_history = {
+        "tool0": deque(
+            [(1.0, 20.0, 200.0), (2.0, 21.0, 200.0), (3.0, 22.0, 200.0)], maxlen=60
+        )
+    }
+    plugin_any._history_dirty = True
+
+    import pathlib
+
+    def _boom_replace(self: pathlib.Path, target: pathlib.Path):
+        raise RuntimeError("replace failed")
+
+    monkeypatch.setattr(pathlib.Path, "replace", _boom_replace)
+
+    _set_time(monkeypatch, 1000.0)
+    plugin._persist_current_profile_history()
+    assert not (tmp_path / "history_default.json.tmp").exists()
+
+
+def test_persist_current_profile_history_ignores_unlink_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    _set_plugin_data_folder(plugin, tmp_path)
+    plugin_any._active_profile_id = "default"
+    plugin_any._logger = WarningRecordingLogger()
+
+    plugin_any._temp_history = {
+        "tool0": deque(
+            [(1.0, 20.0, 200.0), (2.0, 21.0, 200.0), (3.0, 22.0, 200.0)], maxlen=60
+        )
+    }
+    plugin_any._history_dirty = True
+
+    import pathlib
+
+    def _boom_replace(self: pathlib.Path, target: pathlib.Path):
+        raise RuntimeError("replace failed")
+
+    def _boom_unlink(self: pathlib.Path):
+        raise RuntimeError("unlink failed")
+
+    monkeypatch.setattr(pathlib.Path, "replace", _boom_replace)
+    monkeypatch.setattr(pathlib.Path, "unlink", _boom_unlink)
+
+    _set_time(monkeypatch, 1000.0)
+    plugin._persist_current_profile_history()
+
+
+def test_on_printer_add_temperature_logs_heater_names_when_debug_enabled(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    plugin_any._logger = DebuggableLogger(enabled=True)
+    plugin_any._last_update_time = 0.0
+    plugin_any._calculate_and_broadcast_eta = lambda _data: None
+
+    _set_time(monkeypatch, 100.0)
+    plugin.on_printer_add_temperature(
+        {
+            "tool0": {"actual": 20.0, "target": 200.0},
+            "bed": {"actual": 30.0, "target": 60.0},
+            "junk": "not-a-heater",
+        }
+    )
+
+    dbg = cast(DebuggableLogger, plugin_any._logger)
+    assert dbg.debug_payloads
+
+
+def test_on_printer_add_temperature_target_change_enters_persist_phase(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    _set_plugin_data_folder(plugin, tmp_path)
+    plugin_any._calculate_and_broadcast_eta = lambda _data: None
+
+    entered: List[str] = []
+    plugin_any._enter_persist_phase = lambda _now, reason: entered.append(str(reason))
+
+    _set_time(monkeypatch, 100.0)
+    plugin.on_printer_add_temperature({"tool0": {"actual": 20.0, "target": 200.0}})
+
+    _set_time(monkeypatch, 101.0)
+    plugin.on_printer_add_temperature({"tool0": {"actual": 21.0, "target": 201.0}})
+
+    assert "target_change" in entered
+
+
+def test_on_printer_add_temperature_uses_idle_debug_interval_when_no_samples_recorded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    plugin_any = cast(Any, plugin)
+    _set_plugin_data_folder(plugin, tmp_path)
+    plugin_any._calculate_and_broadcast_eta = lambda _data: None
+
+    # Make threshold impossible to meet so recorded_count stays 0.
+    plugin_any._threshold_start_c = 1000.0
+    # Prevent periodic cache refresh from resetting threshold from settings.
+    cast(DummySettings, plugin_any._settings).set(["threshold_start"], 1000.0)
+    plugin_any._last_runtime_cache_refresh_time = 100.0
+
+    intervals: List[float] = []
+
+    def _capture(now: float, interval: float, *_args: Any, **_kwargs: Any) -> None:
+        intervals.append(float(interval))
+
+    plugin_any._debug_log_throttled = _capture
+
+    _set_time(monkeypatch, 100.0)
+    plugin.on_printer_add_temperature({"tool0": {"actual": 20.0, "target": 30.0}})
+    assert intervals
+    assert 60.0 in intervals
+
+
+def test_sanitize_settings_payload_clamps_and_handles_invalid_values(
+    plugin: TempETAPlugin,
+) -> None:
+    data: Dict[str, Any] = {
+        "threshold_start": "nope",
+        "update_interval": "",
+        "history_size": "nope",
+        "historical_graph_window_seconds": "999999",
+        "sound_volume": "2",
+        "notification_timeout_s": None,
+        "cooldown_hysteresis_c": 0,
+        "cooldown_fit_window_seconds": "",
+        "cooldown_ambient_temp": "nope",
+    }
+
+    plugin._sanitize_settings_payload(data)
+
+    assert data["threshold_start"] == 1.0
+    assert data["update_interval"] == 0.1
+    assert data["history_size"] == 10
+    assert data["historical_graph_window_seconds"] == 1800
+    assert data["sound_volume"] == 1.0
+    assert data["notification_timeout_s"] == 1.0
+    assert data["cooldown_hysteresis_c"] == 0.1
+    assert data["cooldown_fit_window_seconds"] == 10
+    assert data["cooldown_ambient_temp"] is None
+
+    data2: Dict[str, Any] = {"cooldown_ambient_temp": "25"}
+    plugin._sanitize_settings_payload(data2)
+    assert data2["cooldown_ambient_temp"] == 25.0
+
+    data3: Dict[str, Any] = {"cooldown_ambient_temp": ""}
+    plugin._sanitize_settings_payload(data3)
+    assert data3["cooldown_ambient_temp"] is None
+
+
+def test_send_history_reset_message_includes_optional_ids(
+    plugin: TempETAPlugin,
+) -> None:
+    plugin_any = cast(Any, plugin)
+    pm: DummyPluginManager = plugin_any._plugin_manager
+
+    plugin._send_history_reset_message(
+        "profile_switch", old_profile_id="old", profile_id="new"
+    )
+    assert pm.messages
+    payload = pm.messages[-1]["payload"]
+    assert payload["type"] == "history_reset"
+    assert payload["reason"] == "profile_switch"
+    assert payload["old_profile_id"] == "old"
+    assert payload["profile_id"] == "new"
+
+
+def test_send_history_reset_message_returns_when_plugin_manager_missing(
+    plugin: TempETAPlugin,
+) -> None:
+    plugin_any = cast(Any, plugin)
+    plugin_any._plugin_manager = None
+    plugin._send_history_reset_message("noop")
+
+
+def test_clear_all_heaters_frontend_returns_when_plugin_manager_missing(
+    plugin: TempETAPlugin,
+) -> None:
+    plugin_any = cast(Any, plugin)
+    plugin_any._plugin_manager = None
+    plugin._clear_all_heaters_frontend()
 
 
 def test_debug_log_settings_snapshot_handles_settings_exception(

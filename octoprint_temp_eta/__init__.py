@@ -1956,21 +1956,17 @@ class TempETAPlugin(
             key: str,
             min_value: float,
             max_value: float,
-            allow_none: bool = False,
         ) -> None:
             if key not in data:
                 return
             raw = data.get(key)
             if raw is None or raw == "":
-                if allow_none:
-                    data[key] = None
-                else:
-                    data[key] = float(min_value)
+                data[key] = float(min_value)
                 return
             try:
                 value = float(raw)
             except Exception:
-                data[key] = None if allow_none else float(min_value)
+                data[key] = float(min_value)
                 return
 
             if value < min_value:
