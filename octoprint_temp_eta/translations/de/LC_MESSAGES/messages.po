@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-12 21:58+0100\n"
+"POT-Creation-Date: 2026-01-13 23:14+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -137,7 +137,7 @@ msgstr "Cooldown abgeschlossen"
 msgid "Cooling color"
 msgstr "Abkühlfarbe"
 
-#: octoprint_temp_eta/__init__.py:1907
+#: octoprint_temp_eta/__init__.py:2149
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:481
 msgid "Defaults restored."
 msgstr "Standardeinstellungen wiederhergestellt."
@@ -426,7 +426,9 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:294
 msgid "Rate limit to avoid repeated beeps due to small target/temperature jitter."
-msgstr "Begrenzt die Häufigkeit, um wiederholte Pieptöne durch kleine Schwankungen von Ziel/Temperatur zu vermeiden."
+msgstr ""
+"Begrenzt die Häufigkeit, um wiederholte Pieptöne durch kleine "
+"Schwankungen von Ziel/Temperatur zu vermeiden."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:355
 msgid ""
@@ -546,7 +548,9 @@ msgid ""
 "Some browsers require a user interaction before sound can play. Use the "
 "Test button to grant permission."
 msgstr ""
-"Einige Browser benötigen eine Nutzerinteraktion, bevor Sound abgespielt werden kann. Nutze die Schaltfläche „Test“, um die Berechtigung zu erteilen."
+"Einige Browser benötigen eine Nutzerinteraktion, bevor Sound abgespielt "
+"werden kann. Nutze die Schaltfläche „Test“, um die Berechtigung zu "
+"erteilen."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:252
 msgid "Sound alerts"
@@ -604,7 +608,7 @@ msgstr "Zieltemperatur für die Kammer im Schwellwert-Modus."
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr "Zieltemperatur für Tool0 im Schwellwert-Modus."
 
-#: octoprint_temp_eta/__init__.py:1680
+#: octoprint_temp_eta/__init__.py:1903
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:21
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:4
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:454
@@ -677,7 +681,9 @@ msgid ""
 "Time-based bands use warning/info/normal colors based on remaining time. "
 "Status mode uses fixed colors for heating, cooling, and idle."
 msgstr ""
-"Zeitbasierte Stufen verwenden Warn-/Info-/Normalfarben basierend auf der verbleibenden Zeit. Der Statusmodus verwendet feste Farben für Heizen, Abkühlen und Leerlauf."
+"Zeitbasierte Stufen verwenden Warn-/Info-/Normalfarben basierend auf der "
+"verbleibenden Zeit. Der Statusmodus verwendet feste Farben für Heizen, "
+"Abkühlen und Leerlauf."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:340
 msgid "Timeout (seconds)"
