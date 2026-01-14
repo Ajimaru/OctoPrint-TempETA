@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional, Sequence, Type
 try:
     from typing import Protocol, runtime_checkable
 except ImportError:  # pragma: no cover
-    from typing_extensions import Protocol, runtime_checkable
+    from typing import Protocol, runtime_checkable
 
 try:
     import octoprint.plugin  # type: ignore
@@ -94,6 +94,8 @@ class LoggerLike(Protocol):
     def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
 
     def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+    def error(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
 
     def warning(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
 
@@ -2247,7 +2249,7 @@ class TempETAPlugin(
 
 
 __plugin_name__ = "Temperature ETA"
-__plugin_pythoncompat__ = ">=3.7,<4"
+__plugin_pythoncompat__ = ">=3.11,<4"
 __plugin_implementation__ = TempETAPlugin()
 
 __plugin_hooks__ = {

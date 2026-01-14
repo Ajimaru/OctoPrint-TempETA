@@ -41,7 +41,7 @@ def _copy_translations_tree(src_root: str, dst_root: str) -> None:
         if os.path.isdir(p):
             shutil.rmtree(p)
 
-    # Copy tree (Python 3.7 compatible: no dirs_exist_ok in copytree).
+    # Copy tree into the build staging area (no working tree modifications).
     for root, _dirs, files in os.walk(src_root):
         rel = os.path.relpath(root, src_root)
         target_dir = dst_root if rel == os.curdir else os.path.join(dst_root, rel)
@@ -79,5 +79,6 @@ setup(
         "build_py": build_py,
         "sdist": sdist,
     },
+    python_requires=">=3.11,<4",
     license_files=["LICENSE"],
 )

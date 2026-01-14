@@ -6,7 +6,7 @@
 <!-- markdownlint-enable MD041 MD033-->
 
 [![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.12.0%2B-blue.svg)](https://octoprint.org)
 [![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/latest/total)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
@@ -35,20 +35,43 @@
 <img src="assets/img/Temperature_ETA_cooling.png" alt="Cooling ETA" width="666" />
 <!-- markdownlint-enable MD033-->
 
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Features](#features)
+- [Installation](#installation)
+  - [Via Plugin Manager (Recommended)](#via-plugin-manager-recommended)
+  - [Manual Installation](#manual-installation)
+- [Configuration](#configuration)
+  - [General](#general)
+  - [Heating ETA](#heating-eta)
+  - [Cool-down ETA](#cool-down-eta)
+  - [MQTT](#mqtt)
+  - [Maintenance](#maintenance)
+  - [Help](#help)
+  - [Settings Defaults](#settings-defaults)
+- [How It Works](#how-it-works)
+- [MQTT Message Format](#mqtt-message-format)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
+- [Credits](#credits)
+
 ## Features
 
 - ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating or cooling
 - 🌡️ **Smart calculation algorithms**: Linear (default) and exponential models
 - 📊 **Flexible display**: Show ETA in navbar, sidebar, and/or a dedicated tab
-- 📈 **Progress bars** (optional): Show progress to target in the sidebar and tab views
+- 📈 **Progress bars**: Show progress to target in the sidebar and tab views
 - 📉 **Historical temperature graphs**: A dedicated history view in the tab with a configurable time window
 - ⏳ **Heating ETA**: Estimates time remaining until target temperature is reached
 - 🧊 **Cool-down ETA**: Estimates time remaining until cool-down target is reached (target set to 0), with two modes: threshold-based and ambient-based
 - 🎛️ **Configurable thresholds**: Start countdown when within a configurable delta to target
 - 🎨 **Status colors**: Optional color bands for heating/cooling/idle states
-- 🔔 **Sound alerts** (optional): Play a sound when target is reached or cool-down finishes
-- 🖥️ **Browser toast notifications** (optional): Small top-right notifications for key events (default off)
-- 📡 **MQTT integration** (optional): Publish ETA data and state changes to an MQTT broker for home automation
+- 🔔 **Sound alerts**: Play a sound when target is reached or cool-down finishes
+- 🖥️ **Browser toast notifications**: Small top-right notifications for key events (default off)
+- 📡 **MQTT integration**: Publish ETA data and state changes to an MQTT broker for home automation
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
 - 🌍 **Internationalization**: English and German included, easily extensible
@@ -140,43 +163,6 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 - **Retain Messages**: Enable MQTT retain flag (new subscribers receive the last message)
 - **Publish Interval**: Minimum seconds between MQTT publishes (default: `1.0`)
 
-#### MQTT Message Format
-
-**ETA Updates** (`{base_topic}/{heater}/eta`):
-
-```json
-{
-  "heater": "bed",
-  "eta_seconds": 120.5,
-  "eta_kind": "heating",
-  "target": 60.0,
-  "actual": 40.2,
-  "cooldown_target": null,
-  "timestamp": 1234567890.123,
-  "state": "heating"
-}
-```
-
-**State Changes** (`{base_topic}/{heater}/state_change`):
-
-```json
-{
-  "heater": "bed",
-  "state": "at_target",
-  "previous_state": "heating",
-  "timestamp": 1234567890.456,
-  "actual": 60.0,
-  "target": 60.0
-}
-```
-
-#### MQTT Integration Use Cases
-
-- **Home Automation**: Trigger actions when printer reaches temperature (e.g., turn on lights, send notifications)
-- **Monitoring Dashboards**: Display real-time heating status in Home Assistant, Node-RED, or custom dashboards
-- **Data Logging**: Record heating performance and temperature profiles for analysis
-- **Multi-Printer Management**: Centralized monitoring of multiple OctoPrint instances
-
 ### Maintenance
 
 - **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder)
@@ -243,6 +229,36 @@ The following defaults apply to the user-editable plugin settings:
 3. **ETA Estimation**: Uses selected algorithm (linear/exponential) to predict time to target
 4. **Display Update**: Sends countdown to frontend via WebSocket (1Hz default)
 5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
+
+## MQTT Message Format
+
+**ETA Updates** (`{base_topic}/{heater}/eta`):
+
+```json
+{
+  "heater": "bed",
+  "eta_seconds": 120.5,
+  "eta_kind": "heating",
+  "target": 60.0,
+  "actual": 40.2,
+  "cooldown_target": null,
+  "timestamp": 1234567890.123,
+  "state": "heating"
+}
+```
+
+**State Changes** (`{base_topic}/{heater}/state_change`):
+
+```json
+{
+  "heater": "bed",
+  "state": "at_target",
+  "previous_state": "heating",
+  "timestamp": 1234567890.456,
+  "actual": 60.0,
+  "target": 60.0
+}
+```
 
 ## FAQ
 

@@ -38,6 +38,8 @@ Follow OctoPrint's testing guidelines:
 
 The main unit test suite lives in `tests/test_print_temp_eta.py`.
 
+MQTT integration logic is covered in `tests/test_mqtt_client.py`.
+
 Notes:
 
 - Tests are pure unit tests and do **not** require a running OctoPrint instance.

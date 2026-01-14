@@ -39,7 +39,7 @@ Creates/uses a local Python virtual environment in `./venv`, installs the plugin
 
 Notes:
 
-- The helper scripts target a Python 3.10+ development environment. The plugin itself supports Python 3.7+ as declared in `pyproject.toml`.
+- The helper scripts target a Python 3.10+ development environment. The plugin itself supports Python 3.11+ as declared in `pyproject.toml`.
 - It automatically sets `git config core.hooksPath .githooks` (if the repo is a git checkout).
 - `pre-commit` is optional: if it is not installed, it will be skipped with a warning.
 - To use a specific Python interpreter for the venv (e.g. Python 3.12), set `PYTHON_BIN`: `PYTHON_BIN=python3.12 .development/setup_dev.sh`.
