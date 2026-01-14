@@ -117,3 +117,9 @@ jobs:
       - name: Install plugin
         run: |
           python -m pip install .
+
+      - name: Smoke test plugin import
+        run: |
+          mkdir ../smoketest
+          cd ../smoketest
+          python -c "import octoprint_temp_eta"
