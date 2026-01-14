@@ -14,6 +14,19 @@ permissions:
   contents: read
 
 jobs:
+  legacy-python37-check:
+    # NOTE: Python 3.7 is not supported by this project anymore.
+    # This job exists solely to satisfy legacy branch protection rules that
+    # still expect a status check named "Test (Python 3.7)".
+    name: Test (Python 3.7)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Legacy check placeholder
+        run: |
+          echo "Python 3.7 is no longer supported by this project."
+          echo "This job is a legacy placeholder to satisfy branch protection."
+
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
