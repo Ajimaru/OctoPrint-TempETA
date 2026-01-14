@@ -97,7 +97,9 @@ jobs:
       - name: Install OctoPrint
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "OctoPrint>=1.12.0,<2"
+          # Note: OctoPrint 1.12.x might not be available on PyPI yet.
+          # For install-smoke testing, use the latest available stable series.
+          python -m pip install "OctoPrint>=1.11.0,<2"
 
       - name: Install plugin
         run: |

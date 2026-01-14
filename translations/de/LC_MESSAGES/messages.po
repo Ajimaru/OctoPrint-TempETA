@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-14 20:21+0100\n"
+"POT-Creation-Date: 2026-01-14 22:29+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -61,7 +61,8 @@ msgid ""
 "{base_topic}/{heater}/eta and {base_topic}/{heater}/state_change"
 msgstr ""
 "Basis-MQTT-Topic für die Veröffentlichung. Nachrichten werden unter "
-"{base_topic}/{heater}/eta und {base_topic}/{heater}/state_change veröffentlicht"
+"{base_topic}/{heater}/eta und {base_topic}/{heater}/state_change "
+"veröffentlicht"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:526
 msgid "Base Topic"
@@ -157,7 +158,7 @@ msgstr "Cooldown abgeschlossen"
 msgid "Cooling color"
 msgstr "Abkühlfarbe"
 
-#: octoprint_temp_eta/__init__.py:2223
+#: octoprint_temp_eta/__init__.py:2225
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:606
 msgid "Defaults restored."
 msgstr "Standardeinstellungen wiederhergestellt."
@@ -193,11 +194,15 @@ msgstr "MQTT aktivieren"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:456
 msgid "Enable MQTT integration to publish temperature ETA data and state changes."
-msgstr "MQTT-Integration aktivieren, um Temperatur-ETA-Daten und Statusänderungen zu veröffentlichen."
+msgstr ""
+"MQTT-Integration aktivieren, um Temperatur-ETA-Daten und Statusänderungen"
+" zu veröffentlichen."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:555
 msgid "Enable MQTT retain flag (new subscribers receive last message)"
-msgstr "MQTT-Retain-Flag aktivieren (neue Abonnenten erhalten die letzte Nachricht)"
+msgstr ""
+"MQTT-Retain-Flag aktivieren (neue Abonnenten erhalten die letzte "
+"Nachricht)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:510
 msgid "Enable TLS/SSL encryption for MQTT connection"
@@ -495,7 +500,9 @@ msgstr "Bitte einen Wert von höchstens {max} eingeben."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:9
 msgid "Please fix the highlighted settings values before saving."
-msgstr "Bitte korrigiere die hervorgehobenen Einstellungswerte, bevor du speicherst."
+msgstr ""
+"Bitte korrigiere die hervorgehobenen Einstellungswerte, bevor du "
+"speicherst."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:561
 msgid "Publish Interval (seconds)"
@@ -701,7 +708,7 @@ msgstr "Zieltemperatur für die Kammer im Schwellwert-Modus."
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr "Zieltemperatur für Tool0 im Schwellwert-Modus."
 
-#: octoprint_temp_eta/__init__.py:1974
+#: octoprint_temp_eta/__init__.py:1976
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:21
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:4
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:579
