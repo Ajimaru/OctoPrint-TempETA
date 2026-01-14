@@ -35,6 +35,29 @@
 <img src="assets/img/Temperature_ETA_cooling.png" alt="Cooling ETA" width="666" />
 <!-- markdownlint-enable MD033-->
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+  - [Via Plugin Manager (Recommended)](#via-plugin-manager-recommended)
+  - [Manual Installation](#manual-installation)
+- [Configuration](#configuration)
+  - [General](#general)
+  - [Heating ETA](#heating-eta)
+  - [Cool-down ETA](#cool-down-eta)
+  - [MQTT](#mqtt)
+    - [MQTT Message Format](#mqtt-message-format)
+    - [MQTT Integration Use Cases](#mqtt-integration-use-cases)
+  - [Maintenance](#maintenance)
+  - [Help](#help)
+  - [Settings Defaults](#settings-defaults)
+- [How It Works](#how-it-works)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
+- [Credits](#credits)
+
 ## Features
 
 - ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating or cooling

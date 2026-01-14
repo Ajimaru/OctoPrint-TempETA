@@ -3,43 +3,11 @@
 **Issue**: [#469](https://github.com/OctoPrint/OctoPrint/issues/469) - Show ETA for bed/hotend heating
 **Target**: OctoPrint 1.12.0+, Python 3.7+ | Implements 2014 feature request
 
-## Requirements
-
-**Blueprint**:
-
-- Monitor temperature ~2Hz, calculate heating rate, estimate time to target
-- Display countdown in navbar/sidebar with configurable threshold
-- Support: tool0, bed, chamber heaters
-- Algorithms: Linear (default), Exponential
-- i18n: English + German
-- **Stack**: Python 3.7+, Knockout.js, Jinja2, pytest, Babel
-
 ## Code Standards (CRITICAL)
 
 **Docs**: https://docs.octoprint.org/en/main/plugins/index.html | Contributing: https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md
 
 **Template Autoescape**: [How do I improve my plugin's security by enabling autoescape?](https://faq.octoprint.org/plugin-autoescape)
-
-### File Structure & Plugin Class
-
-```
-octoprint_temp_eta/__init__.py       # Main plugin
-octoprint_temp_eta/static/           # JS, LESS assets
-octoprint_temp_eta/templates/        # Jinja2 templates
-translations/                         # i18n
-```
-
-```python
-class TempETAPlugin(
-    octoprint.plugin.StartupPlugin,
-    octoprint.plugin.SettingsPlugin,
-    octoprint.plugin.AssetPlugin,
-    octoprint.plugin.TemplatePlugin
-):
-    __plugin_name__ = "Temperature ETA"
-    __plugin_pythoncompat__ = ">=3.7,<4"
-    __plugin_implementation__ = TempETAPlugin()
-```
 
 ### Code Style (OctoPrint Standard)
 
@@ -53,57 +21,18 @@ class TempETAPlugin(
 
 ### Repository communication (English only)
 
+### change /print_temp_eta/CHANGELOG.md only on order
+
 - **All public-facing repository communication must be in English only**: GitHub Issues, Pull Requests, Discussions, Wiki pages, and Security advisories.
 - If a user writes in another language, respond in English and keep technical terms consistent.
 
 **When generating code**: Follow OctoPrint standards, use English, include docstrings, test edge cases, ensure thread safety, keep performance in mind.
 
-```python
-import threading
-from collections import deque
-import octoprint.plugin
-from .calculator import ETACalculator
-```
-
 ### Testing: pytest, min 70% coverage, test edge cases, mock OctoPrint internals
 
 ### Temperature Callback (Called ~2Hz)
 
-```python
-def on_after_startup(self):
-    self._printer.register_callback(self)
-
-def on_printer_add_temperature(self, data):
-    # data = {"bed": {"actual": X, "target": Y}, "tool0": {...}}
-    self._update_history(data)
-    self._calculate_eta()
-```
-
 ### Thread Safety (CRITICAL)
-
-```python
-self._lock = threading.Lock()
-with self._lock:
-    self._temp_history[heater].append((time.time(), temp))
-```
-
-### Settings
-
-```python
-def get_settings_defaults(self):
-    return {"threshold_start": 10.0, "algorithm": "linear"}
-
-threshold = self._settings.get_float(["threshold_start"])
-```
-
-### Send to Frontend
-
-```python
-self._plugin_manager.send_plugin_message(
-    self._identifier,
-    {"type": "eta_update", "heater": "bed", "eta": 45.2}
-)
-```
 
 ### Logging (use self.\_logger)
 
@@ -145,64 +74,6 @@ def calculate_exponential_eta(history, target):
     # Model: T(t) = T_final - (T_final - T_0) * e^(-t/tau)
     # Implementation in calculator.py
     pass
-```
-
-## Frontend Implementation
-
-### Knockout.js ViewModel
-
-```javascript
-function TempETAViewModel(parameters) {
-  var self = this;
-  self.settings = parameters[0];
-  self.bedETA = ko.observable(null);
-  self.tool0ETA = ko.observable(null);
-
-  self.formatETA = function (seconds) {
-    if (!seconds || seconds <= 0) return "--:--";
-    var m = Math.floor(seconds / 60);
-    var s = Math.floor(seconds % 60);
-    return m + ":" + (s < 10 ? "0" : "") + s;
-  };
-
-  self.onDataUpdaterPluginMessage = function (plugin, data) {
-    if (plugin !== "temp_eta") return;
-    if (data.type === "eta_update") {
-      if (data.heater === "bed") self.bedETA(data.eta);
-      if (data.heater === "tool0") self.tool0ETA(data.eta);
-    }
-  };
-}
-
-OCTOPRINT_VIEWMODELS.push({
-  construct: TempETAViewModel,
-  dependencies: ["settingsViewModel"],
-  elements: ["#navbar_plugin_temp_eta"],
-});
-```
-
-### Jinja2 Template
-
-```jinja2
-<div id="navbar_plugin_temp_eta" data-bind="visible: bedETA() !== null">
-    <span><i class="fa fa-bed"></i> <span data-bind="text: formatETA(bedETA())"></span></span>
-    <span><i class="fa fa-fire"></i> <span data-bind="text: formatETA(tool0ETA())"></span></span>
-</div>
-```
-
-## Testing
-
-**Unit Tests Example**:
-
-```python
-def test_linear_eta_simple():
-    history = deque([(0, 20), (1, 21), (2, 22), (3, 23), (4, 24)])
-    eta = calculate_linear_eta(history, 30)
-    assert abs(eta - 6.0) < 0.1
-
-def test_linear_eta_insufficient_data():
-    eta = calculate_linear_eta(deque([(0, 20)]), 30)
-    assert eta is None
 ```
 
 ## Internationalization
