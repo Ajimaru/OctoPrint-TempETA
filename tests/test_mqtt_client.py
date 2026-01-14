@@ -604,7 +604,9 @@ def test_mqtt_on_disconnect_logs_retry(logger: DummyLogger) -> None:
     assert any("will retry" in msg for msg in logger.info_calls)
 
 
-def test_mqtt_disconnect_internal_ignores_exceptions(mqtt_wrapper: MQTTClientWrapper) -> None:
+def test_mqtt_disconnect_internal_ignores_exceptions(
+    mqtt_wrapper: MQTTClientWrapper,
+) -> None:
     """Disconnect should swallow client API errors and reset state."""
     mock_client = MagicMock()
     mock_client.loop_stop.side_effect = RuntimeError("boom")
@@ -648,7 +650,9 @@ def test_mqtt_publish_eta_update_sets_cooling_state(
     assert mqtt_wrapper._last_heater_state.get("bed") == "cooling"
 
 
-def test_mqtt_publish_message_returns_when_not_connected(mqtt_wrapper: MQTTClientWrapper) -> None:
+def test_mqtt_publish_message_returns_when_not_connected(
+    mqtt_wrapper: MQTTClientWrapper,
+) -> None:
     """_publish_message should no-op if there is no client or no connection."""
     mqtt_wrapper._connected = False
     mqtt_wrapper._client = None
