@@ -1,16 +1,19 @@
 [build-system]
-requires = ["setuptools>=68,<81", "wheel"]
+requires = [
+    "setuptools>=65,<68.1; python_version<'3.8'",
+    "setuptools>=77,<81; python_version>='3.8'",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-TempETA"
-version = "0.5.0rc1"
+version = "0.6.0rc1"
 description = "OctoPrint plugin to show estimated time remaining for printer heating"
 authors = [
     {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
-license = {file = "LICENSE"}
 
 requires-python = ">=3.7, <4"
 

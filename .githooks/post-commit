@@ -14,4 +14,4 @@ if [[ ! -x "$script" ]]; then
   exit 0
 fi
 
-"$script" || true
+"$script"

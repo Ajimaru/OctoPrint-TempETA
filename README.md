@@ -101,10 +101,13 @@ The settings UI is organized into multiple tabs:
 - **Show historical graph** + **Historical graph window (seconds)**: Configure the history graph in the tab
 - **Temperature display**: Use OctoPrint's preference or override it
 - **Status colors**: Configure time-based bands or fixed status colors (heating/cooling/idle)
-- **Update interval / history size**: Control frontend refresh rate and retained samples
-- **Debug logging** (optional): Enables additional log output (may be noisy)
+- **Update & Logging**:
+  - **Update interval** + **Temperature history size**: Control refresh rate and retained samples
+  - **Debug logging** (optional): Enables additional log output (may be noisy)
 - **Sound alerts** (optional): Enable per-event sounds, volume, rate limit, and a test button
 - **Browser notifications** (optional): Enable per-event toasts, timeout, and rate limit
+
+Note: Numeric settings inputs are validated (min/max/range) and saving is blocked until invalid values are fixed.
 
 ### Heating ETA
 
@@ -266,7 +269,7 @@ Contributions welcome! Please:
 2. Create a feature branch: `git checkout -b wip/my-feature`
 3. Write tests for new features
 4. Submit a pull request
-5. For local development scripts (setup, restart helper, post-commit build hook), see [.development/README.md](.development/README.md).
+5. For local development scripts (setup, restart helper, post-commit build hook, performance monitor), see [.development/README.md](.development/README.md).
 6. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 7. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
