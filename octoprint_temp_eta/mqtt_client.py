@@ -218,8 +218,9 @@ class MQTTClientWrapper:
             try:
                 self._client.loop_stop()
                 self._client.disconnect()
-            except Exception:
-                pass
+            except Exception as e:
+                # Do not raise during shutdown; log for diagnostics instead.
+                self._logger.debug("Error while disconnecting MQTT client: %s", str(e))
             self._client = None
         self._connected = False
         self._connecting = False
