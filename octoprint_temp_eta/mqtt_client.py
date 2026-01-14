@@ -128,10 +128,14 @@ class MQTTClientWrapper:
         try:
             if mqtt is None:
                 self._warn_mqtt_unavailable()
+                with self._lock:
+                    self._connecting = False
                 return
 
             now = time.time()
             if (now - self._last_connect_attempt) < self._connect_retry_interval:
+                with self._lock:
+                    self._connecting = False
                 return
 
             self._last_connect_attempt = now
@@ -152,9 +156,9 @@ class MQTTClientWrapper:
                 kwargs: Dict[str, Any] = {"client_id": client_id}
 
                 callback_api_version = getattr(mqtt, "CallbackAPIVersion", None)
-                if callback_api_version:
+                if callback_api_version is not None:
                     version2 = getattr(callback_api_version, "VERSION2", None)
-                    if version2:
+                    if version2 is not None:
                         kwargs["callback_api_version"] = version2
 
                 try:
