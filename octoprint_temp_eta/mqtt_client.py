@@ -133,12 +133,11 @@ class MQTTClientWrapper:
                 return
 
             now = time.time()
-            if (now - self._last_connect_attempt) < self._connect_retry_interval:
-                with self._lock:
+            with self._lock:
+                if (now - self._last_connect_attempt) < self._connect_retry_interval:
                     self._connecting = False
-                return
-
-            self._last_connect_attempt = now
+                    return
+                self._last_connect_attempt = now
 
             with self._lock:
                 if self._client is not None:
