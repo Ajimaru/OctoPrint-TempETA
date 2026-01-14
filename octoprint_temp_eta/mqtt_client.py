@@ -121,8 +121,11 @@ class MQTTClientWrapper:
                 if self._client is not None:
                     try:
                         self._client.disconnect()
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        # Ignore disconnect errors during reconnect, but log for diagnostics.
+                        self._logger.debug(
+                            "Error while disconnecting existing MQTT client: %s", str(e)
+                        )
                     self._client = None
 
                 # Create MQTT client with version-specific API
@@ -172,8 +175,12 @@ class MQTTClientWrapper:
                 if self._client is not None:
                     try:
                         self._client.loop_stop()
-                    except Exception:
-                        pass
+                    except Exception as loop_error:
+                        # Ignore loop_stop errors during cleanup, but log for diagnostics.
+                        self._logger.debug(
+                            "Error while stopping MQTT network loop after failure: %s",
+                            str(loop_error),
+                        )
                     self._client = None
 
     def _on_connect(
