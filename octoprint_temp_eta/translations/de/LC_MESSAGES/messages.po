@@ -467,7 +467,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:495
 msgid "Password"
-msgstr ""
+msgstr "Passwort"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:303
 msgid "Play test sound"
@@ -479,32 +479,31 @@ msgstr "Spielt einen kurzen Testton mit der aktuellen Lautstärke ab."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
 msgid "Please enter a valid number."
-msgstr ""
+msgstr "Bitte eine gültige Zahl eingeben."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:8
 msgid "Please enter a value between {min} and {max}."
-msgstr ""
+msgstr "Bitte einen Wert zwischen {min} und {max} eingeben."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:6
 msgid "Please enter a value of at least {min}."
-msgstr ""
+msgstr "Bitte einen Wert von mindestens {min} eingeben."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:7
 msgid "Please enter a value of at most {max}."
-msgstr ""
+msgstr "Bitte einen Wert von höchstens {max} eingeben."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:9
 msgid "Please fix the highlighted settings values before saving."
-msgstr ""
+msgstr "Bitte korrigiere die hervorgehobenen Einstellungswerte, bevor du speicherst."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:561
-#, fuzzy
 msgid "Publish Interval (seconds)"
-msgstr "Aktualisierungsintervall (Sekunden)"
+msgstr "Veröffentlichungsintervall (Sekunden)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:537
 msgid "Quality of Service (QoS)"
-msgstr ""
+msgstr "Dienstgüte (QoS)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:295
 msgid "Rate limit to avoid repeated beeps due to small target/temperature jitter."
@@ -567,7 +566,7 @@ msgstr "Stellt die Temperature-ETA-Einstellungen auf Standardwerte zurück."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:551
 msgid "Retain Messages"
-msgstr ""
+msgstr "Retain-Nachrichten"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:101
 msgid "Show ETA in OctoPrint's sidebar temperature widget."
@@ -798,9 +797,8 @@ msgid "Tip: These colors also apply to progress bars in status mode."
 msgstr "Tipp: Diese Farben gelten im Statusmodus auch für Fortschrittsbalken."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:215
-#, fuzzy
 msgid "Update & Logging"
-msgstr "Debug-Logging aktivieren"
+msgstr "Aktualisierung & Logging"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:219
 msgid "Update Interval (seconds)"
@@ -812,7 +810,7 @@ msgstr "OctoPrint-Einstellung übernehmen"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:506
 msgid "Use TLS/SSL"
-msgstr ""
+msgstr "TLS/SSL verwenden"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:187
 msgid "Used when a heater is actively heating (status color mode)."
@@ -824,7 +822,7 @@ msgstr "Wird verwendet, wenn ein Heizer abkühlt (Status-Farbmodus)."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:484
 msgid "Username"
-msgstr ""
+msgstr "Benutzername"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:280
 msgid "Volume"
