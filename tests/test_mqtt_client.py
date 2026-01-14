@@ -17,11 +17,15 @@ from octoprint_temp_eta.mqtt_client import MQTTClientWrapper
 class DummyLogger:
     def __init__(self) -> None:
         self.info_calls: List[str] = []
+        self.warning_calls: List[str] = []
         self.error_calls: List[str] = []
         self.debug_calls: List[str] = []
 
     def info(self, msg: str, *args: Any, **kwargs: Any) -> None:
         self.info_calls.append(msg % args if args else msg)
+
+    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        self.warning_calls.append(msg % args if args else msg)
 
     def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
         self.error_calls.append(msg % args if args else msg)
@@ -329,7 +333,7 @@ def test_mqtt_schedule_connect_logs_when_mqtt_unavailable(
         with mqtt_wrapper._lock:
             mqtt_wrapper._schedule_connect()
 
-    assert any("MQTT support disabled" in msg for msg in logger.info_calls)
+    assert any("MQTT support disabled" in msg for msg in logger.warning_calls)
 
 
 def test_mqtt_connect_thread_respects_retry_interval(

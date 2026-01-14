@@ -63,6 +63,21 @@ class MQTTClientWrapper:
         self._last_connect_attempt = 0.0
         self._connect_retry_interval = 30.0
 
+        # Avoid log spam when paho-mqtt is not installed.
+        # Use a dedicated lock to avoid re-entrantly acquiring self._lock.
+        self._mqtt_unavailable_lock = threading.Lock()
+        self._mqtt_unavailable_warned = False
+
+    def _warn_mqtt_unavailable(self) -> None:
+        """Log a one-time warning when MQTT support is unavailable."""
+        with self._mqtt_unavailable_lock:
+            if self._mqtt_unavailable_warned:
+                return
+            self._mqtt_unavailable_warned = True
+            self._logger.warning(
+                "MQTT support disabled: paho-mqtt is not available. Install 'paho-mqtt' to enable MQTT publishing."
+            )
+
     def configure(self, settings: Dict[str, Any]) -> None:
         """Update MQTT configuration from plugin settings.
 
@@ -96,7 +111,7 @@ class MQTTClientWrapper:
     def _schedule_connect(self) -> None:
         """Schedule a connection attempt (internal, lock must be held)."""
         if mqtt is None:
-            self._logger.info("MQTT support disabled: paho-mqtt not available")
+            self._warn_mqtt_unavailable()
             return
 
         if not self._broker_host:
@@ -112,6 +127,7 @@ class MQTTClientWrapper:
         """Background thread for establishing MQTT connection."""
         try:
             if mqtt is None:
+                self._warn_mqtt_unavailable()
                 return
 
             now = time.time()
@@ -136,9 +152,9 @@ class MQTTClientWrapper:
                 kwargs: Dict[str, Any] = {"client_id": client_id}
 
                 callback_api_version = getattr(mqtt, "CallbackAPIVersion", None)
-                if callback_api_version is not None:
+                if callback_api_version:
                     version2 = getattr(callback_api_version, "VERSION2", None)
-                    if version2 is not None:
+                    if version2:
                         kwargs["callback_api_version"] = version2
 
                 try:
@@ -344,9 +360,9 @@ class MQTTClientWrapper:
                 topic, json_payload, qos=self._qos, retain=self._retain
             )
 
-            mqtt_err_success = 0
-            if mqtt is not None:
-                mqtt_err_success = int(getattr(mqtt, "MQTT_ERR_SUCCESS", 0))
+            mqtt_err_success = (
+                getattr(mqtt, "MQTT_ERR_SUCCESS", 0) if mqtt is not None else 0
+            )
 
             if result.rc != mqtt_err_success:
                 self._logger.debug(
