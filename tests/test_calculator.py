@@ -138,8 +138,8 @@ class TestCalculateCooldownLinearETA(TestCase):
             history.append((t, temp))
 
         result = calculator.calculate_cooldown_linear_eta(history, 30.0)
-        # Current temp is 80-59=21°C (last sample), goal is 30°C
-        # Already below goal, so should return None
+        # Final temp is 80-59=21°C (i goes 0-59, last is 59)
+        # Already below goal of 30°C, so should return None
         self.assertIsNone(result)
 
     def test_cooldown_in_progress(self):
@@ -153,7 +153,8 @@ class TestCalculateCooldownLinearETA(TestCase):
             history.append((t, temp))
 
         result = calculator.calculate_cooldown_linear_eta(history, 30.0)
-        # Current temp ~40°C (60 - 40*0.5 = 40), goal 30°C, rate -0.5°C/s = 20s remaining
+        # Final temp is 60 - (39 * 0.5) = 40.5°C (i goes 0-39, last is 39)
+        # Goal is 30°C, rate -0.5°C/s, remaining ~10.5°C = ~21s
         self.assertIsNotNone(result)
         self.assertGreater(result, 0.0)
 
