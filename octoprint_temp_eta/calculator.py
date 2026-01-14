@@ -13,7 +13,7 @@ from __future__ import absolute_import
 import math
 import time
 from collections import deque
-from typing import List, Optional, Tuple
+from typing import Optional
 
 
 def calculate_linear_eta(
@@ -252,9 +252,7 @@ def calculate_cooldown_exponential_eta(
         return None
 
     now = time.time()
-    recent = [
-        (ts, temp) for ts, temp in cooldown_history if ts > now - window_seconds
-    ]
+    recent = [(ts, temp) for ts, temp in cooldown_history if ts > now - window_seconds]
     if len(recent) < 6:
         return None
 
