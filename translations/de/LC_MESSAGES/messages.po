@@ -60,18 +60,20 @@ msgid ""
 "Base MQTT topic for publishing. Messages will be published to "
 "{base_topic}/{heater}/eta and {base_topic}/{heater}/state_change"
 msgstr ""
+"Basis-MQTT-Topic für die Veröffentlichung. Nachrichten werden unter "
+"{base_topic}/{heater}/eta und {base_topic}/{heater}/state_change veröffentlicht"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:526
 msgid "Base Topic"
-msgstr ""
+msgstr "Basis-Topic"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:462
 msgid "Broker Host"
-msgstr ""
+msgstr "Broker-Host"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:473
 msgid "Broker Port"
-msgstr ""
+msgstr "Broker-Port"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:314
 msgid "Browser notifications"
@@ -186,21 +188,20 @@ msgstr ""
 "Temperatur liegt und die konfigurierte Schwelle erfüllt ist."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:452
-#, fuzzy
 msgid "Enable MQTT"
-msgstr "Heiz-ETA aktivieren"
+msgstr "MQTT aktivieren"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:456
 msgid "Enable MQTT integration to publish temperature ETA data and state changes."
-msgstr ""
+msgstr "MQTT-Integration aktivieren, um Temperatur-ETA-Daten und Statusänderungen zu veröffentlichen."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:555
 msgid "Enable MQTT retain flag (new subscribers receive last message)"
-msgstr ""
+msgstr "MQTT-Retain-Flag aktivieren (neue Abonnenten erhalten die letzte Nachricht)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:510
 msgid "Enable TLS/SSL encryption for MQTT connection"
-msgstr ""
+msgstr "TLS/SSL-Verschlüsselung für die MQTT-Verbindung aktivieren"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:80
 msgid "Enable Temperature ETA"
@@ -385,27 +386,27 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:17
 msgid "MQTT"
-msgstr ""
+msgstr "MQTT"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:545
 msgid "MQTT Quality of Service level"
-msgstr ""
+msgstr "MQTT-Quality-of-Service-Stufe"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:467
 msgid "MQTT broker hostname or IP address"
-msgstr ""
+msgstr "Hostname oder IP-Adresse des MQTT-Brokers"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:478
 msgid "MQTT broker port (default: 1883)"
-msgstr ""
+msgstr "Port des MQTT-Brokers (Standard: 1883)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:500
 msgid "MQTT password"
-msgstr ""
+msgstr "MQTT-Passwort"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:489
 msgid "MQTT username (leave empty for no authentication)"
-msgstr ""
+msgstr "MQTT-Benutzername (leer lassen für keine Authentifizierung)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:18
 msgid "Maintenance"
@@ -418,7 +419,7 @@ msgstr "Mindestintervall (Sekunden)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:566
 msgid "Minimum interval between MQTT publishes (default: 1.0 seconds)"
-msgstr ""
+msgstr "Mindestintervall zwischen MQTT-Veröffentlichungen (Standard: 1.0 Sekunden)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:653
 msgid ""
@@ -454,7 +455,7 @@ msgstr "OctoPrint-API nicht verfügbar."
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:488
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:499
 msgid "Optional"
-msgstr ""
+msgstr "Optional"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:645
 msgid ""
@@ -630,11 +631,11 @@ msgstr "Zeigt den aktuellen Temperaturverlauf für jedes Heizelement."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:516
 msgid "Skip TLS certificate verification"
-msgstr ""
+msgstr "TLS-Zertifikatsprüfung überspringen"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:520
 msgid "Skip certificate verification (not recommended for production)"
-msgstr ""
+msgstr "Zertifikatsprüfung überspringen (für Produktion nicht empfohlen)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:260
 msgid ""
