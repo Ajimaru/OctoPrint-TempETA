@@ -25,6 +25,49 @@ class TestCalculateLinearETA(TestCase):
         result = calculator.calculate_linear_eta(history, 60.0)
         self.assertIsNone(result)
 
+    def test_invalid_target_nan(self):
+        """Test with NaN target returns None."""
+        now = time.time()
+        history = deque([(now - 1, 20.0, 60.0), (now, 22.0, 60.0)])
+        result = calculator.calculate_linear_eta(history, float("nan"))
+        self.assertIsNone(result)
+
+    def test_invalid_target_inf(self):
+        """Test with infinite target returns None."""
+        now = time.time()
+        history = deque([(now - 1, 20.0, 60.0), (now, 22.0, 60.0)])
+        result = calculator.calculate_linear_eta(history, float("inf"))
+        self.assertIsNone(result)
+
+    def test_invalid_window_seconds(self):
+        """Test with invalid window_seconds returns None."""
+        now = time.time()
+        history = deque([(now - 1, 20.0, 60.0), (now, 22.0, 60.0)])
+        result = calculator.calculate_linear_eta(history, 60.0, window_seconds=-1.0)
+        self.assertIsNone(result)
+
+    def test_invalid_data_in_history(self):
+        """Test that invalid data points are skipped."""
+        now = time.time()
+        history = deque(
+            [
+                (now - 10, 0.0, 60.0),
+                (now - 9, float("nan"), 60.0),  # Invalid temp
+                (now - 8, 4.0, 60.0),
+                (now - 7, 6.0, 60.0),
+                (now - 6, 8.0, 60.0),
+                (now - 5, 10.0, 60.0),
+                (now - 4, 12.0, 60.0),
+                (now - 3, 14.0, 60.0),
+                (now - 2, 16.0, 60.0),
+                (now - 1, 18.0, 60.0),
+                (now, 20.0, 60.0),
+            ]
+        )
+        result = calculator.calculate_linear_eta(history, 60.0)
+        # Should still work by skipping invalid data
+        self.assertIsNotNone(result)
+
     def test_heating_linear(self):
         """Test linear heating calculation."""
         now = time.time()
@@ -86,6 +129,20 @@ class TestCalculateExponentialETA(TestCase):
         result = calculator.calculate_exponential_eta(history, 60.0)
         self.assertIsNone(result)
 
+    def test_invalid_target_nan(self):
+        """Test with NaN target returns None."""
+        now = time.time()
+        history = deque([(now - 1, 20.0, 60.0), (now, 22.0, 60.0)])
+        result = calculator.calculate_exponential_eta(history, float("nan"))
+        self.assertIsNone(result)
+
+    def test_invalid_window_seconds(self):
+        """Test with invalid window_seconds returns None."""
+        now = time.time()
+        history = deque([(now - 1, 20.0, 60.0), (now, 22.0, 60.0)])
+        result = calculator.calculate_exponential_eta(history, 60.0, window_seconds=0.0)
+        self.assertIsNone(result)
+
     def test_fallback_to_linear(self):
         """Test fallback to linear with minimal data."""
         now = time.time()
@@ -110,7 +167,7 @@ class TestCalculateExponentialETA(TestCase):
         for i in range(30):
             t = now - (30 - i)
             # Asymptotic approach: starts fast, slows down
-            temp = 60.0 - 40.0 * (0.95 ** i)
+            temp = 60.0 - 40.0 * (0.95**i)
             history.append((t, temp, 60.0))
 
         result = calculator.calculate_exponential_eta(history, 60.0)
@@ -126,6 +183,40 @@ class TestCalculateCooldownLinearETA(TestCase):
         history = deque()
         result = calculator.calculate_cooldown_linear_eta(history, 30.0)
         self.assertIsNone(result)
+
+    def test_invalid_goal_nan(self):
+        """Test with NaN goal returns None."""
+        now = time.time()
+        history = deque([(now - 1, 60.0), (now, 58.0)])
+        result = calculator.calculate_cooldown_linear_eta(history, float("nan"))
+        self.assertIsNone(result)
+
+    def test_invalid_window_seconds(self):
+        """Test with invalid window_seconds returns None."""
+        now = time.time()
+        history = deque([(now - 1, 60.0), (now, 58.0)])
+        result = calculator.calculate_cooldown_linear_eta(
+            history, 30.0, window_seconds=-10.0
+        )
+        self.assertIsNone(result)
+
+    def test_invalid_data_in_history(self):
+        """Test that invalid data points are filtered out."""
+        now = time.time()
+        history = deque(
+            [
+                (now - 10, 80.0),
+                (float("inf"), 75.0),  # Invalid timestamp
+                (now - 8, float("nan")),  # Invalid temp
+                (now - 6, 70.0),
+                (now - 4, 65.0),
+                (now - 2, 60.0),
+                (now, 55.0),
+            ]
+        )
+        result = calculator.calculate_cooldown_linear_eta(history, 30.0)
+        # Should still work by filtering invalid data
+        self.assertIsNotNone(result)
 
     def test_cooldown_linear(self):
         """Test linear cooldown calculation when already below goal."""
@@ -181,6 +272,33 @@ class TestCalculateCooldownExponentialETA(TestCase):
         result = calculator.calculate_cooldown_exponential_eta(history, 20.0, 30.0)
         self.assertIsNone(result)
 
+    def test_invalid_ambient_nan(self):
+        """Test with NaN ambient returns None."""
+        now = time.time()
+        history = deque([(now, 60.0)])
+        result = calculator.calculate_cooldown_exponential_eta(
+            history, float("nan"), 30.0
+        )
+        self.assertIsNone(result)
+
+    def test_invalid_goal_nan(self):
+        """Test with NaN goal returns None."""
+        now = time.time()
+        history = deque([(now, 60.0)])
+        result = calculator.calculate_cooldown_exponential_eta(
+            history, 20.0, float("nan")
+        )
+        self.assertIsNone(result)
+
+    def test_invalid_window_seconds(self):
+        """Test with invalid window_seconds returns None."""
+        now = time.time()
+        history = deque([(now - 1, 60.0), (now, 58.0)])
+        result = calculator.calculate_cooldown_exponential_eta(
+            history, 20.0, 30.0, window_seconds=float("inf")
+        )
+        self.assertIsNone(result)
+
     def test_invalid_ambient_goal(self):
         """Test with goal below ambient returns None."""
         now = time.time()
@@ -196,12 +314,11 @@ class TestCalculateCooldownExponentialETA(TestCase):
 
         # Simulate Newton's law of cooling: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
         history = deque()
-        tau = 100.0  # time constant
         t0_temp = 80.0
 
         for i in range(120):
             t = now - (120 - i)
-            temp = ambient + (t0_temp - ambient) * (0.99 ** i)
+            temp = ambient + (t0_temp - ambient) * (0.99**i)
             history.append((t, temp))
 
         result = calculator.calculate_cooldown_exponential_eta(

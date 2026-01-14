@@ -32,6 +32,12 @@ def calculate_linear_eta(
     Returns:
         Estimated seconds to target, or None if insufficient data
     """
+    # Validate inputs
+    if not math.isfinite(target):
+        return None
+    if not math.isfinite(window_seconds) or window_seconds <= 0:
+        return None
+
     if not history or len(history) < 2:
         return None
 
@@ -44,6 +50,9 @@ def calculate_linear_eta(
     temp1 = None
 
     for ts, actual, _target in history:
+        # Validate data from history
+        if not (math.isfinite(ts) and math.isfinite(actual)):
+            continue
         if ts <= cutoff:
             continue
         if t0 is None:
@@ -87,6 +96,12 @@ def calculate_exponential_eta(
     Returns:
         Estimated seconds to target, or None if insufficient data
     """
+    # Validate inputs
+    if not math.isfinite(target):
+        return None
+    if not math.isfinite(window_seconds) or window_seconds <= 0:
+        return None
+
     if not history or len(history) < 3:
         return None
 
@@ -192,11 +207,21 @@ def calculate_cooldown_linear_eta(
     Returns:
         Estimated seconds to goal, or None if insufficient data
     """
+    # Validate inputs
+    if not math.isfinite(goal_c):
+        return None
+    if not math.isfinite(window_seconds) or window_seconds <= 0:
+        return None
+
     if not cooldown_history or len(cooldown_history) < 2:
         return None
 
     now = time.time()
-    recent = [(ts, temp) for ts, temp in cooldown_history if ts > now - window_seconds]
+    recent = [
+        (ts, temp)
+        for ts, temp in cooldown_history
+        if ts > now - window_seconds and math.isfinite(ts) and math.isfinite(temp)
+    ]
     if len(recent) < 2:
         return None
 
@@ -243,16 +268,23 @@ def calculate_cooldown_exponential_eta(
     Returns:
         Estimated seconds to goal, or None if insufficient data
     """
-    if not cooldown_history or len(cooldown_history) < 4:
-        return None
-
+    # Validate inputs
     if not (math.isfinite(ambient_c) and math.isfinite(goal_c)):
+        return None
+    if not math.isfinite(window_seconds) or window_seconds <= 0:
         return None
     if goal_c <= ambient_c:
         return None
 
+    if not cooldown_history or len(cooldown_history) < 4:
+        return None
+
     now = time.time()
-    recent = [(ts, temp) for ts, temp in cooldown_history if ts > now - window_seconds]
+    recent = [
+        (ts, temp)
+        for ts, temp in cooldown_history
+        if ts > now - window_seconds and math.isfinite(ts) and math.isfinite(temp)
+    ]
     if len(recent) < 6:
         return None
 
@@ -298,9 +330,19 @@ def calculate_cooldown_exponential_eta(
     if tau <= 0 or tau > 20000:
         return None
 
+    # Calculate ETA with specific error handling for math domain errors
+    numerator = temp_now - ambient_c
+    denominator = goal_c - ambient_c
+
+    # Validate division operands to avoid domain errors
+    if numerator <= 0 or denominator <= 0:
+        return None
+
     try:
-        eta = tau * math.log((temp_now - ambient_c) / (goal_c - ambient_c))
-    except Exception:
+        eta = tau * math.log(numerator / denominator)
+    except (ValueError, ZeroDivisionError):
+        # ValueError: math domain error (log of negative or zero)
+        # ZeroDivisionError: division by zero
         return None
 
     if not math.isfinite(eta) or eta < 0:
