@@ -111,6 +111,9 @@ class MQTTClientWrapper:
     def _connect_thread(self) -> None:
         """Background thread for establishing MQTT connection."""
         try:
+            if mqtt is None:
+                return
+
             now = time.time()
             if (now - self._last_connect_attempt) < self._connect_retry_interval:
                 return
@@ -130,13 +133,17 @@ class MQTTClientWrapper:
 
                 # Create MQTT client with version-specific API
                 client_id = f"{self._identifier}_{int(now)}"
+                kwargs: Dict[str, Any] = {"client_id": client_id}
+
+                callback_api_version = getattr(mqtt, "CallbackAPIVersion", None)
+                if callback_api_version is not None:
+                    version2 = getattr(callback_api_version, "VERSION2", None)
+                    if version2 is not None:
+                        kwargs["callback_api_version"] = version2
+
                 try:
-                    # Try paho-mqtt 2.0+ API with callback version
-                    self._client = mqtt.Client(
-                        client_id=client_id,
-                        callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-                    )
-                except (TypeError, AttributeError) as e:
+                    self._client = mqtt.Client(**kwargs)
+                except TypeError as e:
                     # Fall back to paho-mqtt 1.x API
                     self._logger.debug(
                         "Using paho-mqtt 1.x API (version 2 not available): %s", str(e)
@@ -337,7 +344,11 @@ class MQTTClientWrapper:
                 topic, json_payload, qos=self._qos, retain=self._retain
             )
 
-            if result.rc != mqtt.MQTT_ERR_SUCCESS:
+            mqtt_err_success = 0
+            if mqtt is not None:
+                mqtt_err_success = int(getattr(mqtt, "MQTT_ERR_SUCCESS", 0))
+
+            if result.rc != mqtt_err_success:
                 self._logger.debug(
                     "MQTT publish failed: topic=%s rc=%d", topic, result.rc
                 )

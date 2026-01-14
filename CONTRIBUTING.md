@@ -44,7 +44,7 @@ If you use the helper scripts, see `.development/README.md`.
 
 Notes:
 
-- The helper scripts target a Python 3.10+ development environment. The plugin runtime supports Python 3.7+.
+- The helper scripts target a Python 3.10+ development environment. The plugin runtime supports Python 3.11+.
 - If you downloaded the repo as a ZIP, executable bits may be missing. In that case run `bash .development/setup_dev.sh` (or `chmod +x .development/setup_dev.sh`).
 
 ## Running tests

@@ -27,6 +27,9 @@ class DummyLogger:
     def info(self, *args: Any, **kwargs: Any) -> None:
         return
 
+    def error(self, *args: Any, **kwargs: Any) -> None:
+        return
+
     def warning(self, *args: Any, **kwargs: Any) -> None:
         return
 

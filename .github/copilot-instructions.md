@@ -1,7 +1,7 @@
 # GitHub Copilot Instructions - OctoPrint Temperature ETA Plugin
 
 **Issue**: [#469](https://github.com/OctoPrint/OctoPrint/issues/469) - Show ETA for bed/hotend heating
-**Target**: OctoPrint 1.12.0+, Python 3.7+ | Implements 2014 feature request
+**Target**: OctoPrint 1.12.0+, Python 3.11+ | Implements 2014 feature request
 
 ## Code Standards (CRITICAL)
 
