@@ -19,7 +19,8 @@ requires-python = ">=3.7, <4"
 
 # any additional requirements (besides OctoPrint) should be listed here
 dependencies = [
-    "typing_extensions>=4.0; python_version<'3.8'"
+    "typing_extensions>=4.0; python_version<'3.8'",
+    "paho-mqtt>=1.6.0,<3.0.0"
 ]
 
 [tool.setuptools]

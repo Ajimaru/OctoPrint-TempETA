@@ -48,6 +48,7 @@
 - 🎨 **Status colors**: Optional color bands for heating/cooling/idle states
 - 🔔 **Sound alerts** (optional): Play a sound when target is reached or cool-down finishes
 - 🖥️ **Browser toast notifications** (optional): Small top-right notifications for key events (default off)
+- 📡 **MQTT integration** (optional): Publish ETA data and state changes to an MQTT broker for home automation
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
 - 🌍 **Internationalization**: English and German included, easily extensible
@@ -124,6 +125,58 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 - **Ambient temperature** (optional): Provide a fixed ambient value for ambient mode
 - **Hysteresis / fit window**: Controls when cool-down ETA disappears and how much recent data is used
 
+### MQTT
+
+- **Enable MQTT**: Master switch for MQTT integration (publishes ETA data to external broker)
+- **Broker Host**: MQTT broker hostname or IP address (e.g., `localhost`, `192.168.1.100`)
+- **Broker Port**: MQTT broker port (default: `1883`, TLS typically uses `8883`)
+- **Username/Password**: Optional authentication credentials for the MQTT broker
+- **Use TLS/SSL**: Enable encrypted connection to the broker
+- **Skip TLS certificate verification**: For self-signed certificates (not recommended for production)
+- **Base Topic**: Root MQTT topic for publishing messages (default: `octoprint/temp_eta`)
+  - ETA updates are published to: `{base_topic}/{heater}/eta`
+  - State changes are published to: `{base_topic}/{heater}/state_change`
+- **QoS**: MQTT Quality of Service level (0=At most once, 1=At least once, 2=Exactly once)
+- **Retain Messages**: Enable MQTT retain flag (new subscribers receive the last message)
+- **Publish Interval**: Minimum seconds between MQTT publishes (default: `1.0`)
+
+#### MQTT Message Format
+
+**ETA Updates** (`{base_topic}/{heater}/eta`):
+
+```json
+{
+  "heater": "bed",
+  "eta_seconds": 120.5,
+  "eta_kind": "heating",
+  "target": 60.0,
+  "actual": 40.2,
+  "cooldown_target": null,
+  "timestamp": 1234567890.123,
+  "state": "heating"
+}
+```
+
+**State Changes** (`{base_topic}/{heater}/state_change`):
+
+```json
+{
+  "heater": "bed",
+  "state": "at_target",
+  "previous_state": "heating",
+  "timestamp": 1234567890.456,
+  "actual": 60.0,
+  "target": 60.0
+}
+```
+
+#### MQTT Integration Use Cases
+
+- **Home Automation**: Trigger actions when printer reaches temperature (e.g., turn on lights, send notifications)
+- **Monitoring Dashboards**: Display real-time heating status in Home Assistant, Node-RED, or custom dashboards
+- **Data Logging**: Record heating performance and temperature profiles for analysis
+- **Multi-Printer Management**: Centralized monitoring of multiple OctoPrint instances
+
 ### Maintenance
 
 - **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder)
@@ -137,40 +190,51 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 
 The following defaults apply to the user-editable plugin settings:
 
-| Setting                   | Key                               | Default     |
-| ------------------------- | --------------------------------- | ----------- |
-| Enable Temperature ETA    | `enabled`                         | `true`      |
-| Enable heating ETA        | `enable_heating_eta`              | `true`      |
-| Hide ETA while printing   | `suppress_while_printing`         | `false`     |
-| Show in sidebar           | `show_in_sidebar`                 | `true`      |
-| Show in navbar            | `show_in_navbar`                  | `true`      |
-| Show in tab               | `show_in_tab`                     | `true`      |
-| Show progress bars        | `show_progress_bars`              | `true`      |
-| Show historical graph     | `show_historical_graph`           | `true`      |
-| Graph window (seconds)    | `historical_graph_window_seconds` | `180`       |
-| Temperature display       | `temp_display`                    | `octoprint` |
-| Heating threshold         | `threshold_start`                 | `5.0 °C`    |
-| Threshold unit            | `threshold_unit`                  | `octoprint` |
-| Algorithm                 | `algorithm`                       | `linear`    |
-| Update Interval           | `update_interval`                 | `1.0 s`     |
-| History Size              | `history_size`                    | `60`        |
-| Enable cool-down ETA      | `enable_cooldown_eta`             | `true`      |
-| Cool-down mode            | `cooldown_mode`                   | `threshold` |
-| Enable debug logging      | `debug_logging`                   | `false`     |
-| Color mode                | `color_mode`                      | `bands`     |
-| Heating color             | `color_heating`                   | `#5cb85c`   |
-| Cooling color             | `color_cooling`                   | `#337ab7`   |
-| Idle color                | `color_idle`                      | `#777777`   |
-| Enable sound alerts       | `sound_enabled`                   | `false`     |
-| Sound: target reached     | `sound_target_reached`            | `false`     |
-| Sound: cool-down done     | `sound_cooldown_finished`         | `false`     |
-| Sound volume              | `sound_volume`                    | `0.5`       |
-| Sound min interval        | `sound_min_interval_s`            | `10.0 s`    |
-| Enable notifications      | `notification_enabled`            | `false`     |
-| Notify: target reached    | `notification_target_reached`     | `false`     |
-| Notify: cool-down done    | `notification_cooldown_finished`  | `false`     |
-| Notification timeout      | `notification_timeout_s`          | `6.0 s`     |
-| Notification min interval | `notification_min_interval_s`     | `10.0 s`    |
+| Setting                   | Key                               | Default              |
+| ------------------------- | --------------------------------- | -------------------- |
+| Enable Temperature ETA    | `enabled`                         | `true`               |
+| Enable heating ETA        | `enable_heating_eta`              | `true`               |
+| Hide ETA while printing   | `suppress_while_printing`         | `false`              |
+| Show in sidebar           | `show_in_sidebar`                 | `true`               |
+| Show in navbar            | `show_in_navbar`                  | `true`               |
+| Show in tab               | `show_in_tab`                     | `true`               |
+| Show progress bars        | `show_progress_bars`              | `true`               |
+| Show historical graph     | `show_historical_graph`           | `true`               |
+| Graph window (seconds)    | `historical_graph_window_seconds` | `180`                |
+| Temperature display       | `temp_display`                    | `octoprint`          |
+| Heating threshold         | `threshold_start`                 | `5.0 °C`             |
+| Threshold unit            | `threshold_unit`                  | `octoprint`          |
+| Algorithm                 | `algorithm`                       | `linear`             |
+| Update Interval           | `update_interval`                 | `1.0 s`              |
+| History Size              | `history_size`                    | `60`                 |
+| Enable cool-down ETA      | `enable_cooldown_eta`             | `true`               |
+| Cool-down mode            | `cooldown_mode`                   | `threshold`          |
+| Enable debug logging      | `debug_logging`                   | `false`              |
+| Color mode                | `color_mode`                      | `bands`              |
+| Heating color             | `color_heating`                   | `#5cb85c`            |
+| Cooling color             | `color_cooling`                   | `#337ab7`            |
+| Idle color                | `color_idle`                      | `#777777`            |
+| Enable sound alerts       | `sound_enabled`                   | `false`              |
+| Sound: target reached     | `sound_target_reached`            | `false`              |
+| Sound: cool-down done     | `sound_cooldown_finished`         | `false`              |
+| Sound volume              | `sound_volume`                    | `0.5`                |
+| Sound min interval        | `sound_min_interval_s`            | `10.0 s`             |
+| Enable notifications      | `notification_enabled`            | `false`              |
+| Notify: target reached    | `notification_target_reached`     | `false`              |
+| Notify: cool-down done    | `notification_cooldown_finished`  | `false`              |
+| Notification timeout      | `notification_timeout_s`          | `6.0 s`              |
+| Notification min interval | `notification_min_interval_s`     | `10.0 s`             |
+| Enable MQTT               | `mqtt_enabled`                    | `false`              |
+| MQTT broker host          | `mqtt_broker_host`                | `""`                 |
+| MQTT broker port          | `mqtt_broker_port`                | `1883`               |
+| MQTT username             | `mqtt_username`                   | `""`                 |
+| MQTT password             | `mqtt_password`                   | `""`                 |
+| MQTT use TLS              | `mqtt_use_tls`                    | `false`              |
+| MQTT TLS insecure         | `mqtt_tls_insecure`               | `false`              |
+| MQTT base topic           | `mqtt_base_topic`                 | `octoprint/temp_eta` |
+| MQTT QoS                  | `mqtt_qos`                        | `0`                  |
+| MQTT retain               | `mqtt_retain`                     | `false`              |
+| MQTT publish interval     | `mqtt_publish_interval`           | `1.0 s`              |
 
 ## How It Works
 

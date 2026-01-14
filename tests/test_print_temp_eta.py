@@ -1447,6 +1447,47 @@ def test_on_settings_save_sanitizes_numeric_payload_before_delegating(
     assert captured["cooldown_fit_window_seconds"] == 10
 
 
+def test_on_settings_save_reconfigures_mqtt_client(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    """Saving settings should reconfigure the MQTT client when present."""
+    p_any = cast(Any, plugin)
+    settings = cast(DummySettings, p_any._settings)
+
+    settings.set(["mqtt_enabled"], True)
+    settings.set(["mqtt_broker_host"], "broker")
+    settings.set(["mqtt_broker_port"], 1883)
+    settings.set(["mqtt_username"], "u")
+    settings.set(["mqtt_password"], "p")
+    settings.set(["mqtt_use_tls"], False)
+    settings.set(["mqtt_tls_insecure"], False)
+    settings.set(["mqtt_base_topic"], "octoprint/temp_eta")
+    settings.set(["mqtt_qos"], 1)
+    settings.set(["mqtt_retain"], True)
+    settings.set(["mqtt_publish_interval"], 2.0)
+
+    class RecordingMQTT:
+        def __init__(self) -> None:
+            self.configured: Dict[str, Any] = {}
+
+        def configure(self, cfg: Dict[str, Any]) -> None:
+            self.configured = dict(cfg)
+
+    mqtt_client = RecordingMQTT()
+    p_any._mqtt_client = mqtt_client
+
+    monkeypatch.setattr(
+        octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
+        "on_settings_save",
+        lambda _self, _data: {},
+    )
+    plugin.on_settings_save({"mqtt_enabled": True})
+
+    assert mqtt_client.configured.get("mqtt_enabled") is True
+    assert mqtt_client.configured.get("mqtt_broker_host") == "broker"
+    assert mqtt_client.configured.get("mqtt_broker_port") == 1883
+
+
 def test_on_printer_add_temperature_records_sample_and_triggers_update(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
@@ -2410,6 +2451,119 @@ def test_on_after_startup_registers_callback(
     assert plugin in printer.registered_callbacks
 
 
+def test_broadcast_publishes_to_mqtt_when_configured(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    """ETA updates should be published to MQTT when a client is configured."""
+    _set_time(monkeypatch, 100.0)
+
+    plugin._temp_history["tool0"] = deque(
+        [(90.0, 10.0, 50.0), (100.0, 20.0, 50.0)], maxlen=60
+    )
+    plugin._temp_history["bed"] = deque(
+        [(90.0, 20.0, 60.0), (100.0, 30.0, 60.0)], maxlen=60
+    )
+
+    data = {
+        "tool0": {"actual": 20.0, "target": 50.0},
+        "bed": {"actual": 30.0, "target": 60.0},
+        "chamber": {"actual": 30.0, "target": 60.0},
+    }
+
+    class RecordingMQTT:
+        def __init__(self) -> None:
+            self.calls: List[Dict[str, Any]] = []
+
+        def publish_eta_update(self, **kwargs: Any) -> None:
+            self.calls.append(dict(kwargs))
+
+    mqtt_client = RecordingMQTT()
+    cast(Any, plugin)._mqtt_client = mqtt_client
+
+    plugin._calculate_and_broadcast_eta(data)
+
+    heaters = {c.get("heater") for c in mqtt_client.calls}
+    assert "tool0" in heaters
+    assert "bed" in heaters
+    assert "chamber" not in heaters
+
+
+def test_broadcast_mqtt_publish_connection_errors_are_logged(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    """Connection errors in MQTT publishing should be logged at error level."""
+    _set_time(monkeypatch, 100.0)
+
+    plugin._temp_history["tool0"] = deque(
+        [(90.0, 10.0, 50.0), (100.0, 20.0, 50.0)], maxlen=60
+    )
+
+    data = {"tool0": {"actual": 20.0, "target": 50.0}}
+
+    class RecordingLogger(DummyLogger):
+        def __init__(self) -> None:
+            self.error_calls: List[str] = []
+            self.debug_calls: List[str] = []
+
+        def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
+            self.error_calls.append(msg % args if args else msg)
+
+        def debug(self, msg: str, *args: Any, **kwargs: Any) -> None:
+            self.debug_calls.append(msg % args if args else msg)
+
+    class FailingMQTT:
+        def publish_eta_update(self, **_kwargs: Any) -> None:
+            raise ConnectionError("offline")
+
+    logger = RecordingLogger()
+    p_any = cast(Any, plugin)
+    p_any._logger = logger
+    p_any._mqtt_client = FailingMQTT()
+
+    plugin._calculate_and_broadcast_eta(data)
+
+    assert any("MQTT publish failed (connection)" in m for m in logger.error_calls)
+    assert logger.debug_calls == []
+
+
+def test_broadcast_mqtt_publish_other_errors_are_logged_debug(
+    monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
+) -> None:
+    """Non-connection errors in MQTT publishing should be logged at debug level."""
+    _set_time(monkeypatch, 100.0)
+
+    plugin._temp_history["tool0"] = deque(
+        [(90.0, 10.0, 50.0), (100.0, 20.0, 50.0)], maxlen=60
+    )
+
+    data = {"tool0": {"actual": 20.0, "target": 50.0}}
+
+    class RecordingLogger(DummyLogger):
+        def __init__(self) -> None:
+            self.error_calls: List[str] = []
+            self.debug_calls: List[str] = []
+
+        def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
+            self.error_calls.append(msg % args if args else msg)
+
+        def debug(self, msg: str, *args: Any, **kwargs: Any) -> None:
+            self.debug_calls.append(msg % args if args else msg)
+
+    class FailingMQTT:
+        def publish_eta_update(self, **_kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+    logger = RecordingLogger()
+    p_any = cast(Any, plugin)
+    p_any._logger = logger
+    p_any._mqtt_client = FailingMQTT()
+
+    plugin._calculate_and_broadcast_eta(data)
+
+    assert logger.error_calls == []
+    assert any("MQTT publish failed" in m for m in logger.debug_calls)
+
+
 def test_broadcast_filters_unsupported_heaters(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
@@ -2787,6 +2941,24 @@ def test_on_event_print_started_resets_suppression_flag(plugin: TempETAPlugin) -
     p_any._suppressing_due_to_print = True
     plugin.on_event("PrintStarted", {})
     assert p_any._suppressing_due_to_print is False
+
+
+def test_on_event_shutdown_disconnects_mqtt(plugin: TempETAPlugin) -> None:
+    """Shutdown should disconnect the MQTT client when present."""
+    p_any = cast(Any, plugin)
+
+    class RecordingMQTT:
+        def __init__(self) -> None:
+            self.disconnected = False
+
+        def disconnect(self) -> None:
+            self.disconnected = True
+
+    mqtt_client = RecordingMQTT()
+    p_any._mqtt_client = mqtt_client
+
+    plugin.on_event("Shutdown", {})
+    assert mqtt_client.disconnected is True
 
 
 def test_get_update_information_contains_current_version(plugin: TempETAPlugin) -> None:
