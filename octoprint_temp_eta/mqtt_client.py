@@ -74,10 +74,9 @@ class MQTTClientWrapper:
             if self._mqtt_unavailable_warned:
                 return
             self._mqtt_unavailable_warned = True
-
-        self._logger.warning(
-            "MQTT support disabled: paho-mqtt is not available. Install 'paho-mqtt' to enable MQTT publishing."
-        )
+            self._logger.warning(
+                "MQTT support disabled: paho-mqtt is not available. Install 'paho-mqtt' to enable MQTT publishing."
+            )
 
     def configure(self, settings: Dict[str, Any]) -> None:
         """Update MQTT configuration from plugin settings.
