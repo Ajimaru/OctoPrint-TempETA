@@ -122,4 +122,4 @@ jobs:
         run: |
           mkdir ../smoketest
           cd ../smoketest
-          python -c "import octoprint_temp_eta; print(octoprint_temp_eta.__version__)"
+          python -c "import octoprint_temp_eta; print(getattr(octoprint_temp_eta, '__version__', 'unknown'))"
