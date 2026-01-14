@@ -88,6 +88,11 @@ try:
 except ImportError:  # pragma: no cover
     MQTTClientWrapper = None  # type: ignore
 
+try:
+    from . import calculator  # type: ignore
+except ImportError:  # pragma: no cover
+    calculator = None  # type: ignore
+
 
 @runtime_checkable
 class LoggerLike(Protocol):
@@ -1464,6 +1469,7 @@ class TempETAPlugin(
         return "threshold"
 
     def _cooldown_hysteresis_c(self) -> float:
+        """Return cooldown hysteresis temperature in degrees Celsius."""
         if not getattr(self, "_settings", None):
             return 1.0
         try:
@@ -1475,6 +1481,7 @@ class TempETAPlugin(
             return 1.0
 
     def _cooldown_fit_window_seconds(self) -> float:
+        """Return cooldown fit window duration in seconds."""
         if not getattr(self, "_settings", None):
             return 120.0
         try:
