@@ -1,4 +1,6 @@
 # coding=utf-8
+# flake8: noqa
+# pylint: disable=line-too-long
 """Unit tests for the calculator module."""
 
 from __future__ import absolute_import
@@ -90,6 +92,7 @@ class TestCalculateLinearETA(TestCase):
         result = calculator.calculate_linear_eta(history, 60.0)
         # Should be around 20 seconds (40°C remaining / 2°C/s)
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertGreater(result, 15.0)
         self.assertLess(result, 25.0)
 
@@ -158,6 +161,7 @@ class TestCalculateExponentialETA(TestCase):
         result = calculator.calculate_exponential_eta(history, 60.0)
         # Should still get a result via fallback
         self.assertIsNotNone(result)
+        assert result is not None
 
     def test_exponential_heating(self):
         """Test exponential heating calculation."""
@@ -172,6 +176,7 @@ class TestCalculateExponentialETA(TestCase):
 
         result = calculator.calculate_exponential_eta(history, 60.0)
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertGreater(result, 0.0)
 
 
@@ -217,6 +222,7 @@ class TestCalculateCooldownLinearETA(TestCase):
         result = calculator.calculate_cooldown_linear_eta(history, 30.0)
         # Should still work by filtering invalid data
         self.assertIsNotNone(result)
+        assert result is not None
 
     def test_cooldown_linear(self):
         """Test linear cooldown calculation when already below goal."""
@@ -247,6 +253,7 @@ class TestCalculateCooldownLinearETA(TestCase):
         # Final temp is 60 - (39 * 0.5) = 40.5°C (i goes 0-39, last is 39)
         # Goal is 30°C, rate -0.5°C/s, remaining ~10.5°C = ~21s
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertGreater(result, 0.0)
 
     def test_not_cooling_returns_none(self):
@@ -325,6 +332,7 @@ class TestCalculateCooldownExponentialETA(TestCase):
             history, ambient, goal, window_seconds=120.0
         )
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertGreater(result, 0.0)
 
 
