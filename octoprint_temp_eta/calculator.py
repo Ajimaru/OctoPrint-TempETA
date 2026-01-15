@@ -258,35 +258,36 @@ def calculate_cooldown_exponential_eta(
     """Exponential cooldown ETA (Newton's law of cooling).
 
     Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
+    """
+    if not (math.isfinite(ambient_c) and math.isfinite(goal_c)):
+        return None
+    if not math.isfinite(window_seconds) or window_seconds <= 0:
+        return None
+    if goal_c <= ambient_c:
+        return None
+    if not cooldown_history or len(cooldown_history) < 4:
+        return None
 
-    Args:
-        cooldown_history: Deque of (timestamp, temp) tuples
-        ambient_c: Ambient temperature in degrees
-        goal_c: Target cooldown temperature in degrees
-        window_seconds: Time window for exponential fit (default: 60s)
-            goal_c: float,
-            window_seconds: float = 60.0,
-        ) -> Optional[float]:
-            """Exponential cooldown ETA (Newton's law of cooling).
+    now = time.time()
+    recent = [
+        (ts, temp)
+        for ts, temp in cooldown_history
+        if ts > now - window_seconds and math.isfinite(ts) and math.isfinite(temp)
+    ]
+    if len(recent) < 6:
+        return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
 
-            Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
-            """
-            # Validate inputs
-            if not (math.isfinite(ambient_c) and math.isfinite(goal_c)):
-                return None
-            if not math.isfinite(window_seconds) or window_seconds <= 0:
-                return None
-            if goal_c <= ambient_c:
-                return None
+    _t_now, temp_now = recent[-1]
+    if temp_now <= goal_c:
+        return None
 
-            now = time.time()
-            recent = [
-                (ts, temp)
-                for ts, temp in cooldown_history
-                if ts > now - window_seconds and math.isfinite(ts) and math.isfinite(temp)
-            ]
-            if len(recent) < 6:
-                return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
+    epsilon = 0.5
+    t0 = recent[0][0]
+    xs = []
+    ys = []
+    for ts, temp in recent:
+        delta = temp - ambient_c
+        if delta <= epsilon:
             continue
         x = ts - t0
         if x < 0:
@@ -318,23 +319,17 @@ def calculate_cooldown_exponential_eta(
     if tau <= 0 or tau > 20000:
         return None
 
-    # Calculate ETA with specific error handling for math domain errors
     numerator = temp_now - ambient_c
     denominator = goal_c - ambient_c
-
-    # Validate division operands to avoid domain errors
     if numerator <= 0 or denominator <= 0:
         return None
 
     try:
         eta = tau * math.log(numerator / denominator)
     except (ValueError, ZeroDivisionError):
-        # ValueError: math domain error (log of negative or zero)
-        # ZeroDivisionError: division by zero
         return None
 
     if not math.isfinite(eta) or eta < 0:
         return None
 
-    # Cap at 24 hours
     return float(min(eta, 24 * 3600))
