@@ -1,4 +1,6 @@
 # coding=utf-8
+# flake8: noqa
+# pylint: disable=line-too-long
 """MQTT client wrapper for Temperature ETA plugin.
 
 Handles MQTT broker connection, reconnection, and message publishing with

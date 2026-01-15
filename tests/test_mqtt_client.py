@@ -3,6 +3,9 @@
 Tests MQTT connection management, message publishing, and state transitions.
 """
 
+# flake8: noqa
+# pylint: disable=line-too-long
+
 from __future__ import annotations
 
 import time

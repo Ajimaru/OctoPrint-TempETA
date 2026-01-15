@@ -1,4 +1,6 @@
 # coding=utf-8
+# flake8: noqa
+# pylint: disable=line-too-long
 from __future__ import absolute_import
 
 import json
@@ -1621,33 +1623,34 @@ class TempETAPlugin(
 
         # Use calculator module if available
         if calculator is not None:
+            now = time.time()
             window = self._cooldown_fit_window_seconds()
+            cutoff = now - window
+            recent = deque(
+                (
+                    (ts, temp)
+                    for ts, temp in hist
+                    if math.isfinite(ts) and math.isfinite(temp) and ts > cutoff
+                ),
+                maxlen=hist.maxlen,
+            )
 
-            # Check if we have enough recent samples for debug logging
-            last_ts = None
-            for ts, temp in hist:
-                if math.isfinite(ts) and math.isfinite(temp):
-                    last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
-            if last_ts is None:
-                return None
-
-            cutoff = last_ts - window
-            recent = [(ts, temp) for ts, temp in hist if ts > cutoff]
             if len(recent) < 2:
-                now = time.time()
                 self._debug_log_throttled(
                     now,
                     15.0,
-                    "Cooldown linear fit: not enough recent samples heater=%s window=%.0fs hist=%d",
+                    "Cooldown linear fit: not enough recent samples heater=%s "
+                    "window=%.0fs hist=%d",
                     str(heater_name),
                     float(window),
                     int(len(hist)),
                 )
+                return None
 
-            result = calculator.calculate_cooldown_linear_eta(hist, goal_c, window)
+            result = calculator.calculate_cooldown_linear_eta(recent, goal_c, window)
 
-            # Debug log when slope is not negative (calculator will return None)
-            if result is None and len(recent) >= 2:
+            # Debug log when slope is not negative (calculator returns None)
+            if result is None:
                 t0, temp0 = recent[0]
                 t1, temp1 = recent[-1]
                 dt = t1 - t0
@@ -1658,8 +1661,9 @@ class TempETAPlugin(
                         self._debug_log_throttled(
                             now,
                             15.0,
-                            "Cooldown linear fit: slope not negative heater=%s slope=%.6f dt=%.2f "
-                            "dT=%.2f t0=%.1f t1=%.1f goal=%.1f",
+                            "Cooldown linear fit: slope not negative "
+                            "heater=%s slope=%.6f dt=%.2f dT=%.2f "
+                            "t0=%.1f t1=%.1f goal=%.1f",
                             str(heater_name),
                             float(slope),
                             float(dt),

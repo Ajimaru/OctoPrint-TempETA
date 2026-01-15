@@ -11,7 +11,6 @@ making them easy to test and maintain.
 from __future__ import absolute_import
 
 import math
-import time
 from collections import deque
 from typing import Optional
 
@@ -43,7 +42,11 @@ def calculate_linear_eta(
 
     # Use last N seconds of data for rate calculation (anchored to history)
     last_ts = max(
-        (ts for ts, actual, _target in history if math.isfinite(ts) and math.isfinite(actual)),
+        (
+            ts
+            for ts, actual, _target in history
+            if math.isfinite(ts) and math.isfinite(actual)
+        ),
         default=None,
     )
     if last_ts is None:
@@ -147,8 +150,8 @@ def calculate_exponential_eta(
     if remaining_now <= 0:
         return None
 
-    # We model the approach to target as asymptotic. Since reaching target exactly
-    # would be infinite time, estimate the time until we are within epsilon.
+    # We model the approach to target as asymptotic.
+    # Reaching the target exactly takes infinite time; use an epsilon band.
     epsilon_c = 0.5
     if remaining_now <= epsilon_c:
         return 0.0

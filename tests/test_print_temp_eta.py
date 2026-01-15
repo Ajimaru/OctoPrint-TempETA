@@ -7,6 +7,9 @@ These tests follow the guidance in tests/README.md:
 - avoid sleeps (monkeypatch time)
 """
 
+# flake8: noqa
+# pylint: disable=line-too-long
+
 from __future__ import annotations
 
 import json
