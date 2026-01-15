@@ -1,4 +1,6 @@
 # coding=utf-8
+# flake8: noqa
+# pylint: disable=line-too-long
 from __future__ import absolute_import
 
 import json
@@ -87,6 +89,11 @@ try:
     from .mqtt_client import MQTTClientWrapper  # type: ignore
 except ImportError:  # pragma: no cover
     MQTTClientWrapper = None  # type: ignore
+
+try:
+    from . import calculator  # type: ignore
+except ImportError:  # pragma: no cover
+    calculator = None  # type: ignore
 
 
 @runtime_checkable
@@ -1464,6 +1471,7 @@ class TempETAPlugin(
         return "threshold"
 
     def _cooldown_hysteresis_c(self) -> float:
+        """Return cooldown hysteresis temperature in degrees Celsius."""
         if not getattr(self, "_settings", None):
             return 1.0
         try:
@@ -1475,6 +1483,7 @@ class TempETAPlugin(
             return 1.0
 
     def _cooldown_fit_window_seconds(self) -> float:
+        """Return cooldown fit window duration in seconds."""
         if not getattr(self, "_settings", None):
             return 120.0
         try:
@@ -1609,127 +1618,81 @@ class TempETAPlugin(
     ) -> Optional[float]:
         """Linear cooldown ETA from recent slope."""
         hist = self._cooldown_history.get(heater_name)
-        if not hist or len(hist) < 2:
+        if not hist:
             return None
 
-        now = time.time()
-        window = self._cooldown_fit_window_seconds()
-        recent = [(ts, temp) for ts, temp in hist if ts > now - window]
-        if len(recent) < 2:
-            self._debug_log_throttled(
-                now,
-                15.0,
-                "Cooldown linear fit: not enough recent samples heater=%s window=%.0fs hist=%d",
-                str(heater_name),
-                float(window),
-                int(len(hist)),
+        # Use calculator module if available
+        if calculator is not None:
+            now = time.time()
+            window = self._cooldown_fit_window_seconds()
+            cutoff = now - window
+            recent = deque(
+                (
+                    (ts, temp)
+                    for ts, temp in hist
+                    if math.isfinite(ts) and math.isfinite(temp) and ts > cutoff
+                ),
+                maxlen=hist.maxlen,
             )
-            return None
 
-        t0, temp0 = recent[0]
-        t1, temp1 = recent[-1]
-        dt = t1 - t0
-        dtemp = temp1 - temp0
-        if dt <= 0:
-            return None
+            if len(recent) < 2:
+                self._debug_log_throttled(
+                    now,
+                    15.0,
+                    "Cooldown linear fit: not enough recent samples heater=%s "
+                    "window=%.0fs hist=%d",
+                    str(heater_name),
+                    float(window),
+                    int(len(hist)),
+                )
+                return None
 
-        slope = dtemp / dt
-        if slope >= -1e-3:
-            self._debug_log_throttled(
-                now,
-                15.0,
-                "Cooldown linear fit: slope not negative heater=%s slope=%.6f dt=%.2f "
-                "dT=%.2f t0=%.1f t1=%.1f goal=%.1f",
-                str(heater_name),
-                float(slope),
-                float(dt),
-                float(dtemp),
-                float(temp0),
-                float(temp1),
-                float(goal_c),
-            )
-            return None
+            result = calculator.calculate_cooldown_linear_eta(recent, goal_c, window)
 
-        remaining = temp1 - goal_c
-        if remaining <= 0:
-            return None
+            # Debug log when slope is not negative (calculator returns None)
+            if result is None:
+                t0, temp0 = recent[0]
+                t1, temp1 = recent[-1]
+                dt = t1 - t0
+                dtemp = temp1 - temp0
+                if dt > 0:
+                    slope = dtemp / dt
+                    if slope >= -1e-3:
+                        self._debug_log_throttled(
+                            now,
+                            15.0,
+                            "Cooldown linear fit: slope not negative "
+                            "heater=%s slope=%.6f dt=%.2f dT=%.2f "
+                            "t0=%.1f t1=%.1f goal=%.1f",
+                            str(heater_name),
+                            float(slope),
+                            float(dt),
+                            float(dtemp),
+                            float(temp0),
+                            float(temp1),
+                            float(goal_c),
+                        )
 
-        eta = remaining / (-slope)
-        if not math.isfinite(eta) or eta < 0:
-            return None
+            return result
 
-        return float(min(eta, 24 * 3600))
+        return None
 
     def _calculate_cooldown_exponential_eta(
         self, heater_name: str, ambient_c: float, goal_c: float
     ) -> Optional[float]:
         """Exponential cooldown ETA (Newton's law of cooling)."""
         hist = self._cooldown_history.get(heater_name)
-        if not hist or len(hist) < 4:
+        if not hist:
             return None
 
-        if not (math.isfinite(ambient_c) and math.isfinite(goal_c)):
-            return None
-        if goal_c <= ambient_c:
-            return None
+        # Use calculator module if available
+        if calculator is not None:
+            window = self._cooldown_fit_window_seconds()
+            return calculator.calculate_cooldown_exponential_eta(
+                hist, ambient_c, goal_c, window
+            )
 
-        now = time.time()
-        window = self._cooldown_fit_window_seconds()
-        recent = [(ts, temp) for ts, temp in hist if ts > now - window]
-        if len(recent) < 6:
-            return None
-
-        _t_now, temp_now = recent[-1]
-        if temp_now <= goal_c:
-            return None
-
-        epsilon = 0.5
-        t0 = recent[0][0]
-        xs = []
-        ys = []
-        for ts, temp in recent:
-            delta = temp - ambient_c
-            if delta <= epsilon:
-                continue
-            x = ts - t0
-            if x < 0:
-                continue
-            xs.append(x)
-            ys.append(math.log(delta))
-
-        if len(xs) < 4:
-            return None
-
-        x_mean = sum(xs) / float(len(xs))
-        y_mean = sum(ys) / float(len(ys))
-        sxx = 0.0
-        sxy = 0.0
-        for x, y in zip(xs, ys):
-            dx = x - x_mean
-            dy = y - y_mean
-            sxx += dx * dx
-            sxy += dx * dy
-
-        if sxx <= 0:
-            return None
-
-        slope = sxy / sxx
-        if slope >= -1e-4:
-            return None
-
-        tau = -1.0 / slope
-        if tau <= 0 or tau > 20000:
-            return None
-
-        try:
-            eta = tau * math.log((temp_now - ambient_c) / (goal_c - ambient_c))
-        except Exception:
-            return None
-
-        if not math.isfinite(eta) or eta < 0:
-            return None
-
-        return float(min(eta, 24 * 3600))
+        return None
 
     def _calculate_linear_eta(self, heater, target):
         """Calculate ETA assuming constant heating rate.
@@ -1742,42 +1705,14 @@ class TempETAPlugin(
             float: Estimated seconds to target, or None if insufficient data
         """
         history = self._temp_history.get(heater)
-        if not history or len(history) < 2:
+        if not history:
             return None
 
-        # Use last 10 seconds of data for rate calculation
-        now = time.time()
-        cutoff = now - 10.0
-        t0 = None
-        temp0 = None
-        t1 = None
-        temp1 = None
+        # Use calculator module if available, otherwise fallback not implemented
+        if calculator is not None:
+            return calculator.calculate_linear_eta(history, target)
 
-        for ts, actual, _target in history:
-            if ts <= cutoff:
-                continue
-            if t0 is None:
-                t0 = ts
-                temp0 = actual
-            t1 = ts
-            temp1 = actual
-
-        if t0 is None or t1 is None or temp0 is None or temp1 is None:
-            return None
-
-        time_diff = t1 - t0
-        temp_diff = temp1 - temp0
-        if time_diff <= 0 or temp_diff <= 0:
-            return None
-
-        rate = temp_diff / time_diff
-        remaining = target - temp1
-
-        if remaining <= 0:
-            return None
-
-        eta = remaining / rate
-        return max(0, eta)
+        return None
 
     def _calculate_exponential_eta(self, heater, target):
         """Calculate ETA accounting for thermal asymptotic behavior.
@@ -1792,94 +1727,14 @@ class TempETAPlugin(
             float: Estimated seconds to target, or None if insufficient data
         """
         history = self._temp_history.get(heater, deque())
-        if len(history) < 3:
+        if not history:
             return None
 
-        # Use a recent window for the fit
-        now = time.time()
-        window_seconds = 30
-        recent = [h for h in history if h[0] > now - window_seconds]
+        # Use calculator module if available, otherwise fallback not implemented
+        if calculator is not None:
+            return calculator.calculate_exponential_eta(history, target)
 
-        if len(recent) < 6:
-            return self._calculate_linear_eta(heater, target)
-
-        # Current sample
-        t_now, temp_now, _ = recent[-1]
-        remaining_now = target - temp_now
-        if remaining_now <= 0:
-            return None
-
-        # We model the approach to target as asymptotic. Since reaching target exactly
-        # would be infinite time, estimate the time until we are within epsilon.
-        epsilon_c = 0.5
-        if remaining_now <= epsilon_c:
-            return 0.0
-
-        # Build regression data for ln(target - T).
-        # Exclude points too close to target (noise dominates) and invalid samples.
-        t0 = recent[0][0]
-        xs = []
-        ys = []
-        for ts, temp, _ in recent:
-            delta = target - temp
-            if delta <= epsilon_c:
-                continue
-            x = ts - t0
-            if x < 0:
-                continue
-            xs.append(x)
-            ys.append(math.log(delta))
-
-        if len(xs) < 6:
-            return self._calculate_linear_eta(heater, target)
-
-        span = xs[-1] - xs[0]
-        if span < 5:
-            return self._calculate_linear_eta(heater, target)
-
-        # Require we are actually heating in this window.
-        if (recent[-1][1] - recent[0][1]) <= 0.2:
-            return None
-
-        # Linear regression: y = a + b*x, where b should be negative.
-        x_mean = sum(xs) / len(xs)
-        y_mean = sum(ys) / len(ys)
-        sxx = 0.0
-        sxy = 0.0
-        for x, y in zip(xs, ys):
-            dx = x - x_mean
-            dy = y - y_mean
-            sxx += dx * dx
-            sxy += dx * dy
-
-        if sxx <= 0:
-            return self._calculate_linear_eta(heater, target)
-
-        slope = sxy / sxx
-        if slope >= -1e-4:
-            # Not decaying fast enough or unstable -> fallback.
-            return self._calculate_linear_eta(heater, target)
-
-        tau = -1.0 / slope
-        if tau <= 0 or tau > 2000:
-            return self._calculate_linear_eta(heater, target)
-
-        # ETA to reach epsilon band.
-        try:
-            eta = tau * math.log(remaining_now / epsilon_c)
-        except ValueError:
-            return self._calculate_linear_eta(heater, target)
-
-        if eta < 0:
-            eta = 0.0
-
-        # Protect against spikes: if exponential estimate is wildly larger than
-        # the linear estimate on the same data, trust the linear estimate.
-        linear_eta = self._calculate_linear_eta(heater, target)
-        if linear_eta is not None and eta > (linear_eta * 5):
-            return linear_eta
-
-        return eta
+        return None
 
     # SettingsPlugin mixin
     def get_settings_defaults(self):

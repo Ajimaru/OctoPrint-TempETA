@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-TempETA 0.1.0\n"
 "Report-Msgid-Bugs-To: ajimaru_gdr@pm.me\n"
-"POT-Creation-Date: 2026-01-14 22:29+0100\n"
+"POT-Creation-Date: 2026-01-15 17:57+0100\n"
 "PO-Revision-Date: 2026-01-08 12:00+0000\n"
 "Last-Translator: \n"
 "Language: en\n"
@@ -152,7 +152,7 @@ msgstr "Cooldown finished"
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2225
+#: octoprint_temp_eta/__init__.py:2080
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:606
 msgid "Defaults restored."
 msgstr "Defaults restored."
@@ -685,7 +685,7 @@ msgstr "Target temperature for the chamber when using threshold mode."
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr "Target temperature for tool0 when using threshold mode."
 
-#: octoprint_temp_eta/__init__.py:1976
+#: octoprint_temp_eta/__init__.py:1831
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:21
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:4
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:579
