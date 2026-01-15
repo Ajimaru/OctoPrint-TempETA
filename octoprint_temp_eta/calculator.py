@@ -41,9 +41,15 @@ def calculate_linear_eta(
     if not history or len(history) < 2:
         return None
 
-    # Use last N seconds of data for rate calculation
-    now = time.time()
-    cutoff = now - window_seconds
+    # Use last N seconds of data for rate calculation (anchored to history)
+    last_ts = None
+    for ts, actual, _target in history:
+        if math.isfinite(ts) and math.isfinite(actual):
+            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+    if last_ts is None:
+        return None
+
+    cutoff = last_ts - window_seconds
     t0 = None
     temp0 = None
     t1 = None
