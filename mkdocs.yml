@@ -4,6 +4,9 @@ repo_url: https://github.com/Ajimaru/OctoPrint-TempETA
 repo_name: Ajimaru/OctoPrint-TempETA
 edit_uri: edit/main/docs/
 
+exclude_docs: |
+  README.md
+
 theme:
   name: material
   features:
