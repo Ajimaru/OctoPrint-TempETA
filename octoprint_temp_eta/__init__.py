@@ -1624,9 +1624,17 @@ class TempETAPlugin(
             window = self._cooldown_fit_window_seconds()
 
             # Check if we have enough recent samples for debug logging
-            now = time.time()
-            recent = [(ts, temp) for ts, temp in hist if ts > now - window]
+            last_ts = None
+            for ts, temp in hist:
+                if math.isfinite(ts) and math.isfinite(temp):
+                    last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+            if last_ts is None:
+                return None
+
+            cutoff = last_ts - window
+            recent = [(ts, temp) for ts, temp in hist if ts > cutoff]
             if len(recent) < 2:
+                now = time.time()
                 self._debug_log_throttled(
                     now,
                     15.0,
