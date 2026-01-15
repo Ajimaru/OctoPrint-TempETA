@@ -42,10 +42,10 @@ def calculate_linear_eta(
         return None
 
     # Use last N seconds of data for rate calculation (anchored to history)
-    last_ts = None
-    for ts, actual, _target in history:
-        if math.isfinite(ts) and math.isfinite(actual):
-            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+    last_ts = max(
+        (ts for ts, actual, _target in history if math.isfinite(ts) and math.isfinite(actual)),
+        default=None,
+    )
     if last_ts is None:
         return None
 
