@@ -2337,7 +2337,6 @@ def test_calculate_exponential_eta_returns_none_when_not_heating(
 def test_calculate_exponential_eta_valueerror_falls_back_to_linear(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
-    plugin_any = cast(Any, plugin)
     target = 100.0
     _set_time(monkeypatch, 100.0)
 
@@ -2360,15 +2359,23 @@ def test_calculate_exponential_eta_valueerror_falls_back_to_linear(
     # Force ValueError only for the ETA log() call.
     remaining_now = target - 85.3
     ratio_to_fail = remaining_now / 0.5
-    orig_log = octoprint_temp_eta.math.log
+
+    # Import calculator module to mock it
+    from octoprint_temp_eta import calculator as calc_module
+
+    orig_log = calc_module.math.log
 
     def _fake_log(x: float) -> float:
         if abs(float(x) - float(ratio_to_fail)) < 1e-6:
             raise ValueError("boom")
         return orig_log(x)
 
-    monkeypatch.setattr(octoprint_temp_eta.math, "log", _fake_log)
-    plugin_any._calculate_linear_eta = lambda heater, target: 123.0
+    monkeypatch.setattr(calc_module.math, "log", _fake_log)
+    monkeypatch.setattr(
+        calc_module,
+        "calculate_linear_eta",
+        lambda history, target, window_seconds=10.0: 123.0,
+    )
 
     assert plugin._calculate_exponential_eta("tool0", target) == 123.0
 
@@ -2376,7 +2383,6 @@ def test_calculate_exponential_eta_valueerror_falls_back_to_linear(
 def test_calculate_exponential_eta_spike_protection_returns_linear_eta(
     monkeypatch: pytest.MonkeyPatch, plugin: TempETAPlugin
 ) -> None:
-    plugin_any = cast(Any, plugin)
     target = 100.0
     _set_time(monkeypatch, 100.0)
 
@@ -2394,7 +2400,13 @@ def test_calculate_exponential_eta_spike_protection_returns_linear_eta(
     )
 
     # Force the final comparison to trigger.
-    plugin_any._calculate_linear_eta = lambda heater, target: 0.1
+    from octoprint_temp_eta import calculator as calc_module
+
+    monkeypatch.setattr(
+        calc_module,
+        "calculate_linear_eta",
+        lambda history, target, window_seconds=10.0: 0.1,
+    )
     assert plugin._calculate_exponential_eta("tool0", target) == 0.1
 
 
