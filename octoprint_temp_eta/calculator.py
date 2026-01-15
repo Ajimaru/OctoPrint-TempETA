@@ -226,7 +226,7 @@ def calculate_cooldown_linear_eta(
     if not math.isfinite(window_seconds) or window_seconds <= 0:
         return None
 
-    if not cooldown_history or len(cooldown_history) < 2:
+    if not cooldown_history:
         return None
 
     now = time.time()
