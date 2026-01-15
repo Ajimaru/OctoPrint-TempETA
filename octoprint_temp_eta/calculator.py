@@ -67,8 +67,9 @@ def calculate_linear_eta(
     time_diff = t1 - t0
     temp_diff = temp1 - temp0
     if time_diff <= 0 or temp_diff <= 0:
-        return None
-
+        eta = remaining / rate
+        # cap at 24 hours
+        return float(min(max(0.0, eta), 24 * 3600))
     # rate = ΔT / Δt (°C per second)
     rate = temp_diff / time_diff
     remaining = target - temp1
