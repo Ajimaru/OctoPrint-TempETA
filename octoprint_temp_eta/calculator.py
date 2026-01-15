@@ -234,7 +234,9 @@ def calculate_cooldown_linear_eta(
     ]
     if len(recent) < 2:
         return None
+recent.sort(key=lambda x: x[0])
 
+t0, temp0 = recent[0]
     t0, temp0 = recent[0]
     t1, temp1 = recent[-1]
     dt = t1 - t0
