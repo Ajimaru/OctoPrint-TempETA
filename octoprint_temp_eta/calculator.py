@@ -253,8 +253,8 @@ def calculate_cooldown_exponential_eta(
     cooldown_history: deque,
     ambient_c: float,
     goal_c: float,
-    window_seconds: float = 60.0,
-) -> Optional[float]:
+    if len(recent) < 6:
+        return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
     """Exponential cooldown ETA (Newton's law of cooling).
 
     Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
