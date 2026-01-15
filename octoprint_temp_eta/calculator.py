@@ -120,13 +120,14 @@ def calculate_exponential_eta(
         return None
     cutoff = last_ts - window_seconds
 
-    recent = [
-        (ts, temp, tgt)
-        for (ts, temp, tgt) in history
-        if math.isfinite(ts)
-        and math.isfinite(temp)
-        and ts > cutoff
-    ]
+    recent = sorted(
+        (
+            (ts, temp, tgt)
+            for (ts, temp, tgt) in history
+            if math.isfinite(ts) and math.isfinite(temp) and ts > cutoff
+        ),
+        key=lambda x: x[0],
+    )
 
     if len(recent) < 6:
         return calculate_linear_eta(history, target)
