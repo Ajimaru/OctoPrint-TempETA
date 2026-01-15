@@ -128,6 +128,15 @@ def calculate_exponential_eta(
         ),
         key=lambda x: x[0],
     )
+    # Drop duplicate timestamps to avoid zero-span/unstable fits
+    deduped = []
+    last_ts = None
+    for ts, temp, tgt in recent:
+        if last_ts is not None and ts == last_ts:
+            continue
+        deduped.append((ts, temp, tgt))
+        last_ts = ts
+    recent = deduped
 
     if len(recent) < 6:
         return calculate_linear_eta(history, target)
