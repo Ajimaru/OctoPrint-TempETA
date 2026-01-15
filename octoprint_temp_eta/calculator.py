@@ -106,13 +106,20 @@ def calculate_exponential_eta(
         return None
 
     # Use a recent window for the fit
-    now = time.time()
+    last_ts = None
+    for ts, temp, tgt in history:
+        if math.isfinite(ts) and math.isfinite(temp):
+            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+    if last_ts is None:
+        return None
+    cutoff = last_ts - window_seconds
+
     recent = [
         (ts, temp, tgt)
         for (ts, temp, tgt) in history
         if math.isfinite(ts)
         and math.isfinite(temp)
-        and ts > (now - window_seconds)
+        and ts > cutoff
     ]
 
     if len(recent) < 6:
