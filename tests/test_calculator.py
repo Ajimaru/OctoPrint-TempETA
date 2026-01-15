@@ -126,10 +126,10 @@ class TestCalculateExponentialETA(TestCase):
     def test_insufficient_data(self):
         """Test with insufficient data returns None."""
         history = deque()
+        result = calculator.calculate_exponential_eta(history, 60.0)
+        self.assertIsNone(result)
 
-    def test_already_below_goal(self):
-        """Test returns None when already below goal."""
-        now = time.time()
+    def test_invalid_target_nan(self):
         """Test with NaN target returns None."""
         now = time.time()
         history = deque([(now - 1, 20.0, 60.0), (now, 22.0, 60.0)])

@@ -67,9 +67,8 @@ def calculate_linear_eta(
     time_diff = t1 - t0
     temp_diff = temp1 - temp0
     if time_diff <= 0 or temp_diff <= 0:
-        eta = remaining / rate
-        # cap at 24 hours
-        return float(min(max(0.0, eta), 24 * 3600))
+        return None
+
     # rate = ΔT / Δt (°C per second)
     rate = temp_diff / time_diff
     remaining = target - temp1
@@ -106,24 +105,15 @@ def calculate_exponential_eta(
     if not history or len(history) < 3:
         return None
 
+    # Use a recent window for the fit
     now = time.time()
-    recent = [
-        h
-        for h in history
-        if len(h) >= 2
-        and math.isfinite(h[0])
-        and math.isfinite(h[1])
-        and h[0] > now - window_seconds
-    ]
+    recent = [h for h in history if h[0] > now - window_seconds]
 
     if len(recent) < 6:
         return calculate_linear_eta(history, target)
 
     # Current sample
     t_now, temp_now, _ = recent[-1]
-    if not (math.isfinite(t_now) and math.isfinite(temp_now)):
-        return None
-    remaining_now = target - temp_now
     remaining_now = target - temp_now
     if remaining_now <= 0:
         return None
@@ -234,9 +224,7 @@ def calculate_cooldown_linear_eta(
     ]
     if len(recent) < 2:
         return None
-recent.sort(key=lambda x: x[0])
 
-t0, temp0 = recent[0]
     t0, temp0 = recent[0]
     t1, temp1 = recent[-1]
     dt = t1 - t0
@@ -265,8 +253,8 @@ def calculate_cooldown_exponential_eta(
     cooldown_history: deque,
     ambient_c: float,
     goal_c: float,
-    if len(recent) < 6:
-        return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
+    window_seconds: float = 60.0,
+) -> Optional[float]:
     """Exponential cooldown ETA (Newton's law of cooling).
 
     Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
@@ -288,8 +276,8 @@ def calculate_cooldown_exponential_eta(
     if goal_c <= ambient_c:
         return None
 
-    x_mean = sum(xs) / len(xs)
-y_mean = sum(ys) / len(ys)
+    if not cooldown_history or len(cooldown_history) < 4:
+        return None
 
     now = time.time()
     recent = [
