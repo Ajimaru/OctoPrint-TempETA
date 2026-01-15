@@ -277,8 +277,8 @@ def calculate_cooldown_exponential_eta(
     if goal_c <= ambient_c:
         return None
 
-    if not cooldown_history or len(cooldown_history) < 4:
-        return None
+    x_mean = sum(xs) / len(xs)
+y_mean = sum(ys) / len(ys)
 
     now = time.time()
     recent = [
