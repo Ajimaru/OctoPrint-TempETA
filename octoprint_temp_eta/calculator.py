@@ -281,11 +281,18 @@ def calculate_cooldown_exponential_eta(
     if not cooldown_history or len(cooldown_history) < 4:
         return None
 
-    now = time.time()
+    last_ts = None
+    for ts, temp in cooldown_history:
+        if math.isfinite(ts) and math.isfinite(temp):
+            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+    if last_ts is None:
+        return None
+    cutoff = last_ts - window_seconds
+
     recent = [
         (ts, temp)
         for ts, temp in cooldown_history
-        if ts > now - window_seconds and math.isfinite(ts) and math.isfinite(temp)
+        if ts > cutoff and math.isfinite(ts) and math.isfinite(temp)
     ]
     if len(recent) < 6:
         return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
