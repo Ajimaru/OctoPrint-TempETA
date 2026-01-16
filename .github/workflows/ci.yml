@@ -45,9 +45,18 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[develop]"
 
+      - name: Fetch base branch (pull_request only)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+
       - name: Run pre-commit
         run: |
-          pre-commit run --all-files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
+          else
+            pre-commit run --all-files
+          fi
 
   test:
     name: Test (Python ${{ matrix.python-version }})
