@@ -9,7 +9,6 @@
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.12.0%2B-blue.svg)](https://octoprint.org)
 [![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/latest/total)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
 [![Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
 [![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
