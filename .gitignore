@@ -22,6 +22,10 @@ htmlcov
 # pre-commit/prettier temporary install artifacts
 node_modules/
 
+# Documentation build artifacts
+site/
+docs/api/javascript.md
+
 # Development-only folders (not for GitHub)
 .drafts/
 .local/
