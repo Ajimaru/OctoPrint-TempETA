@@ -106,7 +106,7 @@ class MyPlugin(octoprint.plugin.OctoPrintPlugin):
     def on_after_startup(self):
         # Access TempETA plugin
         temp_eta = self._plugin_manager.get_plugin("temp_eta")
-        
+
         if temp_eta:
             # Get current ETA
             eta_data = temp_eta.get_current_eta()
@@ -124,7 +124,7 @@ class SafeCalculator:
     def __init__(self):
         self._calculator = ETACalculator()
         self._lock = threading.RLock()
-    
+
     def calculate(self, history, target):
         with self._lock:
             return self._calculator.calculate_eta(history, target)
@@ -158,11 +158,11 @@ def calculate_eta(
 ) -> Optional[float]:
     """
     Calculate ETA to target temperature.
-    
+
     Args:
         history: Temperature history deque
         target: Target temperature
-    
+
     Returns:
         ETA in seconds, or None if calculation fails
     """

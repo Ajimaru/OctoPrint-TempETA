@@ -21,49 +21,49 @@ ETA = (T_target - T_current) / rate
 def calculate_linear_eta(self, history, target):
     """
     Calculate ETA using linear extrapolation.
-    
+
     Args:
         history: deque of (timestamp, temperature, target) tuples
         target: Target temperature
-    
+
     Returns:
         Estimated seconds to target, or None if insufficient data
     """
     if len(history) < 2:
         return None
-    
+
     # Use last 10 seconds of data
     now = time.time()
     recent = [h for h in history if h[0] > now - 10]
-    
+
     if len(recent) < 2:
         return None
-    
+
     # Calculate rate: ΔT / Δt
     t0, temp0, _ = recent[0]
     t1, temp1, _ = recent[-1]
-    
+
     delta_t = t1 - t0
     delta_temp = temp1 - temp0
-    
+
     if delta_t <= 0:
         return None
-    
+
     rate = delta_temp / delta_t  # °C/s
-    
+
     # Check minimum rate threshold
     if abs(rate) < self.min_rate:
         return None
-    
+
     # Calculate remaining temperature difference
     remaining = target - temp1
-    
+
     # Same sign = approaching target
     # Different sign = moving away
     if (remaining > 0 and rate > 0) or (remaining < 0 and rate < 0):
         eta = abs(remaining / rate)
         return min(eta, self.max_eta)
-    
+
     return None
 ```
 
@@ -111,57 +111,57 @@ Where `tau` is the thermal time constant.
 def calculate_exponential_eta(self, history, target):
     """
     Calculate ETA using exponential model.
-    
+
     Args:
         history: deque of (timestamp, temperature, target) tuples
         target: Target temperature
-    
+
     Returns:
         Estimated seconds to target, or None if insufficient data
     """
     if len(history) < 3:
         return None
-    
+
     # Use last 30 seconds for fitting
     now = time.time()
     recent = [h for h in history if h[0] > now - 30]
-    
+
     if len(recent) < 3:
         return None
-    
+
     # Extract time and temperature arrays
     times = np.array([h[0] for h in recent])
     temps = np.array([h[1] for h in recent])
-    
+
     # Normalize time to start at 0
     times = times - times[0]
     current_temp = temps[-1]
-    
+
     # Fit exponential model: T(t) = T_f - (T_f - T_0) * e^(-t/tau)
     try:
         # Use scipy.optimize.curve_fit or manual least-squares
         tau = self._fit_time_constant(times, temps, target)
-        
+
         if tau <= 0 or tau > self.max_tau:
             return None
-        
+
         # Calculate ETA: solve for t when T(t) = target
         # t = -tau * ln((target - T_f) / (current - T_f))
-        
+
         remaining = target - current_temp
         initial_diff = temps[0] - target
-        
+
         if abs(remaining) < 0.5:  # Close enough
             return 0
-        
+
         ratio = remaining / initial_diff
-        
+
         if ratio <= 0 or ratio >= 1:
             return None
-        
+
         eta = -tau * math.log(ratio)
         return min(max(eta, 0), self.max_eta)
-        
+
     except (ValueError, RuntimeError, FloatingPointError):
         # Fitting failed, fall back to None
         return None
@@ -173,26 +173,26 @@ def calculate_exponential_eta(self, history, target):
 def _fit_time_constant(self, times, temps, target):
     """
     Fit exponential time constant from temperature data.
-    
+
     Uses linear regression on log-transformed data:
     ln(T - T_target) = ln(T_0 - T_target) - t/tau
     """
     # Transform to linear: y = ln|T - T_target|
     diff = temps - target
-    
+
     # Avoid log(0) or log(negative)
     if np.any(np.abs(diff) < 0.1):
         raise ValueError("Too close to target for fitting")
-    
+
     y = np.log(np.abs(diff))
-    
+
     # Linear regression: y = a + b*t, where b = -1/tau
     A = np.vstack([times, np.ones(len(times))]).T
     b, a = np.linalg.lstsq(A, y, rcond=None)[0]
-    
+
     if b >= 0:
         raise ValueError("Positive slope indicates moving away")
-    
+
     tau = -1 / b
     return tau
 ```
@@ -239,7 +239,7 @@ def calculate_hybrid_eta(self, history, target):
     """Use linear far from target, exponential when close."""
     current = history[-1][1]
     diff = abs(target - current)
-    
+
     if diff > 20:  # Far from target
         return self.calculate_linear_eta(history, target)
     else:  # Close to target
@@ -309,10 +309,10 @@ def test_linear_heating():
     history = deque()
     for i in range(10):
         history.append((i, 25 + i * 2, 200))
-    
+
     calc = Calculator(algorithm="linear")
     eta = calc.calculate_eta(history, 200)
-    
+
     # Rate = 2°C/s, remaining = 175°C
     # Expected ETA = 175 / 2 = 87.5s
     assert abs(eta - 87.5) < 0.1

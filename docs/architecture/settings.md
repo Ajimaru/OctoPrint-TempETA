@@ -346,24 +346,24 @@ plugins:
     update_interval: 1.0
     min_rate: 0.1
     max_eta: 3600
-    
+
     # Heating
     heating_enabled: true
     heating_threshold: 1.0
     heating_sound_enabled: false
     heating_sound_file: "default"
-    
+
     # Cooling
     cooling_enabled: true
     cooling_threshold: 1.0
     cooling_sound_enabled: false
     cooling_sound_file: "default"
-    
+
     # Display
     show_in_graph: true
     show_in_sidebar: true
     time_format: "auto"
-    
+
     # MQTT
     mqtt_enabled: false
     mqtt_broker: "localhost"
@@ -374,7 +374,7 @@ plugins:
     mqtt_topic_prefix: "octoprint/temp_eta"
     mqtt_retain: false
     mqtt_qos: 0
-    
+
     # Advanced
     history_max_age: 60
     history_max_samples: 120
@@ -419,14 +419,14 @@ def on_settings_save(self, data):
     # Validate algorithm
     if data.get("algorithm") not in ["linear", "exponential"]:
         raise ValueError("Invalid algorithm")
-    
+
     # Validate ranges
     min_rate = data.get("min_rate", 0.1)
     if not 0.01 <= min_rate <= 1.0:
         raise ValueError("min_rate out of range")
-    
+
     # ... more validation
-    
+
     octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 ```
 

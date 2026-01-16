@@ -17,7 +17,7 @@ class TempETAPlugin(octoprint.plugin.StartupPlugin):
         self._logger.info("TempETA plugin started")
         self._initialize_history()
         self._start_mqtt_client()
-    
+
     def on_shutdown(self):
         """Called when OctoPrint is shutting down."""
         self._logger.info("TempETA plugin shutting down")
@@ -88,22 +88,22 @@ class TempETAPlugin(octoprint.plugin.SettingsPlugin):
             "max_eta": 3600,
             # ... more defaults
         }
-    
+
     def on_settings_save(self, data):
         """Called when settings are saved."""
         # Validate settings
         self._validate_settings(data)
-        
+
         # Save settings
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-        
+
         # Apply changes
         self._apply_settings()
-    
+
     def get_settings_version(self):
         """Return settings version for migration."""
         return 2
-    
+
     def on_settings_migrate(self, target, current):
         """Migrate settings from old version."""
         if current == 1:
@@ -170,11 +170,11 @@ class TempETAPlugin(octoprint.plugin.EventHandlerPlugin):
         if event == "PrintStarted":
             self._logger.info("Print started")
             self._reset_eta()
-        
+
         elif event == "PrintDone":
             self._logger.info("Print completed")
             self._clear_eta()
-        
+
         elif event == "CurrentTemperatureUpdated":
             self._on_temperature_update(payload)
 ```
@@ -198,16 +198,16 @@ class TempETAPlugin(octoprint.plugin.SimpleApiPlugin):
             "get_eta": [],
             "reset": []
         }
-    
+
     def on_api_command(self, command, data):
         """Handle API command."""
         if command == "get_eta":
             return flask.jsonify(self._get_current_eta())
-        
+
         elif command == "reset":
             self._reset_history()
             return flask.jsonify({"success": True})
-    
+
     def on_api_get(self, request):
         """Handle GET request."""
         return flask.jsonify({
@@ -266,10 +266,10 @@ def __plugin_load__():
     """Load the plugin."""
     global __plugin_implementation__
     __plugin_implementation__ = TempETAPlugin()
-    
+
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": 
+        "octoprint.plugin.softwareupdate.check_config":
             __plugin_implementation__.get_update_information
     }
 
@@ -319,7 +319,7 @@ self._plugin_manager.send_plugin_message(
 ```javascript
 self.onDataUpdaterPluginMessage = function(plugin, data) {
     if (plugin !== "temp_eta") return;
-    
+
     if (data.type === "eta_update") {
         self.updateETA(data.heater, data.data);
     }
@@ -356,12 +356,12 @@ def get_update_information(self):
         "temp_eta": {
             "displayName": "Temperature ETA",
             "displayVersion": self._plugin_version,
-            
+
             "type": "github_release",
             "user": "Ajimaru",
             "repo": "OctoPrint-TempETA",
             "current": self._plugin_version,
-            
+
             "pip": "https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest/download/release.zip"
         }
     }

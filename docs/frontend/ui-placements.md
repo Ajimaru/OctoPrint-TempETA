@@ -28,7 +28,7 @@ Bed: 60.0°C / 80.0°C ⏱ 00:45
 Located in: `octoprint_temp_eta/templates/temp_eta_tab.jinja2`
 
 ```html
-<div class="temp-eta-graph-display" 
+<div class="temp-eta-graph-display"
      data-bind="visible: settings.plugins.temp_eta.show_in_graph()">
     <!-- ko foreach: heaters -->
     <div class="heater-eta" data-bind="visible: hasETA()">
@@ -48,16 +48,16 @@ Styled via LESS: `octoprint_temp_eta/static/less/temp_eta.less`
 .temp-eta-graph-display {
     margin-top: 5px;
     font-size: 0.9em;
-    
+
     .heater-eta {
         display: inline-block;
         margin-right: 15px;
-        
+
         .eta-value {
             font-weight: bold;
             color: @brand-primary;
         }
-        
+
         .eta-icon {
             margin-left: 3px;
         }
@@ -144,15 +144,15 @@ Located in: `octoprint_temp_eta/templates/temp_eta_settings.jinja2`
 ```html
 <form class="form-horizontal">
     <h3>{{ _('General Settings') }}</h3>
-    
+
     <div class="control-group">
         <label class="control-label">{{ _('Enable Plugin') }}</label>
         <div class="controls">
-            <input type="checkbox" 
+            <input type="checkbox"
                    data-bind="checked: settings.plugins.temp_eta.enabled">
         </div>
     </div>
-    
+
     <div class="control-group">
         <label class="control-label">{{ _('Algorithm') }}</label>
         <div class="controls">
@@ -162,7 +162,7 @@ Located in: `octoprint_temp_eta/templates/temp_eta_settings.jinja2`
             </select>
         </div>
     </div>
-    
+
     <!-- More settings... -->
 </form>
 ```
@@ -212,7 +212,7 @@ Usage:
 
 ```html
 <div class="progress">
-    <div class="progress-bar" 
+    <div class="progress-bar"
          data-bind="tempProgress: {current: temp(), target: target()}">
     </div>
 </div>
@@ -262,7 +262,7 @@ Play sound on temperature reached:
 ```javascript
 self.playSound = function(soundFile) {
     if (!self.settings.sound_enabled()) return;
-    
+
     var audio = new Audio(
         '/plugin/temp_eta/static/sounds/' + soundFile
     );
@@ -287,7 +287,7 @@ The UI adapts to different screen sizes:
     .temp-eta-sidebar {
         display: none;  // Hide on small screens
     }
-    
+
     .temp-eta-graph-display {
         font-size: 0.8em;  // Smaller text
     }
@@ -299,8 +299,8 @@ The UI adapts to different screen sizes:
 ### ARIA Labels
 
 ```html
-<div class="heater-eta" 
-     role="status" 
+<div class="heater-eta"
+     role="status"
      aria-live="polite"
      aria-label="Temperature ETA">
     <span data-bind="text: formattedETA()"></span>

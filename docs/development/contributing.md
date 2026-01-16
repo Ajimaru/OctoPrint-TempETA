@@ -75,13 +75,13 @@ Example:
 def calculate_eta(self, history: Deque, target: float) -> Optional[float]:
     """
     Calculate estimated time to target temperature.
-    
+
     Uses linear extrapolation of recent temperature history.
-    
+
     Args:
         history: Temperature history deque
         target: Target temperature in °C
-    
+
     Returns:
         ETA in seconds, or None if insufficient data
     """
@@ -100,13 +100,13 @@ def test_linear_heating():
     """Test linear algorithm with constant heating rate."""
     calculator = ETACalculator(algorithm="linear")
     history = deque()
-    
+
     # Simulate heating at 2°C/s
     for i in range(10):
         history.append((i, 25 + i * 2, 200))
-    
+
     eta = calculator.calculate_eta(history, 200)
-    
+
     # Rate = 2°C/s, remaining = 175°C
     # Expected ETA = 87.5s
     assert abs(eta - 87.5) < 0.1
@@ -355,10 +355,10 @@ def calculate_eta(self, history, target):
     """Calculate ETA using linear extrapolation."""
     if len(history) < 2:
         return None
-    
+
     rate = self._calculate_rate(history)
     remaining = target - history[-1][1]
-    
+
     return remaining / rate if rate > 0 else None
 
 # Bad
@@ -399,7 +399,7 @@ Use semantic naming:
     .heater-name {
         font-weight: bold;
     }
-    
+
     .eta-value {
         color: @brand-primary;
     }
