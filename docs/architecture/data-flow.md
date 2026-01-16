@@ -15,22 +15,22 @@ sequenceDiagram
 
     Printer->>OctoPrint: Temperature Report
     OctoPrint->>Plugin: on_event_handler (2Hz)
-    
+
     Plugin->>Plugin: Acquire Lock
     Plugin->>Plugin: Update History
-    
+
     alt Target Temperature Set
         Plugin->>Calculator: Calculate ETA
         Calculator->>Calculator: Analyze History
         Calculator-->>Plugin: ETA Result
-        
+
         Plugin->>Frontend: Update UI (WebSocket)
-        
+
         opt MQTT Enabled
             Plugin->>MQTT: Publish ETA
         end
     end
-    
+
     Plugin->>Plugin: Release Lock
 ```
 
@@ -86,7 +86,7 @@ def _update_history(self, heater, temp_data):
     timestamp = time.time()
     current = temp_data.get("actual", 0)
     target = temp_data.get("target", 0)
-    
+
     self._history[heater].append((timestamp, current, target))
     self._cleanup_old_data(heater)
 ```
@@ -100,7 +100,7 @@ def _calculate_eta(self, heater):
     history = self._history[heater]
     if len(history) < 2:
         return None
-    
+
     if self._algorithm == "linear":
         return self._calculator.linear_eta(history)
     else:
@@ -151,7 +151,7 @@ graph LR
 ```javascript
 self.onDataUpdaterPluginMessage = function(plugin, data) {
     if (plugin !== "temp_eta") return;
-    
+
     if (data.type === "eta_update") {
         self.updateETA(data.heater, data.data);
     }
@@ -230,7 +230,7 @@ Old data is automatically removed:
 def _cleanup_old_data(self, heater):
     cutoff = time.time() - self.MAX_HISTORY_AGE
     history = self._history[heater]
-    
+
     while history and history[0][0] < cutoff:
         history.popleft()
 ```
@@ -297,7 +297,7 @@ def on_after_startup(self):
 def on_shutdown(self):
     if self._mqtt_client:
         self._mqtt_client.disconnect()
-    
+
     # History is automatically cleared (no persistence)
 ```
 

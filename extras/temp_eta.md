@@ -39,7 +39,7 @@ featuredimage: /assets/img/plugins/temp_eta/Temperature_ETA_heating.png
 compatibility:
   octoprint:
   - 1.12.0
-  
+
   python: ">=3.11,<4"
 
 ---
@@ -163,7 +163,7 @@ This allows integration with home automation systems like Home Assistant, Node-R
 
 ## Origin Story
 
-This plugin implements a feature request from 2014 ([OctoPrint Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469)) 
+This plugin implements a feature request from 2014 ([OctoPrint Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469))
 by [@CptanPanic](https://github.com/CptanPanic) to show estimated time remaining for printer heating.
 
 ## Support

@@ -72,7 +72,7 @@ tests/
 def test_calculator_initialization():
     """Test calculator can be initialized."""
     calculator = ETACalculator(algorithm="linear")
-    
+
     assert calculator.algorithm == "linear"
     assert calculator.min_rate == 0.1
     assert calculator.max_eta == 3600
@@ -96,7 +96,7 @@ def test_linear_eta(mock_history):
     """Test linear ETA calculation."""
     calculator = ETACalculator(algorithm="linear")
     eta = calculator.calculate_eta(mock_history, 200)
-    
+
     assert eta is not None
     assert 80 < eta < 100  # ~87.5 seconds
 ```
@@ -113,7 +113,7 @@ def test_algorithms(algorithm, expected_range):
     calculator = ETACalculator(algorithm=algorithm)
     history = create_heating_history()
     eta = calculator.calculate_eta(history, 200)
-    
+
     assert expected_range[0] < eta < expected_range[1]
 ```
 
@@ -129,13 +129,13 @@ def test_plugin_initialization():
     plugin._logger = MagicMock()
     plugin._settings = MagicMock()
     plugin._plugin_manager = MagicMock()
-    
+
     # Configure mocks
     plugin._settings.get.return_value = True
-    
+
     # Test initialization
     plugin.on_after_startup()
-    
+
     # Verify calls
     plugin._logger.info.assert_called()
 ```
@@ -163,9 +163,9 @@ def test_calculate_rate():
         (0, 25.0, 200),
         (5, 35.0, 200)
     ])
-    
+
     rate = calculator._calculate_rate(history)
-    
+
     assert abs(rate - 2.0) < 0.01  # 10°C / 5s = 2°C/s
 ```
 
@@ -177,13 +177,13 @@ Test component interactions:
 def test_plugin_eta_calculation():
     """Test plugin calculates and sends ETA."""
     plugin = setup_test_plugin()
-    
+
     # Simulate temperature updates
     for i in range(10):
         plugin._on_temperature_update({
             "tool0": {"actual": 25 + i * 2, "target": 200}
         })
-    
+
     # Verify ETA was calculated and sent
     assert plugin._last_eta["tool0"] is not None
 ```
@@ -196,16 +196,16 @@ Test complete workflows:
 def test_heating_workflow():
     """Test complete heating workflow."""
     plugin = setup_test_plugin()
-    
+
     # Start heating
     plugin._on_event("PrintStarted", {})
-    
+
     # Simulate heating
     for temp in range(25, 205, 5):
         plugin._on_temperature_update({
             "tool0": {"actual": temp, "target": 200}
         })
-    
+
     # Verify completion
     assert plugin._heating_complete["tool0"]
     plugin._logger.info.assert_any_call("Heating complete")
@@ -220,24 +220,24 @@ def create_linear_heating(start=25, end=200, rate=2.0, samples=10):
     """Create mock linear heating history."""
     history = deque()
     duration = (end - start) / rate
-    
+
     for i in range(samples):
         t = (duration / samples) * i
         temp = start + rate * t
         history.append((t, temp, end))
-    
+
     return history
 
 def create_exponential_heating(start=25, end=200, tau=30, samples=20):
     """Create mock exponential heating history."""
     import math
     history = deque()
-    
+
     for i in range(samples):
         t = i
         temp = end - (end - start) * math.exp(-t / tau)
         history.append((t, temp, end))
-    
+
     return history
 ```
 
@@ -328,13 +328,13 @@ def test_calculator_performance():
     """Profile calculator performance."""
     calculator = ETACalculator()
     history = create_large_history()
-    
+
     profiler = cProfile.Profile()
     profiler.enable()
-    
+
     for _ in range(1000):
         calculator.calculate_eta(history, 200)
-    
+
     profiler.disable()
     stats = pstats.Stats(profiler)
     stats.sort_stats('cumulative')
@@ -350,14 +350,14 @@ def test_calculation_speed():
     """Ensure calculation is fast enough."""
     calculator = ETACalculator()
     history = create_heating_history()
-    
+
     start = time.time()
-    
+
     for _ in range(100):
         calculator.calculate_eta(history, 200)
-    
+
     elapsed = time.time() - start
-    
+
     # Should complete 100 calculations in < 10ms
     assert elapsed < 0.01
 ```
@@ -381,15 +381,15 @@ def test_with_debug():
     """Test with debug output."""
     calculator = ETACalculator()
     history = create_heating_history()
-    
+
     print(f"History length: {len(history)}")
     print(f"First sample: {history[0]}")
     print(f"Last sample: {history[-1]}")
-    
+
     eta = calculator.calculate_eta(history, 200)
-    
+
     print(f"Calculated ETA: {eta}")
-    
+
     assert eta is not None
 ```
 
@@ -454,10 +454,10 @@ def test_time_dependent():
     """Test time-dependent code."""
     with patch('time.time') as mock_time:
         mock_time.return_value = 1000
-        
+
         # Test code that uses time.time()
         result = function_using_time()
-        
+
         assert result == expected
 ```
 
@@ -469,7 +469,7 @@ Document tests with docstrings:
 def test_exponential_fitting():
     """
     Test exponential ETA with synthetic data.
-    
+
     Creates temperature history following exponential heating model
     with tau=30s. Verifies that:
     1. Fitting succeeds with sufficient data

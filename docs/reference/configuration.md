@@ -27,21 +27,21 @@ plugins:
     update_interval: 1.0
     min_rate: 0.1
     max_eta: 3600
-    
+
     # === Heating Settings ===
     heating_enabled: true
     heating_threshold: 1.0
     heating_sound_enabled: false
     heating_sound_file: "default"
     heating_notification_enabled: true
-    
+
     # === Cooling Settings ===
     cooling_enabled: true
     cooling_threshold: 1.0
     cooling_sound_enabled: false
     cooling_sound_file: "default"
     cooling_notification_enabled: true
-    
+
     # === Display Settings ===
     show_in_graph: true
     show_in_sidebar: true
@@ -49,7 +49,7 @@ plugins:
     time_format: "auto"
     show_rate: true
     show_percentage: false
-    
+
     # === MQTT Settings ===
     mqtt_enabled: false
     mqtt_broker: "localhost"
@@ -63,7 +63,7 @@ plugins:
     mqtt_retain: false
     mqtt_qos: 0
     mqtt_keepalive: 60
-    
+
     # === Advanced Settings ===
     history_max_age: 60
     history_max_samples: 120
