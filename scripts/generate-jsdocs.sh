@@ -3,25 +3,64 @@ set -e
 
 echo "Generating JavaScript API documentation..."
 
-# Check if JS files exist
-if ! ls octoprint_temp_eta/static/js/*.js 1> /dev/null 2>&1; then
+# Resolve repository root (one level up from this script)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." >/dev/null 2>&1 && pwd)"
+JS_SRC_DIR="$PROJECT_ROOT/octoprint_temp_eta/static/js"
+DOCS_API_DIR="$PROJECT_ROOT/docs/api"
+OUTPUT="${DOCS_API_DIR}/javascript.md"
+
+# Check if JS files exist (robust recursive check)
+if ! find "$JS_SRC_DIR" -type f -name '*.js' -print -quit >/dev/null 2>&1; then
     echo "Warning: No JavaScript files found"
-    echo "# JavaScript API" > docs/api/javascript.md
-    echo "" >> docs/api/javascript.md
-    echo "No JavaScript files found for documentation generation." >> docs/api/javascript.md
+    mkdir -p "$DOCS_API_DIR"
+    echo "# JavaScript API" > "$OUTPUT"
+    echo "" >> "$OUTPUT"
+    echo "No JavaScript files found for documentation generation." >> "$OUTPUT"
     exit 0
 fi
 
 # Generate documentation
-npx jsdoc2md \
-  --configure jsdoc.json \
-  "octoprint_temp_eta/static/js/**/*.js" \
-  > docs/api/javascript.md
+mkdir -p "$DOCS_API_DIR"
+
+# Locate local jsdoc-to-markdown binary (prefer local dev dependency)
+if [ -x "$PROJECT_ROOT/node_modules/.bin/jsdoc2md" ]; then
+    JSdoc2md="$PROJECT_ROOT/node_modules/.bin/jsdoc2md"
+elif command -v jsdoc2md >/dev/null 2>&1; then
+    JSdoc2md="jsdoc2md"
+else
+    # Interactive prompt to optionally install the dev dependency
+    if [ -t 0 ]; then
+        read -r -p "jsdoc-to-markdown not found locally. Install as dev-dependency now? (y/N) " REPLY
+        case "$REPLY" in
+            [yY])
+                (cd "$PROJECT_ROOT" && npm install --save-dev jsdoc-to-markdown) || {
+                    echo "Failed to install jsdoc-to-markdown" >&2
+                    exit 1
+                }
+                JSdoc2md="$PROJECT_ROOT/node_modules/.bin/jsdoc2md"
+                ;;
+            *)
+                echo "jsdoc-to-markdown not installed; aborting documentation generation." >&2
+                exit 1
+                ;;
+        esac
+    else
+        echo "jsdoc-to-markdown not found and session is non-interactive; aborting." >&2
+        exit 1
+    fi
+fi
+
+# Run the generator from the project root so relative patterns resolve correctly
+if ! (cd "$PROJECT_ROOT" && "$JSdoc2md" --configure "jsdoc.json" "octoprint_temp_eta/static/js/**/*.js" > "$OUTPUT"); then
+    echo "JSDoc generation failed" >&2
+    exit 1
+fi
 
 # Check if output is empty (no JSDoc comments)
-if [ ! -s docs/api/javascript.md ]; then
+if [ ! -s "$OUTPUT" ]; then
     echo "Warning: No JSDoc comments found in JavaScript files"
-    cat > docs/api/javascript.md << 'EOF'
+    cat > "$OUTPUT" << 'EOF'
 # JavaScript API
 
 This page will contain auto-generated JavaScript API documentation.
@@ -59,4 +98,4 @@ For now, see the [manual overview](javascript.md) in this directory.
 EOF
 fi
 
-echo "Generated docs/api/javascript.md"
+echo "Generated $OUTPUT"
