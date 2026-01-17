@@ -94,6 +94,7 @@ try:
 except ImportError as e:  # pragma: no cover
     # Calculator module is required for ETA calculation. Log error if missing.
     import logging
+
     logging.getLogger("octoprint_temp_eta").error("Calculator module missing: %s", e)
     raise
 
