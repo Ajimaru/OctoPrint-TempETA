@@ -115,6 +115,9 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 The settings UI is organized into multiple tabs:
 
 ### General
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>General Settings</strong> (click to expand)</summary>
 
 - **Enable Temperature ETA**: Master switch for the plugin
 - **Hide ETA while printing**: Optionally suppress ETA during active print jobs
@@ -131,13 +134,25 @@ The settings UI is organized into multiple tabs:
 
 Note: Numeric settings inputs are validated (min/max/range) and saving is blocked until invalid values are fixed.
 
+</details>
+<!-- markdownlint-enable MD033 -->
+
 ### Heating ETA
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>Heating ETA Settings</strong> (click to expand)</summary>
 
 - **Enable heating ETA**: Controls whether heating ETAs are shown/calculated
 - **Heating threshold** + **Threshold unit**: Start ETA when within a configured delta to the target
 - **Calculation algorithm**: Linear (default) or exponential
 
+</details>
+<!-- markdownlint-enable MD033 -->
+
 ### Cool-down ETA
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>Cool-down ETA Settings</strong> (click to expand)</summary>
 
 - **Enable cool-down ETA**: Turn cool-down ETA on/off
 - **Mode**:
@@ -147,7 +162,13 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 - **Ambient temperature** (optional): Provide a fixed ambient value for ambient mode
 - **Hysteresis / fit window**: Controls when cool-down ETA disappears and how much recent data is used
 
+</details>
+<!-- markdownlint-enable MD033 -->
+
 ### MQTT
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>MQTT Settings</strong> (click to expand)</summary>
 
 - **Enable MQTT**: Master switch for MQTT integration (publishes ETA data to external broker)
 - **Broker Host**: MQTT broker hostname or IP address (e.g., `localhost`, `192.168.1.100`)
@@ -162,64 +183,111 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 - **Retain Messages**: Enable MQTT retain flag (new subscribers receive the last message)
 - **Publish Interval**: Minimum seconds between MQTT publishes (default: `1.0`)
 
+</details>
+<!-- markdownlint-enable MD033 -->
+
 ### Maintenance
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>Maintenance Actions</strong> (click to expand)</summary>
 
 - **Reset profile history**: Deletes all persisted ETA history JSON files for all printer profiles (stored in OctoPrint's plugin data folder)
 - **Restore defaults**: Resets only this plugin's settings back to defaults (does not delete history files)
 
-### Help
+</details>
+<!-- markdownlint-enable MD033 -->
 
-- Quick explanations for the ETA logic and algorithms
+### Help
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>How is ETA calculated?</strong> (click to expand)</summary>
+
+**ETA Logic Overview**
+The plugin estimates how long it will take for each heater (bed, hotend, chamber) to reach its target temperature (heating) or cool down to a set value (cooling). It does this by analyzing recent temperature history and applying a calculation algorithm.
+
+**Algorithms Used**
+
+- **Linear ETA (default):**
+  Calculates the rate of temperature change (°C/s) using the last 10 seconds of data. ETA is the remaining temperature difference divided by this rate.
+  This method is fast and stable for most printers.
+
+- **Exponential ETA (advanced):**
+  Models heating/cooling as an exponential curve, which can be more accurate for some hardware.
+  This option can be enabled in the settings.
+
+**Key Points**
+
+- ETA is only shown when the heater is actively heating/cooling and within a configurable threshold of the target.
+- The plugin automatically handles multiple heaters and adapts to target changes.
+- All calculations are optimized for performance and run in a background thread.
+
+</details>
+<!-- markdownlint-enable MD033 -->
 
 ### Settings Defaults
+<!-- markdownlint-disable MD033 MD040 -->
+<details>
+<summary><strong>Default Plugin Settings</strong> (click to expand)</summary>
 
 The following defaults apply to the user-editable plugin settings:
 
-| Setting                   | Key                               | Default              |
-| ------------------------- | --------------------------------- | -------------------- |
-| Enable Temperature ETA    | `enabled`                         | `true`               |
-| Enable heating ETA        | `enable_heating_eta`              | `true`               |
-| Hide ETA while printing   | `suppress_while_printing`         | `false`              |
-| Show in sidebar           | `show_in_sidebar`                 | `true`               |
-| Show in navbar            | `show_in_navbar`                  | `true`               |
-| Show in tab               | `show_in_tab`                     | `true`               |
-| Show progress bars        | `show_progress_bars`              | `true`               |
-| Show historical graph     | `show_historical_graph`           | `true`               |
-| Graph window (seconds)    | `historical_graph_window_seconds` | `180`                |
-| Temperature display       | `temp_display`                    | `octoprint`          |
-| Heating threshold         | `threshold_start`                 | `5.0 °C`             |
-| Threshold unit            | `threshold_unit`                  | `octoprint`          |
-| Algorithm                 | `algorithm`                       | `linear`             |
-| Update Interval           | `update_interval`                 | `1.0 s`              |
-| History Size              | `history_size`                    | `60`                 |
-| Enable cool-down ETA      | `enable_cooldown_eta`             | `true`               |
-| Cool-down mode            | `cooldown_mode`                   | `threshold`          |
-| Enable debug logging      | `debug_logging`                   | `false`              |
-| Color mode                | `color_mode`                      | `bands`              |
-| Heating color             | `color_heating`                   | `#5cb85c`            |
-| Cooling color             | `color_cooling`                   | `#337ab7`            |
-| Idle color                | `color_idle`                      | `#777777`            |
-| Enable sound alerts       | `sound_enabled`                   | `false`              |
-| Sound: target reached     | `sound_target_reached`            | `false`              |
-| Sound: cool-down done     | `sound_cooldown_finished`         | `false`              |
-| Sound volume              | `sound_volume`                    | `0.5`                |
-| Sound min interval        | `sound_min_interval_s`            | `10.0 s`             |
-| Enable notifications      | `notification_enabled`            | `false`              |
-| Notify: target reached    | `notification_target_reached`     | `false`              |
-| Notify: cool-down done    | `notification_cooldown_finished`  | `false`              |
-| Notification timeout      | `notification_timeout_s`          | `6.0 s`              |
-| Notification min interval | `notification_min_interval_s`     | `10.0 s`             |
-| Enable MQTT               | `mqtt_enabled`                    | `false`              |
-| MQTT broker host          | `mqtt_broker_host`                | `""`                 |
-| MQTT broker port          | `mqtt_broker_port`                | `1883`               |
-| MQTT username             | `mqtt_username`                   | `""`                 |
-| MQTT password             | `mqtt_password`                   | `""`                 |
-| MQTT use TLS              | `mqtt_use_tls`                    | `false`              |
-| MQTT TLS insecure         | `mqtt_tls_insecure`               | `false`              |
-| MQTT base topic           | `mqtt_base_topic`                 | `octoprint/temp_eta` |
-| MQTT QoS                  | `mqtt_qos`                        | `0`                  |
-| MQTT retain               | `mqtt_retain`                     | `false`              |
-| MQTT publish interval     | `mqtt_publish_interval`           | `1.0 s`              |
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Key</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Enable Temperature ETA</td><td><code>enabled</code></td><td><code>true</code></td></tr>
+<tr><td>Enable heating ETA</td><td><code>enable_heating_eta</code></td><td><code>true</code></td></tr>
+<tr><td>Hide ETA while printing</td><td><code>suppress_while_printing</code></td><td><code>false</code></td></tr>
+<tr><td>Show in sidebar</td><td><code>show_in_sidebar</code></td><td><code>true</code></td></tr>
+<tr><td>Show in navbar</td><td><code>show_in_navbar</code></td><td><code>true</code></td></tr>
+<tr><td>Show in tab</td><td><code>show_in_tab</code></td><td><code>true</code></td></tr>
+<tr><td>Show progress bars</td><td><code>show_progress_bars</code></td><td><code>true</code></td></tr>
+<tr><td>Show historical graph</td><td><code>show_historical_graph</code></td><td><code>true</code></td></tr>
+<tr><td>Graph window (seconds)</td><td><code>historical_graph_window_seconds</code></td><td><code>180</code></td></tr>
+<tr><td>Temperature display</td><td><code>temp_display</code></td><td><code>octoprint</code></td></tr>
+<tr><td>Heating threshold</td><td><code>threshold_start</code></td><td><code>5.0 °C</code></td></tr>
+<tr><td>Threshold unit</td><td><code>threshold_unit</code></td><td><code>octoprint</code></td></tr>
+<tr><td>Algorithm</td><td><code>algorithm</code></td><td><code>linear</code></td></tr>
+<tr><td>Update Interval</td><td><code>update_interval</code></td><td><code>1.0 s</code></td></tr>
+<tr><td>History Size</td><td><code>history_size</code></td><td><code>60</code></td></tr>
+<tr><td>Enable cool-down ETA</td><td><code>enable_cooldown_eta</code></td><td><code>true</code></td></tr>
+<tr><td>Cool-down mode</td><td><code>cooldown_mode</code></td><td><code>threshold</code></td></tr>
+<tr><td>Enable debug logging</td><td><code>debug_logging</code></td><td><code>false</code></td></tr>
+<tr><td>Color mode</td><td><code>color_mode</code></td><td><code>bands</code></td></tr>
+<tr><td>Heating color</td><td><code>color_heating</code></td><td><code>#5cb85c</code></td></tr>
+<tr><td>Cooling color</td><td><code>color_cooling</code></td><td><code>#337ab7</code></td></tr>
+<tr><td>Idle color</td><td><code>color_idle</code></td><td><code>#777777</code></td></tr>
+<tr><td>Enable sound alerts</td><td><code>sound_enabled</code></td><td><code>false</code></td></tr>
+<tr><td>Sound: target reached</td><td><code>sound_target_reached</code></td><td><code>false</code></td></tr>
+<tr><td>Sound: cool-down done</td><td><code>sound_cooldown_finished</code></td><td><code>false</code></td></tr>
+<tr><td>Sound volume</td><td><code>sound_volume</code></td><td><code>0.5</code></td></tr>
+<tr><td>Sound min interval</td><td><code>sound_min_interval_s</code></td><td><code>10.0 s</code></td></tr>
+<tr><td>Enable notifications</td><td><code>notification_enabled</code></td><td><code>false</code></td></tr>
+<tr><td>Notify: target reached</td><td><code>notification_target_reached</code></td><td><code>false</code></td></tr>
+<tr><td>Notify: cool-down done</td><td><code>notification_cooldown_finished</code></td><td><code>false</code></td></tr>
+<tr><td>Notification timeout</td><td><code>notification_timeout_s</code></td><td><code>6.0 s</code></td></tr>
+<tr><td>Notification min interval</td><td><code>notification_min_interval_s</code></td><td><code>10.0 s</code></td></tr>
+<tr><td>Enable MQTT</td><td><code>mqtt_enabled</code></td><td><code>false</code></td></tr>
+<tr><td>MQTT broker host</td><td><code>mqtt_broker_host</code></td><td><code>""</code></td></tr>
+<tr><td>MQTT broker port</td><td><code>mqtt_broker_port</code></td><td><code>1883</code></td></tr>
+<tr><td>MQTT username</td><td><code>mqtt_username</code></td><td><code>""</code></td></tr>
+<tr><td>MQTT password</td><td><code>mqtt_password</code></td><td><code>""</code></td></tr>
+<tr><td>MQTT use TLS</td><td><code>mqtt_use_tls</code></td><td><code>false</code></td></tr>
+<tr><td>MQTT TLS insecure</td><td><code>mqtt_tls_insecure</code></td><td><code>false</code></td></tr>
+<tr><td>MQTT base topic</td><td><code>mqtt_base_topic</code></td><td><code>octoprint/temp_eta</code></td></tr>
+<tr><td>MQTT QoS</td><td><code>mqtt_qos</code></td><td><code>0</code></td></tr>
+<tr><td>MQTT retain</td><td><code>mqtt_retain</code></td><td><code>false</code></td></tr>
+<tr><td>MQTT publish interval</td><td><code>mqtt_publish_interval</code></td><td><code>1.0 s</code></td></tr>
+</tbody>
+</table>
+
+</details>
+<!-- markdownlint-enable MD033 MD040 -->
 
 ## How It Works
 
@@ -230,6 +298,9 @@ The following defaults apply to the user-editable plugin settings:
 5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
 
 ## MQTT Message Format
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary><strong>MQTT Message Format Details</strong> (click to expand)</summary>
 
 **ETA Updates** (`{base_topic}/{heater}/eta`):
 
@@ -258,6 +329,9 @@ The following defaults apply to the user-editable plugin settings:
   "target": 60.0
 }
 ```
+
+</details>
+<!-- markdownlint-enable MD033 -->
 
 ## FAQ
 
