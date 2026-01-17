@@ -55,10 +55,10 @@ Issues = "https://github.com/Ajimaru/OctoPrint-TempETA/issues"
 
 [project.optional-dependencies]
 develop = [
-    "pytest>=7,<9",
+    "pytest>=7,<10",
     "pytest-cov",
     "pre-commit>=3,<5",
     "black>=24.0.0",
-    "isort>=5,<7",
+    "isort>=5,<8",
     "flake8>=7.0.0"
 ]
