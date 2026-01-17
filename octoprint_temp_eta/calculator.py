@@ -208,7 +208,13 @@ def calculate_exponential_eta(
     # ETA to reach epsilon band.
     try:
         eta = tau * math.log(remaining_now / epsilon_c)
-    except ValueError:
+    except ValueError as e:
+        # Log mathematische Fehler für bessere Nachvollziehbarkeit
+        import logging
+
+        logging.getLogger("octoprint_temp_eta").debug(
+            "Exponential ETA math error: %s", e
+        )
         return calculate_linear_eta(history, target)
 
     if eta < 0:
@@ -375,7 +381,12 @@ def calculate_cooldown_exponential_eta(
 
     try:
         eta = tau * math.log(numerator / denominator)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError) as e:
+        import logging
+
+        logging.getLogger("octoprint_temp_eta").debug(
+            "Exponential ETA math error: %s", e
+        )
         return None
 
     if not math.isfinite(eta) or eta < 0:

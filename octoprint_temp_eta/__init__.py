@@ -10,12 +10,7 @@ import threading
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Type
-
-try:
-    from typing import Protocol, runtime_checkable
-except ImportError:  # pragma: no cover
-    from typing import Protocol, runtime_checkable
+from typing import Any, Dict, Optional, Protocol, Sequence, Type, runtime_checkable
 
 try:
     import octoprint.plugin  # type: ignore
@@ -87,12 +82,20 @@ except ModuleNotFoundError:  # pragma: no cover
 
 try:
     from .mqtt_client import MQTTClientWrapper  # type: ignore
-except ImportError:  # pragma: no cover
+except ImportError as e:  # pragma: no cover
+    # MQTT support is optional. Log warning if unavailable.
+    import logging
+
+    logging.getLogger("octoprint_temp_eta").warning("MQTT support disabled: %s", e)
     MQTTClientWrapper = None  # type: ignore
 
 try:
     from . import calculator  # type: ignore
-except ImportError:  # pragma: no cover
+except ImportError as e:  # pragma: no cover
+    # Calculator module is required for ETA calculation. Log error if missing.
+    import logging
+
+    logging.getLogger("octoprint_temp_eta").error("Calculator module missing: %s", e)
     calculator = None  # type: ignore
 
 
@@ -266,7 +269,8 @@ class TempETAPlugin(
             show_navbar = bool(self._settings.get_boolean(["show_in_navbar"]))
             cooldown_enabled = bool(self._settings.get_boolean(["enable_cooldown_eta"]))
             cooldown_mode = str(self._settings.get(["cooldown_mode"]) or "")
-        except Exception:
+        except Exception as e:
+            self._logger.error("Failed to snapshot settings: %s", e)
             return
 
         self._debug_log(
@@ -288,7 +292,8 @@ class TempETAPlugin(
             return True
         try:
             return bool(self._settings.get_boolean(["suppress_while_printing"]))
-        except Exception:
+        except Exception as e:
+            self._logger.warning("Failed to read 'suppress_while_printing': %s", e)
             return True
 
     def _is_print_job_active(self) -> bool:
@@ -300,24 +305,25 @@ class TempETAPlugin(
         if printer is None:
             return False
 
+        # Check print job state with robust error handling and logging
         try:
             if hasattr(printer, "is_printing") and printer.is_printing():
                 return True
-        except Exception:
-            pass
+        except Exception as e:
+            self._logger.debug("printer.is_printing() check failed: %s", e)
 
         try:
             if hasattr(printer, "is_paused") and printer.is_paused():
                 return True
-        except Exception:
-            pass
+        except Exception as e:
+            self._logger.debug("printer.is_paused() check failed: %s", e)
 
         try:
             if hasattr(printer, "get_state_id"):
                 state_id = printer.get_state_id()
                 return state_id in ("PRINTING", "PAUSED", "PAUSING", "RESUMING")
-        except Exception:
-            pass
+        except Exception as e:
+            self._logger.debug("printer.get_state_id() check failed: %s", e)
 
         return False
 

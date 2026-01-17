@@ -16,7 +16,12 @@ from typing import Any, Dict, Optional
 
 try:
     import paho.mqtt.client as mqtt
-except ImportError:  # pragma: no cover
+except ImportError as e:  # pragma: no cover
+    import logging
+
+    logging.getLogger("octoprint_temp_eta").warning(
+        "paho-mqtt not installed, MQTT features disabled: %s", e
+    )
     mqtt = None  # type: ignore
 
 
