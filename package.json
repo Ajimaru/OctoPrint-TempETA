@@ -5,9 +5,10 @@
   "private": true,
   "devDependencies": {
     "jsdoc": "^4.0.0",
-    "jsdoc-to-markdown": "^9.0.0"
+    "jsdoc-to-markdown": "^9.1.3"
   },
   "scripts": {
-    "docs:js": "./scripts/generate-jsdocs.sh"
+    "docs:js": "./scripts/generate-jsdocs.sh",
+    "docs": "npm run docs:js"
   }
 }
