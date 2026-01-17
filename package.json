@@ -1,6 +1,6 @@
 {
   "name": "octoprint-temp-eta",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "OctoPrint plugin to show estimated time remaining for printer heating",
   "private": true,
   "devDependencies": {

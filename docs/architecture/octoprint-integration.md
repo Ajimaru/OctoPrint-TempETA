@@ -287,7 +287,7 @@ def __plugin_check__():
 ```python
 __plugin_name__ = "Temperature ETA"
 __plugin_pythoncompat__ = ">=3.11,<4"
-__plugin_version__ = "0.7.0"
+__plugin_version__ = "0.7.1"
 __plugin_description__ = "Show ETA for printer heating/cooling"
 __plugin_author__ = "Ajimaru"
 __plugin_author_email__ = "ajimaru_gdr@pm.me"
@@ -333,7 +333,7 @@ self.onDataUpdaterPluginMessage = function(plugin, data) {
 ```python
 # In setup.py or pyproject.toml
 install_requires = [
-    "OctoPrint>=1.12.0",
+    "OctoPrint>=1.10.2",
     "paho-mqtt>=1.6.0,<3.0.0"
 ]
 ```

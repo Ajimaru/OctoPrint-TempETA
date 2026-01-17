@@ -280,8 +280,8 @@ None
 ### Report Template
 
 ```markdown
-**OctoPrint Version**: 1.12.0
-**Plugin Version**: 0.7.0
+**OctoPrint Version**: 1.10.2
+**Plugin Version**: 0.7.1
 **Python Version**: 3.11.5
 **OS**: Raspberry Pi OS (Debian 12)
 
