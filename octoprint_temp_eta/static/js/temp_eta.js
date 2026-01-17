@@ -191,6 +191,16 @@ $(function () {
     });
   });
 
+  /**
+   * TempETAViewModel
+   *
+   * Main Knockout view model for the Temperature ETA plugin. The `parameters`
+   * array contains OctoPrint view models in the standard order the plugin
+   * expects (settings, printerState, printerProfiles, loginState, ...).
+   *
+   * @param {Array} parameters - Array of injected OctoPrint view model parameters
+   * @constructor
+   */
   function TempETAViewModel(parameters) {
     var self = this;
 
@@ -1694,6 +1704,12 @@ $(function () {
       }
     };
 
+    /**
+     * Format seconds into a human-readable ETA string.
+     *
+     * @param {number} seconds - ETA in seconds
+     * @returns {string} Human-readable ETA (e.g. "2m 15s" or "--")
+     */
     self.formatETA = function (seconds) {
       if (!seconds || seconds <= 0) {
         return "--:--";
@@ -1702,6 +1718,19 @@ $(function () {
       var secs = Math.floor(seconds % 60);
       return mins + ":" + (secs < 10 ? "0" : "") + secs;
     };
+
+    /**
+     * calculateETA (placeholder documentation)
+     *
+     * ETA calculation is primarily performed on the backend for accuracy and
+     * consistency. If a client-side implementation exists in the future, it
+     * should accept a `history` array of {time, temp} and a numeric `target`.
+     *
+     * @function calculateETA
+     * @param {Array<Object>} history - Array of recent samples {time:number, temp:number}
+     * @param {number} target - Target temperature in Celsius
+     * @returns {?number} Seconds to reach target, or null if unavailable
+     */
 
     self._getTempDisplayMode = function () {
       var ps = self._pluginSettings();
