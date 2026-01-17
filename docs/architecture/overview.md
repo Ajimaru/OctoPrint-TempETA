@@ -156,7 +156,7 @@ Developers can extend the plugin through:
 ### Runtime
 
 - Python 3.11+
-- OctoPrint 1.12.0+
+- OctoPrint 1.10.2+
 - paho-mqtt 1.6.0+ (optional)
 
 ### Development

@@ -38,7 +38,7 @@ featuredimage: /assets/img/plugins/temp_eta/Temperature_ETA_heating.png
 
 compatibility:
   octoprint:
-  - 1.12.0
+  - 1.10.2
 
   python: ">=3.11,<4"
 

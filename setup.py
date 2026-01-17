@@ -79,6 +79,6 @@ setup(
         "build_py": build_py,
         "sdist": sdist,
     },
-    python_requires=">=3.11,<4",
+    python_requires=">=3.7,<4",
     license_files=["LICENSE"],
 )
