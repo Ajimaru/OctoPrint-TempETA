@@ -6,7 +6,7 @@
 <!-- markdownlint-enable MD041 MD033-->
 
 [![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.10.2%2B-blue.svg)](https://octoprint.org)
 [![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
 [![Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
