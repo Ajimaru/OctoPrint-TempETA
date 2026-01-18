@@ -67,6 +67,7 @@
   if (typeof process === "undefined" || !process.versions || !process.versions.node) return;
 
   function TempETAViewModel() {}
+  globalThis.TempETAViewModel = TempETAViewModel;
 
   TempETAViewModel.prototype.onSettingsShown = function (dialog) {};
 
