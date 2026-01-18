@@ -60,10 +60,12 @@
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
@@ -130,6 +132,18 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -184,6 +198,18 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
 <a name="TempETAViewModel+getProgressPercent"></a>
 
@@ -357,10 +383,12 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
@@ -427,6 +455,18 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -481,6 +521,18 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
 <a name="TempETAViewModel+getProgressPercent"></a>
 
@@ -652,10 +704,12 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
@@ -722,6 +776,18 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -776,6 +842,18 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
 <a name="TempETAViewModel+getProgressPercent"></a>
 
@@ -949,10 +1027,12 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
@@ -1019,6 +1099,18 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -1073,6 +1165,18 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+isETAVisible"></a>
+
+### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
+<p>Determine whether an ETA value should be considered visible.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
 <a name="TempETAViewModel+getProgressPercent"></a>
 

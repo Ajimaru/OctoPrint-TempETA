@@ -2181,6 +2181,12 @@ $(function () {
       );
     };
 
+    /**
+     * Determine whether an ETA value should be considered visible.
+     * @function TempETAViewModel#isETAVisible
+     * @param {number|null|undefined} eta - ETA in seconds (may be null/undefined)
+     * @returns {boolean} true if ETA should be shown to the user
+     */
     self.isETAVisible = function (eta) {
       return eta !== null && eta !== undefined && eta >= 1;
     };
