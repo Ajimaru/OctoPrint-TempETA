@@ -17,6 +17,7 @@
  */
 
 /**
+ * @ignore
  * @typedef {Object} Heater
  * @property {string} name - heater id (e.g. 'tool0', 'bed')
  * @property {Function|number|null} actual - current temperature observable or number
@@ -28,6 +29,7 @@
  */
 
 /**
+ * @ignore
  * @typedef {Object} HeaterHistoryEntry
  * @property {number} t - epoch seconds of sample
  * @property {number} a - actual temp
@@ -35,6 +37,7 @@
  */
 
 /**
+ * @ignore
  * @typedef {Object} PluginMessage
  * @property {string} type
  * @property {string} [heater]
