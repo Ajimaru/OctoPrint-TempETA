@@ -2304,13 +2304,6 @@ $(function () {
       return pct;
     };
 
-    /**
-     * Compute a progress percentage (0-100) for the heater towards its target.
-     * @function TempETAViewModel#getProgressPercent
-     * @param {Heater} heater - heater object with `actual` and `target` observables
-     * @returns {number} percentage (0..100)
-     */
-
     self.getProgressBarClass = function (heater) {
       if (self._getColorMode() === "status") {
         if (heater && heater.etaKind && heater.etaKind() === "cooling") {
