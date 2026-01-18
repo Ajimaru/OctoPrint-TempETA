@@ -60,7 +60,13 @@
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
         * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
         * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
@@ -124,6 +130,42 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
 <a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
 
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
@@ -142,6 +184,42 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
@@ -279,7 +357,13 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
         * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
         * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
@@ -343,6 +427,42 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
 <a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
 
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
@@ -361,6 +481,42 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
@@ -496,7 +652,13 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
         * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
         * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
@@ -560,6 +722,42 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
 <a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
 
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
@@ -578,6 +776,42 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
@@ -715,7 +949,13 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
+        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
         * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
         * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
@@ -779,6 +1019,42 @@ adding it should not alter runtime behavior.</p>
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
 
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
 <a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
 
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
@@ -797,6 +1073,42 @@ adding it should not alter runtime behavior.</p>
 | [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
 | [data.actual] | <code>number</code> \| <code>null</code> |  |
 | [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+getProgressPercent"></a>
+
+### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
+
+<a name="TempETAViewModel+getHeaterLabel"></a>
+
+### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized label</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heaterName | <code>string</code> | <p>heater identifier (e.g. 'tool0','bed')</p> |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 

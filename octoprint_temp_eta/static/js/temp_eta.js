@@ -2288,6 +2288,13 @@ $(function () {
       return pct;
     };
 
+    /**
+     * Compute a progress percentage (0-100) for the heater towards its target.
+     * @function TempETAViewModel#getProgressPercent
+     * @param {Heater} heater - heater object with `actual` and `target` observables
+     * @returns {number} percentage (0..100)
+     */
+
     self.getProgressBarClass = function (heater) {
       if (self._getColorMode() === "status") {
         if (heater && heater.etaKind && heater.etaKind() === "cooling") {
@@ -2321,6 +2328,20 @@ $(function () {
       }
       return heaterName.charAt(0).toUpperCase() + heaterName.slice(1);
     };
+
+    /**
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
+     */
+
+    /**
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
+     */
 
     self.getHeaterIdleText = function (heater) {
       if (heater && heater.etaKind && heater.etaKind() === "cooling") {
