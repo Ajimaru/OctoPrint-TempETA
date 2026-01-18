@@ -38,7 +38,6 @@ repos:
     hooks:
       - id: jsdoc-gen
         name: Generate JavaScript docs
-        entry: >
-          bash -c 'if git diff --cached --name-only --relative | grep -E "\.js$" >/dev/null; then ./scripts/generate-jsdocs.sh || (echo "\nERROR: JSDoc generation failed. Ensure dev deps are installed: run \"npm install\" in the project root and re-run the commit." >&2; exit 1); fi'
-        language: system
+        entry: ./scripts/generate-jsdocs.sh
+        language: script
         files: '\.js$'
