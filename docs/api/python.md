@@ -4,96 +4,96 @@ Auto-generated Python API documentation for OctoPrint-TempETA.
 
 ## Main Plugin Class
 
-::: octoprint_temp_eta
-    handler: python
-    options:
-      members_order: source
-      show_source: true
-      filters:
-        - "!^_"
-        - "!^__"
+::: octoprint_temp_eta.TempETAPlugin
+        handler: python
+        options:
+            members_order: source
+            show_source: true
+            filters:
+                - "!^_"
 
 ## Calculator Module
 
 ::: octoprint_temp_eta.calculator
-    handler: python
-    options:
-      members_order: source
-      show_source: true
-      filters:
-        - "!^_"
+        handler: python
+        options:
+            members_order: source
+            show_source: true
+            filters:
+                - "!^_"
 
 ## MQTT Client Module
 
-::: octoprint_temp_eta.mqtt_client
-    handler: python
-    options:
-      members_order: source
-      show_source: true
-      filters:
-        - "!^_"
+::: octoprint_temp_eta.mqtt_client.MQTTClientWrapper
+        handler: python
+        options:
+            members_order: source
+            show_source: true
+            filters:
+                - "!^_"
 
 ## Usage Examples
 
 ### Using the Calculator
 
 ```python
-from octoprint_temp_eta.calculator import ETACalculator
+from octoprint_temp_eta.calculator import calculate_linear_eta, calculate_exponential_eta
 from collections import deque
 import time
-
-# Create calculator instance
-calculator = ETACalculator(
-    algorithm="linear",
-    min_rate=0.1,
-    max_eta=3600
-)
 
 # Create temperature history
 history = deque()
 for i in range(10):
     timestamp = time.time() + i
-    temperature = 25 + i * 2  # Heating at 2°C/s
-    target = 200
+    temperature = 25 + i * 0.2  # small ramp
+    target = 200.0
     history.append((timestamp, temperature, target))
 
-# Calculate ETA
-eta_seconds = calculator.calculate_eta(history, target)
-print(f"ETA: {eta_seconds:.1f} seconds")
+# Calculate ETA using linear estimator
+eta_seconds = calculate_linear_eta(history, target)
+print(f"Linear ETA: {eta_seconds}")
+
+# Calculate ETA using exponential estimator (fallbacks to linear if needed)
+eta_exp = calculate_exponential_eta(history, target)
+print(f"Exponential ETA: {eta_exp}")
 ```
 
 ### Using the MQTT Client
 
 ```python
-from octoprint_temp_eta.mqtt_client import MQTTClient
+from octoprint_temp_eta.mqtt_client import MQTTClientWrapper
 import logging
 
 # Create logger
 logger = logging.getLogger(__name__)
 
-# Create MQTT client
-mqtt_client = MQTTClient(
-    broker="localhost",
-    port=1883,
-    username="user",
-    password="pass",
-    tls_enabled=False,
-    logger=logger
-)
+# Instantiate wrapper (note: the wrapper expects a logger and plugin identifier)
+mqtt_client = MQTTClientWrapper(logger, "temp_eta")
 
-# Connect
-mqtt_client.connect()
+# Configure client via settings-like dict
+mqtt_client.configure({
+    "mqtt_enabled": True,
+    "mqtt_broker_host": "localhost",
+    "mqtt_broker_port": 1883,
+    "mqtt_username": "",
+    "mqtt_password": "",
+    "mqtt_use_tls": False,
+    "mqtt_base_topic": "octoprint/temp_eta",
+    "mqtt_qos": 0,
+    "mqtt_retain": False,
+    "mqtt_publish_interval": 1.0,
+})
 
-# Publish ETA data
-mqtt_client.publish_eta(
+# Publish a sample ETA update (heater name, eta seconds, eta kind, target, actual)
+mqtt_client.publish_eta_update(
     heater="tool0",
-    current=50.0,
+    eta=120.0,
+    eta_kind="heating",
     target=200.0,
-    eta_seconds=120,
-    rate=1.5
+    actual=50.0,
 )
 
-# Disconnect
+# Disconnect when done
 mqtt_client.disconnect()
 ```
 
