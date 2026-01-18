@@ -2225,13 +2225,6 @@ $(function () {
     };
 
     /**
-     * Compute the CSS class for ETA display based on heater state.
-     * @function TempETAViewModel#getETAClass
-     * @param {Heater} heater - heater object
-     * @returns {string} CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)
-     */
-
-    /**
      * Progress helpers (percent to target).
      *
      * We intentionally compute this client-side from actual/target to keep the
