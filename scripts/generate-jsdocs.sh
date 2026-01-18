@@ -64,6 +64,17 @@ if command -v sed >/dev/null 2>&1; then
     sed -E -i 's/[[:space:]]+$//' "$OUTPUT" || true
 fi
 
+# Ensure file ends with exactly one newline (remove extra blank lines at EOF)
+if command -v python3 >/dev/null 2>&1; then
+    python3 - <<'PY'
+from pathlib import Path
+p = Path("""$OUTPUT""")
+text = p.read_text()
+text = text.rstrip('\n') + '\n'
+p.write_text(text)
+PY
+fi
+
 # Check if output is empty (no JSDoc comments)
 if [ ! -s "$OUTPUT" ]; then
     echo "Warning: No JSDoc comments found in JavaScript files"
