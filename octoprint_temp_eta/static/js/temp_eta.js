@@ -23,7 +23,7 @@
  * @property {Function|number|null} target - target temperature observable or number
  * @property {Function|number|null} [cooldownTarget]
  * @property {Function|string|null} [etaKind]
- * @property {Array<Object>} [_history]
+ * @property {Array<HeaterHistoryEntry>} [_history]
  * @property {number} [_historyStart]
  */
 
