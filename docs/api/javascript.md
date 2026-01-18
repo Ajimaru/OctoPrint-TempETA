@@ -40,6 +40,18 @@
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
+    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
 
 <a name="new_TempETAViewModel_new"></a>
 
@@ -54,6 +66,128 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 <p>Knockout view model for the Temperature ETA plugin.
 The runtime implementation lives in <code>temp_eta.js</code>; this file provides
 non-invasive JSDoc typedefs and an overview for documentation generation.</p>
+
+<a name="TempETAViewModel.onSettingsShown"></a>
+
+### TempETAViewModel.onSettingsShown(dialog)
+<p>Called when the settings dialog is shown.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dialog | <code>HTMLElement</code> | <p>The settings dialog element.</p> |
+
+<a name="TempETAViewModel.onSettingsHidden"></a>
+
+### TempETAViewModel.onSettingsHidden()
+<p>Called when the settings dialog is hidden.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+<a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
+
+### TempETAViewModel.onDataUpdaterPluginMessage(msg)
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| msg | [<code>PluginMessage</code>](#PluginMessage) | <p>The incoming plugin message payload.</p> |
+
+<a name="TempETAViewModel.getHeaterLabel"></a>
+
+### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heaterId | <code>string</code> | 
+
+<a name="TempETAViewModel.isETAVisible"></a>
+
+### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
+<p>Whether the ETA should be visible for a given heater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
+
+<a name="TempETAViewModel.getProgressPercent"></a>
+
+### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
+
+<a name="TempETAViewModel.onSettingsShown"></a>
+
+### TempETAViewModel.onSettingsShown(dialog)
+<p>Called when the settings dialog is shown.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dialog | <code>HTMLElement</code> | <p>The settings dialog element.</p> |
+
+<a name="TempETAViewModel.onSettingsHidden"></a>
+
+### TempETAViewModel.onSettingsHidden()
+<p>Called when the settings dialog is hidden.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+<a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
+
+### TempETAViewModel.onDataUpdaterPluginMessage(msg)
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| msg | [<code>PluginMessage</code>](#PluginMessage) | <p>The incoming plugin message payload.</p> |
+
+<a name="TempETAViewModel.getHeaterLabel"></a>
+
+### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heaterId | <code>string</code> | 
+
+<a name="TempETAViewModel.isETAVisible"></a>
+
+### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
+<p>Whether the ETA should be visible for a given heater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
+
+<a name="TempETAViewModel.getProgressPercent"></a>
+
+### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
 
 <a name="TempETAViewModel"></a>
 
@@ -63,6 +197,18 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
+    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
 
 <a name="new_TempETAViewModel_new"></a>
 
@@ -77,6 +223,128 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 <p>Knockout view model for the Temperature ETA plugin.
 The runtime implementation lives in <code>temp_eta.js</code>; this file provides
 non-invasive JSDoc typedefs and an overview for documentation generation.</p>
+
+<a name="TempETAViewModel.onSettingsShown"></a>
+
+### TempETAViewModel.onSettingsShown(dialog)
+<p>Called when the settings dialog is shown.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dialog | <code>HTMLElement</code> | <p>The settings dialog element.</p> |
+
+<a name="TempETAViewModel.onSettingsHidden"></a>
+
+### TempETAViewModel.onSettingsHidden()
+<p>Called when the settings dialog is hidden.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+<a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
+
+### TempETAViewModel.onDataUpdaterPluginMessage(msg)
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| msg | [<code>PluginMessage</code>](#PluginMessage) | <p>The incoming plugin message payload.</p> |
+
+<a name="TempETAViewModel.getHeaterLabel"></a>
+
+### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heaterId | <code>string</code> | 
+
+<a name="TempETAViewModel.isETAVisible"></a>
+
+### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
+<p>Whether the ETA should be visible for a given heater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
+
+<a name="TempETAViewModel.getProgressPercent"></a>
+
+### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
+
+<a name="TempETAViewModel.onSettingsShown"></a>
+
+### TempETAViewModel.onSettingsShown(dialog)
+<p>Called when the settings dialog is shown.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dialog | <code>HTMLElement</code> | <p>The settings dialog element.</p> |
+
+<a name="TempETAViewModel.onSettingsHidden"></a>
+
+### TempETAViewModel.onSettingsHidden()
+<p>Called when the settings dialog is hidden.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+<a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
+
+### TempETAViewModel.onDataUpdaterPluginMessage(msg)
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| msg | [<code>PluginMessage</code>](#PluginMessage) | <p>The incoming plugin message payload.</p> |
+
+<a name="TempETAViewModel.getHeaterLabel"></a>
+
+### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
+<p>Return a user-facing label for a heater id.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heaterId | <code>string</code> | 
+
+<a name="TempETAViewModel.isETAVisible"></a>
+
+### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
+<p>Whether the ETA should be visible for a given heater.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
+
+<a name="TempETAViewModel.getProgressPercent"></a>
+
+### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
+<p>Compute a progress percentage (0-100) for the heater towards its target.</p>
+
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type |
+| --- | --- |
+| heater | [<code>Heater</code>](#Heater) | 
 
 <a name="Heater"></a>
 
