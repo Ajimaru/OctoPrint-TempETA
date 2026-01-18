@@ -57,6 +57,13 @@ if ! (cd "$PROJECT_ROOT" && "$JSdoc2md" --configure "jsdoc.json" "octoprint_temp
     exit 1
 fi
 
+# Normalize generated output to avoid accidental diffs from trailing whitespace
+# and ensure consistent formatting across environments. This prevents
+# pre-commit hooks from modifying the file in CI.
+if command -v sed >/dev/null 2>&1; then
+    sed -E -i 's/[[:space:]]+$//' "$OUTPUT" || true
+fi
+
 # Check if output is empty (no JSDoc comments)
 if [ ! -s "$OUTPUT" ]; then
     echo "Warning: No JSDoc comments found in JavaScript files"
