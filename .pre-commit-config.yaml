@@ -38,7 +38,7 @@ repos:
     hooks:
       - id: jsdoc-gen
         name: Generate JavaScript docs
-        entry: ./scripts/generate-jsdocs.sh
-        language: script
+        entry: bash scripts/generate-jsdocs.sh
+        language: system
         files: '\.js$'
         pass_filenames: false
