@@ -62,46 +62,21 @@
  * The runtime implementation lives in `temp_eta.js`; this file provides
  * non-invasive JSDoc typedefs and an overview for documentation generation.
  */
-function TempETAViewModel() {}
+(function () {
+  // Safety: if this file is ever loaded in a browser, do nothing.
+  if (typeof window !== "undefined") return;
 
-/**
- * Called when the settings dialog is shown.
- * @param {HTMLElement} dialog - The settings dialog element.
- * @returns {void}
- */
-TempETAViewModel.prototype.onSettingsShown = function (dialog) {};
+  function TempETAViewModel() {}
 
-/**
- * Called when the settings dialog is hidden.
- * @returns {void}
- */
-TempETAViewModel.prototype.onSettingsHidden = function () {};
+  TempETAViewModel.prototype.onSettingsShown = function (dialog) {};
 
-/**
- * Handle incoming plugin messages delivered by OctoPrint's data updater.
- * @param {string} plugin
- * @param {PluginMessage} msg - The incoming plugin message payload.
- * @returns {void}
- */
-TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (plugin, msg) {};
+  TempETAViewModel.prototype.onSettingsHidden = function () {};
 
-/**
- * Return a user-facing label for a heater id.
- * @param {string} heaterId
- * @returns {string}
- */
-TempETAViewModel.prototype.getHeaterLabel = function (heaterId) {};
+  TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (plugin, msg) {};
 
-/**
- * Whether the ETA should be visible for a given heater.
- * @param {number|null|undefined} eta
- * @returns {boolean}
- */
-TempETAViewModel.prototype.isETAVisible = function (eta) {};
+  TempETAViewModel.prototype.getHeaterLabel = function (heaterId) {};
 
-/**
- * Compute a progress percentage (0-100) for the heater towards its target.
- * @param {Heater} heater
- * @returns {number}
- */
-TempETAViewModel.prototype.getProgressPercent = function (heater) {};
+  TempETAViewModel.prototype.isETAVisible = function (eta) {};
+
+  TempETAViewModel.prototype.getProgressPercent = function (heater) {};
+})();
