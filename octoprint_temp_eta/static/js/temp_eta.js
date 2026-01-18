@@ -2215,6 +2215,13 @@ $(function () {
     };
 
     /**
+     * Compute the CSS class for ETA display based on heater state.
+     * @function TempETAViewModel#getETAClass
+     * @param {Heater} heater - heater object
+     * @returns {string} CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)
+     */
+
+    /**
      * Progress helpers (percent to target).
      *
      * We intentionally compute this client-side from actual/target to keep the
@@ -2324,6 +2331,13 @@ $(function () {
       return c;
     };
 
+    /**
+     * Determine CSS class for the progress bar element of a heater.
+     * @function TempETAViewModel#getProgressBarClass
+     * @param {Heater} heater - heater object
+     * @returns {string} CSS class name for progress bar
+     */
+
     self.getHeaterLabel = function (heaterName) {
       var labels = {
         bed: _gettext("Bed"),
@@ -2334,6 +2348,13 @@ $(function () {
       }
       return heaterName.charAt(0).toUpperCase() + heaterName.slice(1);
     };
+
+    /**
+     * Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').
+     * @function TempETAViewModel#getHeaterIdleText
+     * @param {Heater} heater - heater object
+     * @returns {string} localized idle text
+     */
 
     /**
      * Return a user-facing label for a heater id.

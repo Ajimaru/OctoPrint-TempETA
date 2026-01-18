@@ -61,12 +61,18 @@
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
@@ -144,6 +150,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -155,6 +173,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -211,6 +253,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -222,6 +276,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -384,12 +462,18 @@ adding it should not alter runtime behavior.</p>
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
@@ -467,6 +551,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -478,6 +574,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -534,6 +654,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -545,6 +677,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -705,12 +861,18 @@ adding it should not alter runtime behavior.</p>
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
@@ -788,6 +950,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -799,6 +973,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -855,6 +1053,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -866,6 +1076,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -1028,12 +1262,18 @@ adding it should not alter runtime behavior.</p>
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
+        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
         * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
+        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
+        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
@@ -1111,6 +1351,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -1122,6 +1374,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
@@ -1178,6 +1454,18 @@ adding it should not alter runtime behavior.</p>
 | --- | --- | --- |
 | eta | <code>number</code> \| <code>null</code> \| <code>undefined</code> | <p>ETA in seconds (may be null/undefined)</p> |
 
+<a name="TempETAViewModel+getETAClass"></a>
+
+### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
+<p>Compute the CSS class for ETA display based on heater state.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
 <a name="TempETAViewModel+getProgressPercent"></a>
 
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
@@ -1189,6 +1477,30 @@ adding it should not alter runtime behavior.</p>
 | Param | Type | Description |
 | --- | --- | --- |
 | heater | [<code>Heater</code>](#Heater) | <p>heater object with <code>actual</code> and <code>target</code> observables</p> |
+
+<a name="TempETAViewModel+getProgressBarClass"></a>
+
+### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
+<p>Determine CSS class for the progress bar element of a heater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
+
+<a name="TempETAViewModel+getHeaterIdleText"></a>
+
+### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
+<p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Returns**: <code>string</code> - <p>localized idle text</p>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| heater | [<code>Heater</code>](#Heater) | <p>heater object</p> |
 
 <a name="TempETAViewModel+getHeaterLabel"></a>
 
