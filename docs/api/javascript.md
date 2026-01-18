@@ -1,28 +1,16 @@
 
-## `TempETAViewModel`
+# JavaScript API
 
-Knockout view model used by the plugin frontend. This is the primary JavaScript
-API surface users of the OctoPrint view model system will interact with.
+Die erzeugte HTML-Dokumentation der clientseitigen API ist unter `docs/api/javascript/` abgelegt.
 
-### Constructor
+- Vollständige generierte API-Übersicht: [Index](api/javascript/index.html)
+- `TempETAViewModel`: [TempETAViewModel](api/javascript/TempETAViewModel.html)
+- Rohdatei-Dokumentation: [temp_eta.js](api/javascript/temp_eta.js.html)
 
-`new TempETAViewModel(parameters)`
+Hinweis: Diese Seiten werden von `jsdoc` generiert. Wenn Sie die Dokumentation lokal neu erzeugen wollen, führen Sie im Repo-Root aus:
 
-- parameters: Array — OctoPrint-injected view models in the usual order
-	(settingsViewModel, printerState, printerProfiles, loginState, ...)
+```bash
+npx jsdoc -c jsdoc.json -r
+```
 
-### Description
-
-`TempETAViewModel` wires the plugin settings and the OctoPrint UI together,
-providing methods for binding the settings dialog, handling reset/restore
-actions, and publishing simple API commands. The view model is registered
-with OctoPrint and is the recommended entry point for UI integrations.
-
-### Public methods (selection)
-
-- `bind` / `applyBindings` — Bind the view model to the settings dialog (implicit)
-- `publish reset_profile_history` — Triggers the plugin API command to clear persisted history
-- `publish reset_settings_defaults` — Restores plugin settings to defaults
-
-For further implementation details, see the source file:
-[octoprint_temp_eta/static/js/temp_eta.js](octoprint_temp_eta/static/js/temp_eta.js#L1-L200)
+Für Quellcode und Beispiele siehe: [octoprint_temp_eta/static/js/temp_eta.js](octoprint_temp_eta/static/js/temp_eta.js#L1-L200)

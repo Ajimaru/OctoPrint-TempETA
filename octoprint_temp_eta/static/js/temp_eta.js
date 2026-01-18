@@ -79,6 +79,12 @@ $(function () {
 
   // Settings button handler. We keep this as a delegated event handler so it
   // works regardless of how the settings template is bound.
+  /**
+   * Handler for the "Reset Profile History" settings button.
+   * Delegated click handler so it works regardless of template binding timing.
+   * @function resetProfileHistoryHandler
+   * @param {Event} e - Click event
+   */
   $(document).on("click", "#temp_eta_reset_profile_history", function (e) {
     e.preventDefault();
 
@@ -190,6 +196,14 @@ $(function () {
         });
     });
   });
+
+  /**
+   * Handler for the "Restore Defaults" settings button.
+   * Invokes OctoPrint's `simpleApiCommand` to instruct the plugin to reset
+   * settings to their defaults.
+   * @function restoreDefaultsHandler
+   * @param {Event} e - Click event
+   */
 
   /**
    * TempETAViewModel
@@ -456,6 +470,14 @@ $(function () {
       return true;
     };
 
+    /**
+     * Install validation handlers for numeric inputs inside the settings dialog.
+     * This attaches delegated input/change/blur handlers for `input[type="number"]`.
+     * @function TempETAViewModel#_installSettingsValidationHandlers
+     * @param {HTMLElement|jQuery} rootEl - Root element of the settings dialog
+     * @returns {void}
+     */
+
     self._validateAllSettingsNumbers = function () {
       var $root = self._getSettingsDialogRoot();
       if (!$root) {
@@ -502,6 +524,15 @@ $(function () {
         self._validateNumberInput(this);
       });
     };
+
+    /**
+     * Validate a single numeric input element according to `min`/`max` attributes
+     * and custom data-* attributes used by the settings template. Adds inline
+     * validation messages when invalid.
+     * @function TempETAViewModel#_validateNumberInput
+     * @param {HTMLElement} inputEl - The input element to validate
+     * @returns {boolean} true if valid
+     */
 
     self._unbindSettingsIfBound = function () {
       var $root = self._getSettingsDialogRoot();
