@@ -15,6 +15,24 @@
  * @class TempETAViewModel
  * @classdesc Knockout view model for the Temperature ETA plugin.
  */
+
+/**
+ * @typedef {Object} Heater
+ * @property {string} name - heater id (e.g. 'tool0', 'bed')
+ * @property {Function|number|null} actual - current temperature observable or number
+ * @property {Function|number|null} target - target temperature observable or number
+ * @property {Function|number|null} [cooldownTarget]
+ * @property {Function|string|null} [etaKind]
+ * @property {Array<Object>} [_history]
+ * @property {number} [_historyStart]
+ */
+
+/**
+ * @typedef {Object} HeaterHistoryEntry
+ * @property {number} t - epoch seconds of sample
+ * @property {number} a - actual temp
+ * @property {number|null} [tg] - recorded target
+ */
 $(function () {
   function _attrOr($el, name, fallback) {
     var v = $el && $el.length ? $el.attr(name) : null;

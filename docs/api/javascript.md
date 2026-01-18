@@ -28,11 +28,19 @@
 <dd></dd>
 <dt><a href="#HeaterHistoryEntry">HeaterHistoryEntry</a> : <code>Object</code></dt>
 <dd></dd>
+<dt><a href="#Heater">Heater</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#HeaterHistoryEntry">HeaterHistoryEntry</a> : <code>Object</code></dt>
+<dd></dd>
 <dt><a href="#PluginSettings">PluginSettings</a> : <code>Object</code></dt>
 <dd></dd>
 <dt><a href="#SoundConfig">SoundConfig</a> : <code>Object</code></dt>
 <dd></dd>
 <dt><a href="#PluginMessage">PluginMessage</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#Heater">Heater</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#HeaterHistoryEntry">HeaterHistoryEntry</a> : <code>Object</code></dt>
 <dd></dd>
 </dl>
 
@@ -824,6 +832,34 @@ adding it should not alter runtime behavior.</p>
 | target | <code>function</code> \| <code>number</code> \| <code>null</code> | <p>target temperature observable or number</p> |
 | [cooldownTarget] | <code>function</code> \| <code>number</code> \| <code>null</code> |  |
 | [etaKind] | <code>function</code> \| <code>string</code> \| <code>null</code> |  |
+| [_history] | <code>Array.&lt;Object&gt;</code> |  |
+| [_historyStart] | <code>number</code> |  |
+
+<a name="HeaterHistoryEntry"></a>
+
+## HeaterHistoryEntry : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| t | <code>number</code> | <p>epoch seconds of sample</p> |
+| a | <code>number</code> | <p>actual temp</p> |
+| [tg] | <code>number</code> \| <code>null</code> | <p>recorded target</p> |
+
+<a name="Heater"></a>
+
+## Heater : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | <p>heater id (e.g. 'tool0', 'bed')</p> |
+| actual | <code>function</code> \| <code>number</code> \| <code>null</code> | <p>current temperature observable or number</p> |
+| target | <code>function</code> \| <code>number</code> \| <code>null</code> | <p>target temperature observable or number</p> |
+| [cooldownTarget] | <code>function</code> \| <code>number</code> \| <code>null</code> |  |
+| [etaKind] | <code>function</code> \| <code>string</code> \| <code>null</code> |  |
 | [_history] | [<code>Array.&lt;HeaterHistoryEntry&gt;</code>](#HeaterHistoryEntry) |  |
 | [_historyStart] | <code>number</code> |  |
 
@@ -881,4 +917,32 @@ adding it should not alter runtime behavior.</p>
 | [cooldown_target] | <code>number</code> \| <code>null</code> | 
 | [actual] | <code>number</code> \| <code>null</code> | 
 | [target] | <code>number</code> \| <code>null</code> | 
+
+<a name="Heater"></a>
+
+## Heater : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | <p>heater id (e.g. 'tool0', 'bed')</p> |
+| actual | <code>function</code> \| <code>number</code> \| <code>null</code> | <p>current temperature observable or number</p> |
+| target | <code>function</code> \| <code>number</code> \| <code>null</code> | <p>target temperature observable or number</p> |
+| [cooldownTarget] | <code>function</code> \| <code>number</code> \| <code>null</code> |  |
+| [etaKind] | <code>function</code> \| <code>string</code> \| <code>null</code> |  |
+| [_history] | <code>Array.&lt;Object&gt;</code> |  |
+| [_historyStart] | <code>number</code> |  |
+
+<a name="HeaterHistoryEntry"></a>
+
+## HeaterHistoryEntry : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| t | <code>number</code> | <p>epoch seconds of sample</p> |
+| a | <code>number</code> | <p>actual temp</p> |
+| [tg] | <code>number</code> \| <code>null</code> | <p>recorded target</p> |
 
