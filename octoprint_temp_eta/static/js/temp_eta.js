@@ -2303,12 +2303,11 @@ $(function () {
     };
 
     /**
-     * Determine CSS class for the progress bar element of a heater.
-     * @function TempETAViewModel#getProgressBarClass
-     * @param {Heater} heater - heater object
-     * @returns {string} CSS class name for progress bar
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
      */
-
     self.getHeaterLabel = function (heaterName) {
       var labels = {
         bed: _gettext("Bed"),
