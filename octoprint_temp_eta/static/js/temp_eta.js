@@ -8,10 +8,10 @@
 /**
  * TempETA runtime JSDoc (small safe step).
  *
- * This comment block documents the public class `TempETAViewModel` used by the
- * plugin. It is intentionally brief and only contains descriptive JSDoc so
- * adding it should not alter runtime behavior.
+ * This comment block exists in the runtime file but should not be used as a
+ * source for generated API documentation (see `temp_eta.docs.js`).
  *
+ * @ignore
  * @class TempETAViewModel
  * @classdesc Knockout view model for the Temperature ETA plugin.
  */
