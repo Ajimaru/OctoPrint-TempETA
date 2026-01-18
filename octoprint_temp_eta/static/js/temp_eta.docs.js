@@ -66,50 +66,42 @@ function TempETAViewModel() {}
 
 /**
  * Called when the settings dialog is shown.
- * @memberof TempETAViewModel
- * @name onSettingsShown
- * @function
  * @param {HTMLElement} dialog - The settings dialog element.
+ * @returns {void}
  */
+TempETAViewModel.prototype.onSettingsShown = function (dialog) {};
 
 /**
  * Called when the settings dialog is hidden.
- * @memberof TempETAViewModel
- * @name onSettingsHidden
- * @function
+ * @returns {void}
  */
+TempETAViewModel.prototype.onSettingsHidden = function () {};
 
 /**
  * Handle incoming plugin messages delivered by OctoPrint's data updater.
- * @memberof TempETAViewModel
- * @name onDataUpdaterPluginMessage
- * @function
+ * @param {string} plugin
  * @param {PluginMessage} msg - The incoming plugin message payload.
+ * @returns {void}
  */
+TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (plugin, msg) {};
 
 /**
  * Return a user-facing label for a heater id.
- * @memberof TempETAViewModel
- * @name getHeaterLabel
- * @function
  * @param {string} heaterId
  * @returns {string}
  */
+TempETAViewModel.prototype.getHeaterLabel = function (heaterId) {};
 
 /**
  * Whether the ETA should be visible for a given heater.
- * @memberof TempETAViewModel
- * @name isETAVisible
- * @function
- * @param {Heater} heater
+ * @param {number|null|undefined} eta
  * @returns {boolean}
  */
+TempETAViewModel.prototype.isETAVisible = function (eta) {};
 
 /**
  * Compute a progress percentage (0-100) for the heater towards its target.
- * @memberof TempETAViewModel
- * @name getProgressPercent
- * @function
  * @param {Heater} heater
  * @returns {number}
  */
+TempETAViewModel.prototype.getProgressPercent = function (heater) {};
