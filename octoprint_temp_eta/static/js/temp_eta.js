@@ -5,6 +5,20 @@
  * Author: Ajimaru
  * License: AGPLv3
  */
+/**
+ * TempETA runtime JSDoc (small safe step).
+ *
+ * This comment block exists in the runtime file but should not be used as a
+ * source for generated API documentation (see `temp_eta.docs.js`).
+ *
+ * @ignore
+ * @class TempETAViewModel
+ * @classdesc Knockout view model for the Temperature ETA plugin.
+ */
+
+/**
+ * Type documentation lives in `temp_eta.docs.js` (non-runtime) to keep this file runtime-focused.
+ */
 $(function () {
   function _attrOr($el, name, fallback) {
     var v = $el && $el.length ? $el.attr(name) : null;
@@ -79,12 +93,6 @@ $(function () {
 
   // Settings button handler. We keep this as a delegated event handler so it
   // works regardless of how the settings template is bound.
-  /**
-   * Handler for the "Reset Profile History" settings button.
-   * Delegated click handler so it works regardless of template binding timing.
-   * @function resetProfileHistoryHandler
-   * @param {Event} e - Click event
-   */
   $(document).on("click", "#temp_eta_reset_profile_history", function (e) {
     e.preventDefault();
 
@@ -197,60 +205,6 @@ $(function () {
     });
   });
 
-  /**
-   * Handler for the "Restore Defaults" settings button.
-   * Invokes OctoPrint's `simpleApiCommand` to instruct the plugin to reset
-   * settings to their defaults.
-   * @function restoreDefaultsHandler
-   * @param {Event} e - Click event
-   */
-  /**
-   * Complex types used throughout the TempETAViewModel.
-   *
-   * @typedef {Object} Heater
-   * @property {string} name - heater id (e.g. 'tool0', 'bed')
-   * @property {Function|ko.observable<number|null>} actual - current temperature observable or number
-   * @property {Function|ko.observable<number|null>} target - target temperature observable or number
-   * @property {Function|ko.observable<number|null>} [cooldownTarget] - optional cooldown target observable or number
-   * @property {Function|ko.observable<string>} [etaKind] - 'heating'|'cooling' or similar observable
-   * @property {Array<HeaterHistoryEntry>} [_history] - internal history array of samples
-   * @property {number} [_historyStart] - index where retained history begins
-   *
-   * @typedef {Object} HeaterHistoryEntry
-   * @property {number} time - epoch seconds (or ms depending on implementation) of sample
-   * @property {number} temp - temperature in °C
-   *
-   * @typedef {Object} PluginSettings
-   * @property {string} [color_mode]
-   * @property {boolean} [progress_bars_enabled]
-   * @property {number} [historical_graph_window_seconds]
-   * @property {boolean} [debug_logging]
-   *
-   * @typedef {Object} SoundConfig
-   * @property {boolean} enabled
-   * @property {number} volume
-   * @property {Array<string>} files
-   *
-   * @typedef {Object} PluginMessage
-   * @property {string} type - message type (e.g. 'eta_update','history_reset','settings_reset')
-   * @property {string} [heater] - heater id for 'eta_update'
-   * @property {number} [eta]
-   * @property {string} [eta_kind]
-   * @property {number|null} [cooldown_target]
-   * @property {number|null} [actual]
-   * @property {number|null} [target]
-   *
-   * TempETAViewModel
-   *
-   * Main Knockout view model for the Temperature ETA plugin. The `parameters`
-   * array contains OctoPrint view models in the standard order the plugin
-   * expects (settings, printerState, printerProfiles, loginState, ...).
-   *
-   * @class TempETAViewModel
-   * @global
-   * @param {Array} parameters - OctoPrint-injected view model parameters
-   * @constructor
-   */
   function TempETAViewModel(parameters) {
     var self = this;
 
@@ -281,12 +235,6 @@ $(function () {
       }
       return false;
     });
-    /**
-     * Resolve the settings root object across OctoPrint versions.
-     * Returns an object that contains `plugins` and (optionally) `appearance`.
-     * @function TempETAViewModel#_resolveSettingsRoot
-     * @returns {Object} settings root (may be an empty object)
-     */
     self._resolveSettingsRoot = function () {
       // OctoPrint versions can differ in how the settings model is nested.
       // We want an object where `plugins.temp_eta.*` and `appearance.*` exist.
@@ -324,18 +272,6 @@ $(function () {
       return $root.length ? $root : null;
     };
 
-    /**
-     * Get the root element of the plugin settings dialog.
-     * @function TempETAViewModel#_getSettingsDialogRoot
-     * @returns {jQuery|null} jQuery element or null
-     */
-
-    /**
-     * Bind the view model to the settings dialog if it hasn't been bound yet.
-     * This supports OctoPrint instances that inject the settings template lazily.
-     * @function TempETAViewModel#_bindSettingsIfNeeded
-     * @returns {void}
-     */
     self._bindSettingsIfNeeded = function () {
       // With custom_bindings=True the settings template is injected lazily when the
       // settings dialog opens. Bind it then, and guard against double-binding.
@@ -362,11 +298,6 @@ $(function () {
       }
     };
 
-    /**
-     * Retrieve localized validation message templates used by the settings UI.
-     * @function TempETAViewModel#_getValidationMessages
-     * @returns {{title:string,invalid:string,min:string,max:string,range:string,fix:string}}
-     */
     self._getValidationMessages = function () {
       var $m = $("#temp_eta_validation_messages");
       return {
@@ -399,19 +330,6 @@ $(function () {
       };
     };
 
-      /**
-       * Retrieve localized validation message templates used by the settings UI.
-       * @function TempETAViewModel#_getValidationMessages
-       * @returns {Object} messages
-       */
-
-    /**
-     * Replace named placeholders in a template string like "{min}".
-     * @function TempETAViewModel#_formatValidationMessage
-     * @param {string} template - template string with {keys}
-     * @param {Object<string,*>} [params] - mapping of key->value
-     * @returns {string}
-     */
     self._formatValidationMessage = function (template, params) {
       var msg = String(template || "");
       params = params || {};
@@ -421,12 +339,6 @@ $(function () {
       return msg;
     };
 
-    /**
-     * Clear inline validation UI for an input element.
-     * @function TempETAViewModel#_clearValidationForInput
-     * @param {HTMLElement|jQuery} inputEl - input element
-     * @returns {void}
-     */
     self._clearValidationForInput = function (inputEl) {
       var $input = $(inputEl);
       $input.removeAttr("aria-invalid");
@@ -436,13 +348,6 @@ $(function () {
       $controls.find(".temp-eta-validation-error").remove();
     };
 
-    /**
-     * Mark an input as invalid and show an inline message.
-     * @function TempETAViewModel#_setValidationForInput
-     * @param {HTMLElement|jQuery} inputEl - input element
-     * @param {string} message - validation message to display
-     * @returns {void}
-     */
     self._setValidationForInput = function (inputEl, message) {
       var $input = $(inputEl);
       $input.attr("aria-invalid", "true");
@@ -455,22 +360,10 @@ $(function () {
         .appendTo($controls);
     };
 
-    /**
-     * Return whether a value is considered empty for settings inputs.
-     * @function TempETAViewModel#_isEmptyValue
-     * @param {*} v
-     * @returns {boolean}
-     */
     self._isEmptyValue = function (v) {
       return v === undefined || v === null || String(v).trim() === "";
     };
 
-    /**
-     * Parse a value into a finite number or return null.
-     * @function TempETAViewModel#_parseFiniteNumber
-     * @param {*} v
-     * @returns {number|null}
-     */
     self._parseFiniteNumber = function (v) {
       var n = parseFloat(v);
       if (!isFinite(n)) {
@@ -479,13 +372,6 @@ $(function () {
       return n;
     };
 
-    /**
-     * Validate a numeric input element using `min`/`max` attributes and
-     * custom `data-allow-empty`. Adds inline error message when invalid.
-     * @function TempETAViewModel#_validateNumberInput
-     * @param {HTMLElement|jQuery} inputEl - the input element to validate
-     * @returns {boolean} true when valid
-     */
     self._validateNumberInput = function (inputEl) {
       var $input = $(inputEl);
       self._clearValidationForInput(inputEl);
@@ -554,20 +440,6 @@ $(function () {
       return true;
     };
 
-    /**
-     * Install validation handlers for numeric inputs inside the settings dialog.
-     * This attaches delegated input/change/blur handlers for `input[type="number"]`.
-     * @function TempETAViewModel#_installSettingsValidationHandlers
-     * @param {HTMLElement|jQuery} rootEl - Root element of the settings dialog
-     * @returns {void}
-     */
-
-    /**
-     * Validate all numeric settings inputs in the settings dialog.
-     * Blocks save when invalid inputs are found.
-     * @function TempETAViewModel#_validateAllSettingsNumbers
-     * @returns {boolean} true if all numeric inputs are valid
-     */
     self._validateAllSettingsNumbers = function () {
       var $root = self._getSettingsDialogRoot();
       if (!$root) {
@@ -615,20 +487,6 @@ $(function () {
       });
     };
 
-    /**
-     * Validate a single numeric input element according to `min`/`max` attributes
-     * and custom data-* attributes used by the settings template. Adds inline
-     * validation messages when invalid.
-     * @function TempETAViewModel#_validateNumberInput
-     * @param {HTMLElement} inputEl - The input element to validate
-     * @returns {boolean} true if valid
-     */
-
-    /**
-     * Unbind the settings dialog if it was previously bound to this viewmodel.
-     * @function TempETAViewModel#_unbindSettingsIfBound
-     * @returns {void}
-     */
     self._unbindSettingsIfBound = function () {
       var $root = self._getSettingsDialogRoot();
       if (!$root) {
@@ -644,12 +502,6 @@ $(function () {
       $(rootEl).removeData("tempEtaKoBound");
     };
 
-    /**
-     * Attempt to bind the settings dialog, retrying a small number of times
-     * to handle lazy-injection of the template.
-     * @function TempETAViewModel#_bindSettingsWithRetry
-     * @returns {void}
-     */
     self._bindSettingsWithRetry = function () {
       // The settings content is injected lazily; retry a few times to catch it.
       var attempts = 0;
@@ -673,15 +525,6 @@ $(function () {
       tick();
     };
 
-    /**
-     * Bind a DOM element once, retrying until it appears in the DOM.
-     * @function TempETAViewModel#_bindElementOnce
-     * @param {string} selector - DOM selector
-     * @param {string} dataFlag - data flag to mark binding
-     * @param {number} [maxAttempts] - maximum attempts
-     * @param {number} [delayMs] - delay between attempts in ms
-     * @returns {void}
-     */
     self._bindElementOnce = function (
       selector,
       dataFlag,
@@ -717,11 +560,6 @@ $(function () {
       tick();
     };
 
-    /**
-     * Install hooks to bind/unbind settings dialog on show/hidden events.
-     * @function TempETAViewModel#_installSettingsDialogHooks
-     * @returns {void}
-     */
     self._installSettingsDialogHooks = function () {
       if (self._settingsDialogHooksInstalled) {
         return;
@@ -744,27 +582,17 @@ $(function () {
       });
     };
 
-    /**
-     * Ensure the sidebar view is bound to this viewmodel (lazy binding).
-     * @function TempETAViewModel#_ensureSidebarBound
-     * @returns {void}
-     */
     self._ensureSidebarBound = function () {
       // Sidebar DOM can be injected after the initial viewmodel binding;
       // bind it lazily and only once.
-        self._bindElementOnce(
-          "#sidebar_plugin_temp_eta",
-          "tempEtaKoBoundSidebar",
-          10,
-          200,
-        );
+      self._bindElementOnce(
+        "#sidebar_plugin_temp_eta",
+        "tempEtaKoBoundSidebar",
+        10,
+        200,
+      );
+    };
 
-    /**
-     * Throttled wrapper around `_ensureSidebarBound` to avoid excessive DOM
-     * operations during rapid updates.
-     * @function TempETAViewModel#_throttledEnsureSidebarBound
-     * @returns {void}
-     */
     self._throttledEnsureSidebarBound = (function () {
       var last = 0;
       return function () {
@@ -783,11 +611,6 @@ $(function () {
     self.heaters = ko.observableArray([]);
     self.heaterData = {}; // Maps heater name to {eta, actual, target}
 
-    /**
-     * Check whether frontend debug logging is enabled via plugin settings.
-     * @function TempETAViewModel#_isFrontendDebugEnabled
-     * @returns {boolean}
-     */
     self._isFrontendDebugEnabled = function () {
       var ps = self._pluginSettings();
       if (!ps || !ps.debug_logging) {
@@ -802,15 +625,6 @@ $(function () {
       }
     };
 
-    /**
-     * Throttled frontend debug logger. Usage: `self._debugLog(key, message, payload, minIntervalMs)`
-     * @function TempETAViewModel#_debugLog
-     * @param {string} key - unique key to throttle messages
-     * @param {string} message - message to log
-     * @param {any} [payload] - optional payload to log
-     * @param {number} [minIntervalMs] - minimum interval between logs for this key
-     * @returns {void}
-     */
     self._debugLog = (function () {
       var lastByKey = {};
       return function (key, message, payload, minIntervalMs) {
@@ -842,11 +656,6 @@ $(function () {
     self._audioContext = null;
     self._soundLastPlayedByKey = {};
 
-    /**
-     * Return the configured color mode for ETA display ('bands' or 'status').
-     * @function TempETAViewModel#_getColorMode
-     * @returns {string}
-     */
     self._getColorMode = function () {
       var ps = self._pluginSettings();
       if (!ps || !ps.color_mode) {
@@ -861,13 +670,6 @@ $(function () {
       }
     };
 
-    /**
-     * Read a Knockout observable or plain value as string, with fallback.
-     * @function TempETAViewModel#_readKoString
-     * @param {any} value - observable or value
-     * @param {string} defaultValue - fallback value
-     * @returns {string}
-     */
     self._readKoString = function (value, defaultValue) {
       try {
         if (typeof value === "function") {
@@ -882,11 +684,6 @@ $(function () {
       return defaultValue;
     };
 
-    /**
-     * Apply CSS custom properties for status colors from plugin settings.
-     * @function TempETAViewModel#_applyStatusColorVariables
-     * @returns {void}
-     */
     self._applyStatusColorVariables = function () {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -910,11 +707,6 @@ $(function () {
       }
     };
 
-    /**
-     * Subscribe to extended settings (colors etc.) and apply on changes.
-     * @function TempETAViewModel#_setupExtendedSettingsSubscriptions
-     * @returns {void}
-     */
     self._setupExtendedSettingsSubscriptions = function () {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -936,13 +728,6 @@ $(function () {
       self._applyStatusColorVariables();
     };
 
-    /**
-     * Read an i18n data-attribute from the hidden i18n element.
-     * @function TempETAViewModel#_i18nAttrOr
-     * @param {string} attrName - attribute name
-     * @param {string} fallback - fallback string
-     * @returns {string}
-     */
     self._i18nAttrOr = function (attrName, fallback) {
       try {
         return _attrOr($("#temp_eta_i18n"), attrName, fallback);
@@ -951,11 +736,6 @@ $(function () {
       }
     };
 
-    /**
-     * Check whether sound alerts are enabled in the plugin settings.
-     * @function TempETAViewModel#_isSoundEnabled
-     * @returns {boolean}
-     */
     self._isSoundEnabled = function () {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -967,11 +747,6 @@ $(function () {
       return readKoBool(ps.sound_enabled, false);
     };
 
-    /**
-     * Check whether toast notifications are enabled in plugin settings.
-     * @function TempETAViewModel#_isNotificationEnabled
-     * @returns {boolean}
-     */
     self._isNotificationEnabled = function () {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -983,12 +758,6 @@ $(function () {
       return readKoBool(ps.notification_enabled, false);
     };
 
-    /**
-     * Return whether a specific notification event is enabled.
-     * @function TempETAViewModel#_isNotificationEventEnabled
-     * @param {string} eventKey - event identifier (e.g. 'target_reached')
-     * @returns {boolean}
-     */
     self._isNotificationEventEnabled = function (eventKey) {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -1003,11 +772,6 @@ $(function () {
       return false;
     };
 
-    /**
-     * Get the configured toast timeout in milliseconds.
-     * @function TempETAViewModel#_getNotificationTimeoutMs
-     * @returns {number}
-     */
     self._getNotificationTimeoutMs = function () {
       var ps = self._pluginSettings();
       var s = 6.0;
@@ -1020,11 +784,6 @@ $(function () {
       return Math.max(1000, Math.min(60000, s * 1000.0));
     };
 
-    /**
-     * Get the minimum interval between notification toasts in milliseconds.
-     * @function TempETAViewModel#_getNotificationMinIntervalMs
-     * @returns {number}
-     */
     self._getNotificationMinIntervalMs = function () {
       var ps = self._pluginSettings();
       var s = 10.0;
@@ -1037,14 +796,6 @@ $(function () {
       return s * 1000.0;
     };
 
-    /**
-     * Show a toast notification for a heater event (target reached, cooldown finished).
-     * @function TempETAViewModel#_notifyEvent
-     * @param {string} heaterName - heater identifier
-     * @param {string} eventKey - event key ('target_reached'|'cooldown_finished')
-     * @param {number} displayTargetC - temperature to display (°C)
-     * @returns {void}
-     */
     self._notifyEvent = function (heaterName, eventKey, displayTargetC) {
       if (!self._isNotificationEnabled()) {
         return;
@@ -1105,12 +856,6 @@ $(function () {
       _toast(type, title, text, self._getNotificationTimeoutMs(), toastClass);
     };
 
-    /**
-     * Return whether a specific sound event is enabled.
-     * @function TempETAViewModel#_isSoundEventEnabled
-     * @param {string} eventKey
-     * @returns {boolean}
-     */
     self._isSoundEventEnabled = function (eventKey) {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -1125,11 +870,6 @@ $(function () {
       return false;
     };
 
-    /**
-     * Get configured sound playback volume (0.0 - 1.0).
-     * @function TempETAViewModel#_getSoundVolume
-     * @returns {number}
-     */
     self._getSoundVolume = function () {
       var ps = self._pluginSettings();
       var v = 0.5;
@@ -1142,11 +882,6 @@ $(function () {
       return Math.max(0, Math.min(1, v));
     };
 
-    /**
-     * Minimum interval between sound events in milliseconds.
-     * @function TempETAViewModel#_getSoundMinIntervalMs
-     * @returns {number}
-     */
     self._getSoundMinIntervalMs = function () {
       var ps = self._pluginSettings();
       var s = 10.0;
@@ -1159,11 +894,6 @@ $(function () {
       return s * 1000.0;
     };
 
-    /**
-     * Ensure and return a WebAudio `AudioContext` if supported.
-     * @function TempETAViewModel#_ensureAudioContext
-     * @returns {AudioContext|null}
-     */
     self._ensureAudioContext = function () {
       if (self._audioContext) {
         return self._audioContext;
@@ -1180,12 +910,6 @@ $(function () {
       }
     };
 
-    /**
-     * Return the URL for a plugin static sound file.
-     * @function TempETAViewModel#_getStaticSoundUrl
-     * @param {string} fileName
-     * @returns {string}
-     */
     self._getStaticSoundUrl = function (fileName) {
       // Prefer OctoPrint's helper if available; fall back to a relative URL.
       // Static files are served from /plugin/<identifier>/static/...
@@ -1207,12 +931,6 @@ $(function () {
       return "/plugin/temp_eta/static/sounds/" + encodeURIComponent(fileName);
     };
 
-    /**
-     * Play a static sound file via HTMLAudio (falls back to WebAudio beep).
-     * @function TempETAViewModel#_playSoundFile
-     * @param {string} fileName
-     * @returns {void}
-     */
     self._playSoundFile = function (fileName) {
       // HTMLAudio playback. This may be blocked by autoplay policies.
       try {
@@ -1232,12 +950,6 @@ $(function () {
       }
     };
 
-    /**
-     * Play a short WebAudio beep. Options: `{ force: true, volume: 0.5 }`.
-     * @function TempETAViewModel#_playBeep
-     * @param {Object} [opts]
-     * @returns {void}
-     */
     self._playBeep = function (opts) {
       var options = opts || {};
       var force = !!options.force;
@@ -1310,13 +1022,6 @@ $(function () {
       }
     };
 
-    /**
-     * Play the configured sound for an event (or fallback beep).
-     * @function TempETAViewModel#_playSoundEvent
-     * @param {string} heaterName
-     * @param {string} eventKey
-     * @returns {void}
-     */
     self._playSoundEvent = function (heaterName, eventKey) {
       var nowMs = Date.now();
       var k = String(heaterName) + ":" + String(eventKey);
@@ -1339,11 +1044,6 @@ $(function () {
       self._playBeep({});
     };
 
-    /**
-     * Trigger the test sound (bound to settings button).
-     * @function TempETAViewModel#testSound
-     * @returns {void}
-     */
     self.testSound = function () {
       // The test button should work regardless of master enable state to help
       // browsers unlock audio playback on user interaction.
@@ -1398,11 +1098,6 @@ $(function () {
       return defaultValue;
     }
 
-    /**
-     * Return the current plugin settings object (Knockout structure) or null.
-     * @function TempETAViewModel#_pluginSettings
-     * @returns {Object|null}
-     */
     self._pluginSettings = function () {
       try {
         // IMPORTANT: prefer a fresh settings root (OctoPrint may replace the
@@ -1454,12 +1149,6 @@ $(function () {
       }
     };
 
-    /**
-     * Return whether a UI component (sidebar/navbar/tab) is enabled.
-     * @function TempETAViewModel#isComponentEnabled
-     * @param {string} component - one of 'sidebar','navbar','tab'
-     * @returns {boolean}
-     */
     self.isComponentEnabled = function (component) {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -1484,11 +1173,6 @@ $(function () {
       return true;
     };
 
-    /**
-     * Return whether progress bars are enabled in settings.
-     * @function TempETAViewModel#isProgressBarsEnabled
-     * @returns {boolean}
-     */
     self.isProgressBarsEnabled = function () {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -1503,11 +1187,6 @@ $(function () {
       return readKoBool(ps.show_progress_bars, true);
     };
 
-    /**
-     * Return whether the historical graph feature is enabled.
-     * @function TempETAViewModel#isHistoricalGraphEnabled
-     * @returns {boolean}
-     */
     self.isHistoricalGraphEnabled = function () {
       var ps = self._pluginSettings();
       if (!ps) {
@@ -1522,11 +1201,6 @@ $(function () {
       return readKoBool(ps.show_historical_graph, false);
     };
 
-    /**
-     * Get the historical graph window length in seconds (configured).
-     * @function TempETAViewModel#getHistoricalGraphWindowSeconds
-     * @returns {number}
-     */
     self.getHistoricalGraphWindowSeconds = function () {
       var ps = self._pluginSettings();
       var seconds = 180;
@@ -1542,12 +1216,6 @@ $(function () {
       return seconds;
     };
 
-    /**
-    * Return whether the historical graph should be visible for a heater.
-    * @function TempETAViewModel#isHistoricalGraphVisible
-    * @param {Heater} heater - heater object
-     * @returns {boolean}
-     */
     self.isHistoricalGraphVisible = function (heater) {
       if (!self.isHistoricalGraphEnabled()) {
         return false;
@@ -1573,16 +1241,11 @@ $(function () {
       return true;
     };
 
-    /**
-    * Record a heater sample for the historical graph.
-     * @function TempETAViewModel#_recordHeaterHistory
-     * @param {Heater} heaterObj
-     * @param {number} tsSec - timestamp (seconds)
-     * @param {number} actualC - actual temperature (°C)
-    * @param {number} targetC - target temperature (°C)
-    * @returns {void}
-     */
     self._recordHeaterHistory = function (heaterObj, tsSec, actualC, targetC) {
+      if (!heaterObj) {
+        return;
+      }
+
       if (!heaterObj._history) {
         heaterObj._history = [];
       }
@@ -1632,13 +1295,13 @@ $(function () {
       }
     };
 
-    /**
-    * Reset cached state used by the historical graph rendering.
-     * @function TempETAViewModel#_resetHistoricalGraphState
-     * @param {Object} [info]
-    * @returns {void}
-    */
     self._resetHistoricalGraphState = function (info) {
+      try {
+        self._graphElementCache = {};
+      } catch (e) {
+        // ignore
+      }
+
       var heaterKeys = [];
       try {
         heaterKeys = Object.keys(self.heaterData || {});
@@ -1682,13 +1345,10 @@ $(function () {
       );
     };
 
-    /**
-    * Retrieve cached SVG graph elements for a heater, or query DOM and cache them.
-     * @function TempETAViewModel#_getGraphElements
-     * @param {string} heaterName
-    * @returns {Object|null} elements or null
-    */
-
+    self._getGraphElements = function (heaterName) {
+      if (!heaterName) {
+        return null;
+      }
 
       if (!self._graphElementCache) {
         self._graphElementCache = {};
@@ -1760,56 +1420,45 @@ $(function () {
       return cached;
     };
 
-    /**
-     * Format seconds for axis labels (M:SS).
-     * @function TempETAViewModel#_formatAxisTime
-     * @param {number} seconds
-     * @returns {string}
-     */
     self._formatAxisTime = function (seconds) {
+      // Format seconds as M:SS (no i18n needed for numeric axis labels).
+      if (!isFinite(seconds) || seconds < 0) {
+        seconds = 0;
+      }
       var s = Math.round(seconds);
       var m = Math.floor(s / 60);
       var r = s % 60;
       return m + ":" + (r < 10 ? "0" : "") + r;
     };
 
-    /**
-     * Format temperature for axis labels according to display unit.
-     * @function TempETAViewModel#_formatAxisTemp
-     * @param {number} tempC
-     * @returns {string}
-     */
     self._formatAxisTemp = function (tempC) {
+      // Keep labels compact; whole degrees read better at small font sizes.
+      if (!isFinite(tempC)) {
+        return "";
+      }
+
       var unit = self._effectiveThresholdUnit() === "f" ? "°F" : "°C";
       var value = tempC;
       if (unit === "°F") {
         value = self._cToF(tempC);
       }
+
       return String(Math.round(value)) + unit;
     };
 
-    /**
-     * Determine whether a heater is currently heating.
-     * @function TempETAViewModel#_isHeaterHeatingNow
-     * @param {number|null} etaValue
-     * @param {number} actualC
-     * @param {number} targetC
-     * @returns {boolean}
-     */
     self._isHeaterHeatingNow = function (etaValue, actualC, targetC) {
-      var eps = 0.5;
+      // "Idle" in the UI should cover: no active target or already at/above target.
+      // Use a small epsilon to avoid flicker around the target.
+      var eps = 0.3;
+      if (!isFinite(actualC) || !isFinite(targetC) || targetC <= 0) {
+        return false;
+      }
       if (self.isETAVisible(etaValue)) {
         return true;
       }
       return targetC - actualC > eps;
     };
 
-    /**
-    * Render the historical graph for a heater into its SVG element.
-    * @function TempETAViewModel#_renderHistoricalGraph
-    * @param {Heater} heaterObj
-     * @returns {void}
-     */
     self._renderHistoricalGraph = function (heaterObj) {
       if (!heaterObj) {
         return;
@@ -2060,10 +1709,14 @@ $(function () {
     };
 
     /**
-     * Format seconds into a human-readable ETA string.
+     * Format seconds into a human-readable minutes:seconds string.
      *
-     * @param {number} seconds - ETA in seconds
-     * @returns {string} Human-readable ETA (e.g. "2m 15s" or "--")
+     * This is a pure documentation block (JSDoc) and does not alter runtime
+     * behavior; it must be kept as a comment-only insertion to avoid parse
+     * issues during documentation generation.
+     *
+     * @param {number} seconds - Seconds until target (positive integer)
+     * @returns {string} Formatted ETA like "M:SS" or "--:--" if unknown
      */
     self.formatETA = function (seconds) {
       if (!seconds || seconds <= 0) {
@@ -2073,19 +1726,6 @@ $(function () {
       var secs = Math.floor(seconds % 60);
       return mins + ":" + (secs < 10 ? "0" : "") + secs;
     };
-
-    /**
-     * calculateETA (placeholder documentation)
-     *
-     * ETA calculation is primarily performed on the backend for accuracy and
-     * consistency. If a client-side implementation exists in the future, it
-     * should accept a `history` array of {@link HeaterHistoryEntry} and a numeric `target`.
-     *
-     * @function calculateETA
-     * @param {Array<HeaterHistoryEntry>} history - Array of recent samples
-     * @param {number} target - Target temperature in Celsius
-     * @returns {?number} Seconds to reach target, or null if unavailable
-     */
 
     self._getTempDisplayMode = function () {
       var ps = self._pluginSettings();
@@ -2116,13 +1756,6 @@ $(function () {
       }
     };
 
-    /**
-     * Format a temperature for display according to user settings.
-     * Uses OctoPrint helper if available, otherwise falls back to simple formatting.
-     * @function TempETAViewModel#formatTempDisplay
-     * @param {number} temp - temperature in °C
-     * @returns {string} formatted temperature (e.g. "200°C" or "200°C (392°F)")
-     */
     self.formatTempDisplay = function (temp) {
       // Prefer OctoPrint's helper if available to keep formatting consistent.
       var mode = self._getTempDisplayMode();
@@ -2152,53 +1785,24 @@ $(function () {
       return c + "°C (" + f + "°F)";
     };
 
-    /**
-     * Convert Celsius to Fahrenheit.
-     * @function TempETAViewModel#_cToF
-     * @param {number} celsius
-     * @returns {number}
-     */
     self._cToF = function (celsius) {
       return (celsius * 9.0) / 5.0 + 32.0;
     };
 
-    /**
-     * Convert Fahrenheit to Celsius.
-     * @function TempETAViewModel#_fToC
-     * @param {number} fahrenheit
-     * @returns {number}
-     */
     self._fToC = function (fahrenheit) {
       return ((fahrenheit - 32.0) * 5.0) / 9.0;
     };
 
     // Delta conversions (used for settings like threshold_start which represent
     // a temperature difference, not an absolute temperature).
-    /**
-     * Convert a Celsius delta to Fahrenheit delta.
-     * @function TempETAViewModel#_cDeltaToF
-     * @param {number} deltaC
-     * @returns {number}
-     */
     self._cDeltaToF = function (deltaC) {
       return (deltaC * 9.0) / 5.0;
     };
 
-    /**
-     * Convert a Fahrenheit delta to Celsius delta.
-     * @function TempETAViewModel#_fDeltaToC
-     * @param {number} deltaF
-     * @returns {number}
-     */
     self._fDeltaToC = function (deltaF) {
       return (deltaF * 5.0) / 9.0;
     };
 
-    /**
-     * Determine the effective unit for threshold display ("c" or "f").
-     * @function TempETAViewModel#_effectiveThresholdUnit
-     * @returns {string} "c" or "f"
-     */
     self._effectiveThresholdUnit = function () {
       var ps = self._pluginSettings();
       if (!ps || !ps.threshold_unit) {
@@ -2278,20 +1882,22 @@ $(function () {
     });
 
     // Block settings save if any numeric fields are invalid.
-    /**
-     * Hook called before settings are saved. Return false to block save.
-     * @function TempETAViewModel#onSettingsBeforeSave
-     * @returns {boolean}
-     */
     self.onSettingsBeforeSave = function () {
       return self._validateAllSettingsNumbers();
     };
 
     /**
-     * Handler for messages from OctoPrint's data updater plugin.
+     * Handle incoming plugin messages delivered by OctoPrint's data updater.
      * @function TempETAViewModel#onDataUpdaterPluginMessage
-     * @param {string} plugin - plugin identifier (expected 'temp_eta')
-    * @param {PluginMessage} data - payload object
+     * @param {string} plugin - plugin identifier (should be "temp_eta")
+     * @param {Object} data - plugin message payload
+     * @param {string} data.type - message type (e.g. 'history_reset','settings_reset','heater_update')
+     * @param {string} [data.heater] - heater id when applicable (e.g. 'tool0','bed')
+     * @param {number} [data.eta] - ETA in seconds when provided
+     * @param {string} [data.eta_kind] - kind of ETA ('linear','exponential',...)
+     * @param {number|null} [data.cooldown_target]
+     * @param {number|null} [data.actual]
+     * @param {number|null} [data.target]
      * @returns {void}
      */
     self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -2517,12 +2123,6 @@ $(function () {
       }
     };
 
-    /**
-    * Determine the effective display target (°C) for a heater, using cooldownTarget when cooling.
-     * @function TempETAViewModel#_effectiveDisplayTargetC
-     * @param {Heater} heater
-     * @returns {number} target in °C or NaN
-     */
     self._effectiveDisplayTargetC = function (heater) {
       if (!heater) {
         return NaN;
@@ -2545,12 +2145,6 @@ $(function () {
       return heater.target ? parseFloat(heater.target()) : NaN;
     };
 
-    /**
-    * Format a pair of temperatures (actual/target) for display.
-     * @function TempETAViewModel#formatTempPair
-     * @param {Heater} heater
-     * @returns {string}
-     */
     self.formatTempPair = function (heater) {
       if (!heater) {
         return "";
@@ -2573,21 +2167,15 @@ $(function () {
     };
 
     /**
-     * Return whether an ETA value should be shown.
+     * Determine whether an ETA value should be considered visible.
      * @function TempETAViewModel#isETAVisible
-     * @param {number|null} eta
-     * @returns {boolean}
+     * @param {number|null|undefined} eta - ETA in seconds (may be null/undefined)
+     * @returns {boolean} true if ETA should be shown to the user
      */
     self.isETAVisible = function (eta) {
       return eta !== null && eta !== undefined && eta >= 1;
     };
 
-    /**
-    * Return CSS class for ETA display based on heater state and ETA value.
-     * @function TempETAViewModel#getETAClass
-     * @param {Heater} heater
-     * @returns {string}
-     */
     self.getETAClass = function (heater) {
       if (!heater || !heater.eta) return "hidden";
 
@@ -2617,12 +2205,6 @@ $(function () {
      * We intentionally compute this client-side from actual/target to keep the
      * backend payload small and robust across profiles/heaters.
      */
-    /**
-    * Whether the progress bar should be visible for a heater.
-     * @function TempETAViewModel#isProgressVisible
-     * @param {Heater} heater
-     * @returns {boolean}
-     */
     self.isProgressVisible = function (heater) {
       if (!self.isProgressBarsEnabled()) {
         return false;
@@ -2642,12 +2224,6 @@ $(function () {
       return true;
     };
 
-    /**
-    * Whether the tab progress indicator should be visible for a heater.
-     * @function TempETAViewModel#isTabProgressVisible
-     * @param {Heater} heater
-     * @returns {boolean}
-     */
     self.isTabProgressVisible = function (heater) {
       if (!self.isProgressVisible(heater)) {
         return false;
@@ -2660,12 +2236,6 @@ $(function () {
       return self._isHeaterHeatingNow(eta, actual, target);
     };
 
-    /**
-    * Compute progress percent for a heater (0-100).
-     * @function TempETAViewModel#getProgressPercent
-     * @param {Heater} heater
-     * @returns {number}
-     */
     self.getProgressPercent = function (heater) {
       if (!self.isProgressVisible(heater)) {
         return 0;
@@ -2709,12 +2279,6 @@ $(function () {
       return pct;
     };
 
-    /**
-    * Return CSS class for progress bar based on ETA and color mode.
-     * @function TempETAViewModel#getProgressBarClass
-     * @param {Heater} heater
-     * @returns {string}
-     */
     self.getProgressBarClass = function (heater) {
       if (self._getColorMode() === "status") {
         if (heater && heater.etaKind && heater.etaKind() === "cooling") {
@@ -2739,10 +2303,10 @@ $(function () {
     };
 
     /**
-    * Human-readable label for a heater name (i18n-aware for known names).
+     * Return a user-facing label for a heater id.
      * @function TempETAViewModel#getHeaterLabel
-     * @param {string} heaterName
-     * @returns {string}
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
      */
     self.getHeaterLabel = function (heaterName) {
       var labels = {
@@ -2756,11 +2320,19 @@ $(function () {
     };
 
     /**
-    * Idle text for a heater ("Idle" or "Cooling").
+     * Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').
      * @function TempETAViewModel#getHeaterIdleText
-     * @param {Heater} heater
-     * @returns {string}
+     * @param {Heater} heater - heater object
+     * @returns {string} localized idle text
      */
+
+    /**
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
+     */
+
     self.getHeaterIdleText = function (heater) {
       if (heater && heater.etaKind && heater.etaKind() === "cooling") {
         return _gettext("Cooling");
@@ -2768,12 +2340,6 @@ $(function () {
       return _gettext("Idle");
     };
 
-    /**
-    * CSS class for idle/heating state.
-     * @function TempETAViewModel#getHeaterIdleClass
-     * @param {Heater} heater
-     * @returns {string}
-     */
     self.getHeaterIdleClass = function (heater) {
       if (heater && heater.etaKind && heater.etaKind() === "cooling") {
         return "eta-cooling";
@@ -2781,12 +2347,6 @@ $(function () {
       return "eta-idle";
     };
 
-    /**
-     * Sort heaters into display order (tools, bed, chamber).
-     * @function TempETAViewModel#sortHeaters
-     * @param {Array<Heater>} heaters
-     * @returns {Array<Heater>} sorted heaters
-     */
     self.sortHeaters = function (heaters) {
       return heaters.slice().sort(function (a, b) {
         var nameA = a.name;
@@ -2815,19 +2375,13 @@ $(function () {
       });
     };
 
-    /**
-     * Return a font-awesome icon class for a heater name.
-     * @function TempETAViewModel#getHeaterIcon
-     * @param {string} heaterName
-     * @returns {string}
-     */
     self.getHeaterIcon = function (heaterName) {
       if (heaterName === "bed") {
         return "fa-bed";
       } else if (heaterName === "chamber") {
         return "fa-cube";
       } else {
-        return "fa-fire"; // tools/hotends
+        return "fa-fire";
       }
     };
 
