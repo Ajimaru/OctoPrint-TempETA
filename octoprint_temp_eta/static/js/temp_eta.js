@@ -198,7 +198,9 @@ $(function () {
    * array contains OctoPrint view models in the standard order the plugin
    * expects (settings, printerState, printerProfiles, loginState, ...).
    *
-   * @param {Array} parameters - Array of injected OctoPrint view model parameters
+   * @class TempETAViewModel
+   * @global
+   * @param {Array} parameters - OctoPrint-injected view model parameters
    * @constructor
    */
   function TempETAViewModel(parameters) {
@@ -268,6 +270,18 @@ $(function () {
       return $root.length ? $root : null;
     };
 
+    /**
+     * Get the root element of the plugin settings dialog.
+     * @function TempETAViewModel#_getSettingsDialogRoot
+     * @returns {jQuery|null} jQuery element or null
+     */
+
+    /**
+     * Bind the view model to the settings dialog if it hasn't been bound yet.
+     * This supports OctoPrint instances that inject the settings template lazily.
+     * @function TempETAViewModel#_bindSettingsIfNeeded
+     * @returns {void}
+     */
     self._bindSettingsIfNeeded = function () {
       // With custom_bindings=True the settings template is injected lazily when the
       // settings dialog opens. Bind it then, and guard against double-binding.
@@ -325,6 +339,12 @@ $(function () {
         ),
       };
     };
+
+      /**
+       * Retrieve localized validation message templates used by the settings UI.
+       * @function TempETAViewModel#_getValidationMessages
+       * @returns {Object} messages
+       */
 
     self._formatValidationMessage = function (template, params) {
       var msg = String(template || "");
