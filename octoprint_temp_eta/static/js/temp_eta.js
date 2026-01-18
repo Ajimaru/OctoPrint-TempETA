@@ -5,6 +5,20 @@
  * Author: Ajimaru
  * License: AGPLv3
  */
+/**
+ * TempETA runtime JSDoc (small safe step).
+ *
+ * This comment block exists in the runtime file but should not be used as a
+ * source for generated API documentation (see `temp_eta.docs.js`).
+ *
+ * @ignore
+ * @class TempETAViewModel
+ * @classdesc Knockout view model for the Temperature ETA plugin.
+ */
+
+/**
+ * Type documentation lives in `temp_eta.docs.js` (non-runtime) to keep this file runtime-focused.
+ */
 $(function () {
   function _attrOr($el, name, fallback) {
     var v = $el && $el.length ? $el.attr(name) : null;
@@ -191,16 +205,6 @@ $(function () {
     });
   });
 
-  /**
-   * TempETAViewModel
-   *
-   * Main Knockout view model for the Temperature ETA plugin. The `parameters`
-   * array contains OctoPrint view models in the standard order the plugin
-   * expects (settings, printerState, printerProfiles, loginState, ...).
-   *
-   * @param {Array} parameters - Array of injected OctoPrint view model parameters
-   * @constructor
-   */
   function TempETAViewModel(parameters) {
     var self = this;
 
@@ -1705,10 +1709,14 @@ $(function () {
     };
 
     /**
-     * Format seconds into a human-readable ETA string.
+     * Format seconds into a human-readable minutes:seconds string.
      *
-     * @param {number} seconds - ETA in seconds
-     * @returns {string} Human-readable ETA (e.g. "2m 15s" or "--")
+     * This is a pure documentation block (JSDoc) and does not alter runtime
+     * behavior; it must be kept as a comment-only insertion to avoid parse
+     * issues during documentation generation.
+     *
+     * @param {number} seconds - Seconds until target (positive integer)
+     * @returns {string} Formatted ETA like "M:SS" or "--:--" if unknown
      */
     self.formatETA = function (seconds) {
       if (!seconds || seconds <= 0) {
@@ -1718,19 +1726,6 @@ $(function () {
       var secs = Math.floor(seconds % 60);
       return mins + ":" + (secs < 10 ? "0" : "") + secs;
     };
-
-    /**
-     * calculateETA (placeholder documentation)
-     *
-     * ETA calculation is primarily performed on the backend for accuracy and
-     * consistency. If a client-side implementation exists in the future, it
-     * should accept a `history` array of {time, temp} and a numeric `target`.
-     *
-     * @function calculateETA
-     * @param {Array<Object>} history - Array of recent samples {time:number, temp:number}
-     * @param {number} target - Target temperature in Celsius
-     * @returns {?number} Seconds to reach target, or null if unavailable
-     */
 
     self._getTempDisplayMode = function () {
       var ps = self._pluginSettings();
@@ -1891,6 +1886,20 @@ $(function () {
       return self._validateAllSettingsNumbers();
     };
 
+    /**
+     * Handle incoming plugin messages delivered by OctoPrint's data updater.
+     * @function TempETAViewModel#onDataUpdaterPluginMessage
+     * @param {string} plugin - plugin identifier (should be "temp_eta")
+     * @param {Object} data - plugin message payload
+     * @param {string} data.type - message type (e.g. 'history_reset','settings_reset','heater_update')
+     * @param {string} [data.heater] - heater id when applicable (e.g. 'tool0','bed')
+     * @param {number} [data.eta] - ETA in seconds when provided
+     * @param {string} [data.eta_kind] - kind of ETA ('linear','exponential',...)
+     * @param {number|null} [data.cooldown_target]
+     * @param {number|null} [data.actual]
+     * @param {number|null} [data.target]
+     * @returns {void}
+     */
     self.onDataUpdaterPluginMessage = function (plugin, data) {
       if (plugin !== "temp_eta") {
         return;
@@ -2157,6 +2166,12 @@ $(function () {
       );
     };
 
+    /**
+     * Determine whether an ETA value should be considered visible.
+     * @function TempETAViewModel#isETAVisible
+     * @param {number|null|undefined} eta - ETA in seconds (may be null/undefined)
+     * @returns {boolean} true if ETA should be shown to the user
+     */
     self.isETAVisible = function (eta) {
       return eta !== null && eta !== undefined && eta >= 1;
     };
@@ -2287,6 +2302,12 @@ $(function () {
       return c;
     };
 
+    /**
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
+     */
     self.getHeaterLabel = function (heaterName) {
       var labels = {
         bed: _gettext("Bed"),
@@ -2297,6 +2318,20 @@ $(function () {
       }
       return heaterName.charAt(0).toUpperCase() + heaterName.slice(1);
     };
+
+    /**
+     * Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').
+     * @function TempETAViewModel#getHeaterIdleText
+     * @param {Heater} heater - heater object
+     * @returns {string} localized idle text
+     */
+
+    /**
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
+     */
 
     self.getHeaterIdleText = function (heater) {
       if (heater && heater.etaKind && heater.etaKind() === "cooling") {
@@ -2346,7 +2381,7 @@ $(function () {
       } else if (heaterName === "chamber") {
         return "fa-cube";
       } else {
-        return "fa-fire"; // tools/hotends
+        return "fa-fire";
       }
     };
 

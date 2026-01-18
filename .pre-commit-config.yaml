@@ -33,3 +33,12 @@ repos:
       - id: flake8
         exclude: '\.md$|\.yaml$|\.yml$|\.json$|\.txt$|\.po$|\.pot$|\.mo$'
         args: ["--max-line-length=120", "--extend-ignore=E203,W503"]
+
+  - repo: local
+    hooks:
+      - id: jsdoc-gen
+        name: Generate JavaScript docs
+        entry: bash scripts/generate-jsdocs.sh
+        language: system
+        files: '^octoprint_temp_eta/static/js/.*\.js$'
+        pass_filenames: false

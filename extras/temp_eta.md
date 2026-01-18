@@ -44,7 +44,7 @@ compatibility:
 
 ---
 
-# Temperature ETA Plugin for OctoPrint
+## Temperature ETA Plugin for OctoPrint
 
 Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up or cooling down.
 No more guessing how long until your print starts or is ready for maintenance!
@@ -75,7 +75,7 @@ No more guessing how long until your print starts or is ready for maintenance!
 Install via the bundled [Plugin Manager](https://docs.octoprint.org/en/master/bundledplugins/pluginmanager.html)
 or manually using this URL:
 
-```
+```url
 https://github.com/Ajimaru/OctoPrint-TempETA/archive/main.zip
 ```
 
@@ -84,6 +84,7 @@ https://github.com/Ajimaru/OctoPrint-TempETA/archive/main.zip
 After installation, configure the plugin in **Settings** → **Temperature ETA**:
 
 ### General
+
 - **Enable Temperature ETA**: Master switch for the plugin
 - **Hide ETA while printing**: Optionally suppress ETA during active print jobs
 - **Show in sidebar / navbar / tab**: Independently enable the UI placements
@@ -98,11 +99,13 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 - **Browser notifications** (optional): Enable per-event toasts, timeout, and rate limit
 
 ### Heating ETA
+
 - **Enable heating ETA**: Controls whether heating ETAs are shown/calculated
 - **Heating threshold** + **Threshold unit**: Start ETA when within a configured delta to the target
 - **Calculation algorithm**: Linear (default) or exponential
 
 ### Cool-down ETA
+
 - **Enable cool-down ETA**: Turn cool-down ETA on/off
 - **Mode**:
   - **Threshold target (default)**: Estimate time until a fixed, per-heater target is reached
@@ -112,6 +115,7 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 - **Hysteresis / fit window**: Controls when cool-down ETA disappears and how much recent data is used
 
 ### MQTT
+
 - **Enable MQTT**: Master switch for MQTT integration (publishes ETA data to external broker)
 - **Broker Host**: MQTT broker hostname or IP address
 - **Broker Port**: MQTT broker port (default: 1883)
@@ -136,6 +140,7 @@ When MQTT is enabled, the plugin publishes temperature ETA updates and state cha
 This allows integration with home automation systems like Home Assistant, Node-RED, or any MQTT-compatible platform.
 
 **ETA Updates** (`{base_topic}/{heater}/eta`):
+
 ```json
 {
   "heater": "bed",
@@ -150,6 +155,7 @@ This allows integration with home automation systems like Home Assistant, Node-R
 ```
 
 **State Changes** (`{base_topic}/{heater}/state_change`):
+
 ```json
 {
   "heater": "bed",
@@ -175,9 +181,11 @@ by [@CptanPanic](https://github.com/CptanPanic) to show estimated time remaining
 ## Privacy & Data
 
 This plugin optionally connects to external services only when explicitly enabled:
+
 - **MQTT Integration** (optional, disabled by default): When enabled, publishes temperature data to your configured MQTT broker. No data is sent to any third-party service without your explicit configuration.
 
 The plugin does not:
+
 - Collect or transmit any personal information
 - Connect to any external services by default
 - Require internet connectivity to function

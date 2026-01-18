@@ -25,6 +25,7 @@ node_modules/
 # Documentation build artifacts
 site/
 docs/api/javascript.md
+out
 
 # Development-only folders (not for GitHub)
 .drafts/
