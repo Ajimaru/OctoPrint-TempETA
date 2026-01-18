@@ -5,12 +5,12 @@ Auto-generated Python API documentation for OctoPrint-TempETA.
 ## Main Plugin Class
 
 ::: octoprint_temp_eta.TempETAPlugin
-        handler: python
-        options:
-            members_order: source
-            show_source: true
-            filters:
-                - "!^_"
+    handler: python
+    options:
+        members_order: source
+        show_source: true
+        filters:
+            - "!^_"
 
 ## Calculator Module
 
