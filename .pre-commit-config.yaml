@@ -41,3 +41,4 @@ repos:
         entry: ./scripts/generate-jsdocs.sh
         language: script
         files: '\.js$'
+        pass_filenames: false
