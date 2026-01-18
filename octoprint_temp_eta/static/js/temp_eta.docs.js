@@ -63,8 +63,8 @@
  * non-invasive JSDoc typedefs and an overview for documentation generation.
  */
 (function () {
-  // Safety: if this file is ever loaded in a browser, do nothing.
-  if (typeof window !== "undefined") return;
+  // Safety: if this file is ever loaded outside a Node docs build, do nothing.
+  if (typeof process === "undefined" || !process.versions || !process.versions.node) return;
 
   function TempETAViewModel() {}
 
