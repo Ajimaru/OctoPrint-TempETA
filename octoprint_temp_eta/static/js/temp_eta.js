@@ -1733,6 +1733,16 @@ $(function () {
       }
     };
 
+    /**
+     * Format seconds into a human-readable minutes:seconds string.
+     *
+     * This is a pure documentation block (JSDoc) and does not alter runtime
+     * behavior; it must be kept as a comment-only insertion to avoid parse
+     * issues during documentation generation.
+     *
+     * @param {number} seconds - Seconds until target (positive integer)
+     * @returns {string} Formatted ETA like "M:SS" or "--:--" if unknown
+     */
     self.formatETA = function (seconds) {
       if (!seconds || seconds <= 0) {
         return "--:--";
@@ -2418,7 +2428,7 @@ $(function () {
       } else if (heaterName === "chamber") {
         return "fa-cube";
       } else {
-        return "fa-fire"; // tools/hotends
+        return "fa-fire";
       }
     };
 
