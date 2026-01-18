@@ -2371,9 +2371,6 @@ $(function () {
      * @function TempETAViewModel#getHeaterLabel
      * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
      * @returns {string} localized label
-     */
-
-    /**
      * Return a user-facing label for a heater id.
      * @function TempETAViewModel#getHeaterLabel
      * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
