@@ -40,5 +40,5 @@ repos:
         name: Generate JavaScript docs
         entry: bash scripts/generate-jsdocs.sh
         language: system
-        files: '\.js$'
+        files: '^octoprint_temp_eta/static/js/.*\.js$'
         pass_filenames: false
