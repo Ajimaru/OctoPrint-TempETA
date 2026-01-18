@@ -51,7 +51,7 @@
 <a name="TempETAViewModel"></a>
 
 ## TempETAViewModel
-**Kind**: global class  
+**Kind**: global class
 
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
@@ -124,7 +124,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -143,8 +143,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -155,8 +155,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -167,8 +167,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -179,8 +179,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -191,8 +191,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -203,8 +203,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -215,8 +215,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -227,7 +227,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -246,8 +246,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -258,8 +258,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -270,8 +270,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -282,8 +282,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -294,8 +294,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -306,8 +306,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -318,8 +318,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -330,7 +330,7 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -341,13 +341,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -358,40 +358,40 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -402,13 +402,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -419,40 +419,40 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel"></a>
 
 ## TempETAViewModel
 <p>Knockout view model for the Temperature ETA plugin.</p>
 
-**Kind**: global class  
+**Kind**: global class
 
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
@@ -525,7 +525,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -544,8 +544,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -556,8 +556,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -568,8 +568,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -580,8 +580,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -592,8 +592,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -604,8 +604,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -616,8 +616,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -628,7 +628,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -647,8 +647,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -659,8 +659,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -671,8 +671,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -683,8 +683,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -695,8 +695,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -707,8 +707,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -719,8 +719,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -731,7 +731,7 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -742,13 +742,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -759,40 +759,40 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -803,13 +803,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -820,38 +820,38 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel"></a>
 
 ## TempETAViewModel
-**Kind**: global class  
+**Kind**: global class
 
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
@@ -924,7 +924,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -943,8 +943,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -955,8 +955,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -967,8 +967,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -979,8 +979,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -991,8 +991,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1003,8 +1003,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1015,8 +1015,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1027,7 +1027,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1046,8 +1046,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1058,8 +1058,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1070,8 +1070,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1082,8 +1082,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1094,8 +1094,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1106,8 +1106,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1118,8 +1118,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1130,7 +1130,7 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1141,13 +1141,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1158,40 +1158,40 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1202,13 +1202,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1219,40 +1219,40 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel"></a>
 
 ## TempETAViewModel
 <p>Knockout view model for the Temperature ETA plugin.</p>
 
-**Kind**: global class  
+**Kind**: global class
 
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
@@ -1325,7 +1325,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1344,8 +1344,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1356,8 +1356,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1368,8 +1368,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1380,8 +1380,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1392,8 +1392,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1404,8 +1404,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1416,8 +1416,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1428,7 +1428,7 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1447,8 +1447,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.isETAVisible(eta) ⇒ <code>boolean</code>
 <p>Determine whether an ETA value should be considered visible.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>boolean</code> - <p>true if ETA should be shown to the user</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1459,8 +1459,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getETAClass(heater) ⇒ <code>string</code>
 <p>Compute the CSS class for ETA display based on heater state.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name ('hidden','eta-heating','eta-idle','eta-cooling',...)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1471,8 +1471,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>number</code> - <p>percentage (0..100)</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>number</code> - <p>percentage (0..100)</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1483,8 +1483,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getProgressBarClass(heater) ⇒ <code>string</code>
 <p>Determine CSS class for the progress bar element of a heater.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>CSS class name for progress bar</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1495,8 +1495,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterIdleText(heater) ⇒ <code>string</code>
 <p>Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized idle text</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized idle text</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1507,8 +1507,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1519,8 +1519,8 @@ adding it should not alter runtime behavior.</p>
 ### tempETAViewModel.getHeaterLabel(heaterName) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
-**Returns**: <code>string</code> - <p>localized label</p>  
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)
+**Returns**: <code>string</code> - <p>localized label</p>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1531,7 +1531,7 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1542,13 +1542,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1559,40 +1559,40 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
 ### TempETAViewModel.onSettingsShown(dialog)
 <p>Called when the settings dialog is shown.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1603,13 +1603,13 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.onSettingsHidden()
 <p>Called when the settings dialog is hidden.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 <a name="TempETAViewModel.onDataUpdaterPluginMessage"></a>
 
 ### TempETAViewModel.onDataUpdaterPluginMessage(msg)
 <p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1620,38 +1620,38 @@ adding it should not alter runtime behavior.</p>
 ### TempETAViewModel.getHeaterLabel(heaterId) ⇒ <code>string</code>
 <p>Return a user-facing label for a heater id.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heaterId | <code>string</code> | 
+| heaterId | <code>string</code> |
 
 <a name="TempETAViewModel.isETAVisible"></a>
 
 ### TempETAViewModel.isETAVisible(heater) ⇒ <code>boolean</code>
 <p>Whether the ETA should be visible for a given heater.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="TempETAViewModel.getProgressPercent"></a>
 
 ### TempETAViewModel.getProgressPercent(heater) ⇒ <code>number</code>
 <p>Compute a progress percentage (0-100) for the heater towards its target.</p>
 
-**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+**Kind**: static method of [<code>TempETAViewModel</code>](#TempETAViewModel)
 
 | Param | Type |
 | --- | --- |
-| heater | [<code>Heater</code>](#Heater) | 
+| heater | [<code>Heater</code>](#Heater) |
 
 <a name="Heater"></a>
 
 ## Heater : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1667,7 +1667,7 @@ adding it should not alter runtime behavior.</p>
 <a name="HeaterHistoryEntry"></a>
 
 ## HeaterHistoryEntry : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1679,50 +1679,50 @@ adding it should not alter runtime behavior.</p>
 <a name="PluginSettings"></a>
 
 ## PluginSettings : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| [color_mode] | <code>string</code> | 
-| [show_in_sidebar] | <code>boolean</code> | 
-| [show_in_navbar] | <code>boolean</code> | 
-| [show_in_tab] | <code>boolean</code> | 
-| [historical_graph_window_seconds] | <code>number</code> | 
-| [debug_logging] | <code>boolean</code> | 
+| [color_mode] | <code>string</code> |
+| [show_in_sidebar] | <code>boolean</code> |
+| [show_in_navbar] | <code>boolean</code> |
+| [show_in_tab] | <code>boolean</code> |
+| [historical_graph_window_seconds] | <code>number</code> |
+| [debug_logging] | <code>boolean</code> |
 
 <a name="SoundConfig"></a>
 
 ## SoundConfig : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| enabled | <code>boolean</code> | 
-| volume | <code>number</code> | 
-| files | <code>Array.&lt;string&gt;</code> | 
+| enabled | <code>boolean</code> |
+| volume | <code>number</code> |
+| files | <code>Array.&lt;string&gt;</code> |
 
 <a name="PluginMessage"></a>
 
 ## PluginMessage : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| type | <code>string</code> | 
-| [heater] | <code>string</code> | 
-| [eta] | <code>number</code> | 
-| [eta_kind] | <code>string</code> | 
-| [cooldown_target] | <code>number</code> \| <code>null</code> | 
-| [actual] | <code>number</code> \| <code>null</code> | 
-| [target] | <code>number</code> \| <code>null</code> | 
+| type | <code>string</code> |
+| [heater] | <code>string</code> |
+| [eta] | <code>number</code> |
+| [eta_kind] | <code>string</code> |
+| [cooldown_target] | <code>number</code> \| <code>null</code> |
+| [actual] | <code>number</code> \| <code>null</code> |
+| [target] | <code>number</code> \| <code>null</code> |
 
 <a name="Heater"></a>
 
 ## Heater : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1738,7 +1738,7 @@ adding it should not alter runtime behavior.</p>
 <a name="HeaterHistoryEntry"></a>
 
 ## HeaterHistoryEntry : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1750,23 +1750,23 @@ adding it should not alter runtime behavior.</p>
 <a name="PluginMessage"></a>
 
 ## PluginMessage : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| type | <code>string</code> | 
-| [heater] | <code>string</code> | 
-| [eta] | <code>number</code> | 
-| [eta_kind] | <code>string</code> | 
-| [cooldown_target] | <code>number</code> \| <code>null</code> | 
-| [actual] | <code>number</code> \| <code>null</code> | 
-| [target] | <code>number</code> \| <code>null</code> | 
+| type | <code>string</code> |
+| [heater] | <code>string</code> |
+| [eta] | <code>number</code> |
+| [eta_kind] | <code>string</code> |
+| [cooldown_target] | <code>number</code> \| <code>null</code> |
+| [actual] | <code>number</code> \| <code>null</code> |
+| [target] | <code>number</code> \| <code>null</code> |
 
 <a name="Heater"></a>
 
 ## Heater : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1782,7 +1782,7 @@ adding it should not alter runtime behavior.</p>
 <a name="HeaterHistoryEntry"></a>
 
 ## HeaterHistoryEntry : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1794,50 +1794,50 @@ adding it should not alter runtime behavior.</p>
 <a name="PluginSettings"></a>
 
 ## PluginSettings : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| [color_mode] | <code>string</code> | 
-| [show_in_sidebar] | <code>boolean</code> | 
-| [show_in_navbar] | <code>boolean</code> | 
-| [show_in_tab] | <code>boolean</code> | 
-| [historical_graph_window_seconds] | <code>number</code> | 
-| [debug_logging] | <code>boolean</code> | 
+| [color_mode] | <code>string</code> |
+| [show_in_sidebar] | <code>boolean</code> |
+| [show_in_navbar] | <code>boolean</code> |
+| [show_in_tab] | <code>boolean</code> |
+| [historical_graph_window_seconds] | <code>number</code> |
+| [debug_logging] | <code>boolean</code> |
 
 <a name="SoundConfig"></a>
 
 ## SoundConfig : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| enabled | <code>boolean</code> | 
-| volume | <code>number</code> | 
-| files | <code>Array.&lt;string&gt;</code> | 
+| enabled | <code>boolean</code> |
+| volume | <code>number</code> |
+| files | <code>Array.&lt;string&gt;</code> |
 
 <a name="PluginMessage"></a>
 
 ## PluginMessage : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| type | <code>string</code> | 
-| [heater] | <code>string</code> | 
-| [eta] | <code>number</code> | 
-| [eta_kind] | <code>string</code> | 
-| [cooldown_target] | <code>number</code> \| <code>null</code> | 
-| [actual] | <code>number</code> \| <code>null</code> | 
-| [target] | <code>number</code> \| <code>null</code> | 
+| type | <code>string</code> |
+| [heater] | <code>string</code> |
+| [eta] | <code>number</code> |
+| [eta_kind] | <code>string</code> |
+| [cooldown_target] | <code>number</code> \| <code>null</code> |
+| [actual] | <code>number</code> \| <code>null</code> |
+| [target] | <code>number</code> \| <code>null</code> |
 
 <a name="Heater"></a>
 
 ## Heater : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1853,7 +1853,7 @@ adding it should not alter runtime behavior.</p>
 <a name="HeaterHistoryEntry"></a>
 
 ## HeaterHistoryEntry : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type | Description |
@@ -1865,16 +1865,15 @@ adding it should not alter runtime behavior.</p>
 <a name="PluginMessage"></a>
 
 ## PluginMessage : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| type | <code>string</code> | 
-| [heater] | <code>string</code> | 
-| [eta] | <code>number</code> | 
-| [eta_kind] | <code>string</code> | 
-| [cooldown_target] | <code>number</code> \| <code>null</code> | 
-| [actual] | <code>number</code> \| <code>null</code> | 
-| [target] | <code>number</code> \| <code>null</code> | 
-
+| type | <code>string</code> |
+| [heater] | <code>string</code> |
+| [eta] | <code>number</code> |
+| [eta_kind] | <code>string</code> |
+| [cooldown_target] | <code>number</code> \| <code>null</code> |
+| [actual] | <code>number</code> \| <code>null</code> |
+| [target] | <code>number</code> \| <code>null</code> |
