@@ -10,7 +10,7 @@ Auto-generated Python API documentation for OctoPrint-TempETA.
         members_order: source
         show_source: true
         filters:
-          - "!^_"
+            - "!^_"
 
 ## Calculator Module
 
