@@ -55,9 +55,6 @@
 
 * [TempETAViewModel](#TempETAViewModel)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * _instance_
         * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
         * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
@@ -66,22 +63,7 @@
         * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
         * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
         * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
-        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
-        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
-        * [.isETAVisible(eta)](#TempETAViewModel+isETAVisible) ⇒ <code>boolean</code>
-        * [.getETAClass(heater)](#TempETAViewModel+getETAClass) ⇒ <code>string</code>
-        * [.getProgressPercent(heater)](#TempETAViewModel+getProgressPercent) ⇒ <code>number</code>
-        * [.getProgressBarClass(heater)](#TempETAViewModel+getProgressBarClass) ⇒ <code>string</code>
-        * [.getHeaterIdleText(heater)](#TempETAViewModel+getHeaterIdleText) ⇒ <code>string</code>
-        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
-        * [.getHeaterLabel(heaterName)](#TempETAViewModel+getHeaterLabel) ⇒ <code>string</code>
     * _static_
-        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
         * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
         * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
         * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
