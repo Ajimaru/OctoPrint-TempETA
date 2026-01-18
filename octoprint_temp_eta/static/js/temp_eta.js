@@ -1901,6 +1901,20 @@ $(function () {
       return self._validateAllSettingsNumbers();
     };
 
+    /**
+     * Handle incoming plugin messages delivered by OctoPrint's data updater.
+     * @function TempETAViewModel#onDataUpdaterPluginMessage
+     * @param {string} plugin - plugin identifier (should be "temp_eta")
+     * @param {Object} data - plugin message payload
+     * @param {string} data.type - message type (e.g. 'history_reset','settings_reset','heater_update')
+     * @param {string} [data.heater] - heater id when applicable (e.g. 'tool0','bed')
+     * @param {number} [data.eta] - ETA in seconds when provided
+     * @param {string} [data.eta_kind] - kind of ETA ('linear','exponential',...)
+     * @param {number|null} [data.cooldown_target]
+     * @param {number|null} [data.actual]
+     * @param {number|null} [data.target]
+     * @returns {void}
+     */
     self.onDataUpdaterPluginMessage = function (plugin, data) {
       if (plugin !== "temp_eta") {
         return;

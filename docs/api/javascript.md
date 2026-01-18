@@ -58,18 +58,22 @@
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+    * _instance_
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+    * _static_
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
 
 <a name="new_TempETAViewModel_new"></a>
 
@@ -100,6 +104,44 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 <p>This comment block documents the public class <code>TempETAViewModel</code> used by the
 plugin. It is intentionally brief and only contains descriptive JSDoc so
 adding it should not alter runtime behavior.</p>
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
@@ -235,18 +277,22 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+    * _instance_
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+    * _static_
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
 
 <a name="new_TempETAViewModel_new"></a>
 
@@ -277,6 +323,44 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 <p>This comment block documents the public class <code>TempETAViewModel</code> used by the
 plugin. It is intentionally brief and only contains descriptive JSDoc so
 adding it should not alter runtime behavior.</p>
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
@@ -410,18 +494,22 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+    * _instance_
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+    * _static_
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
 
 <a name="new_TempETAViewModel_new"></a>
 
@@ -452,6 +540,44 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 <p>This comment block documents the public class <code>TempETAViewModel</code> used by the
 plugin. It is intentionally brief and only contains descriptive JSDoc so
 adding it should not alter runtime behavior.</p>
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
@@ -587,18 +713,22 @@ adding it should not alter runtime behavior.</p>
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
     * [new TempETAViewModel()](#new_TempETAViewModel_new)
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
-    * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
-    * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
-    * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
-    * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
-    * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
-    * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+    * _instance_
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+        * [.onDataUpdaterPluginMessage(plugin, data)](#TempETAViewModel+onDataUpdaterPluginMessage) ⇒ <code>void</code>
+    * _static_
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
+        * [.onSettingsShown(dialog)](#TempETAViewModel.onSettingsShown)
+        * [.onSettingsHidden()](#TempETAViewModel.onSettingsHidden)
+        * [.onDataUpdaterPluginMessage(msg)](#TempETAViewModel.onDataUpdaterPluginMessage)
+        * [.getHeaterLabel(heaterId)](#TempETAViewModel.getHeaterLabel) ⇒ <code>string</code>
+        * [.isETAVisible(heater)](#TempETAViewModel.isETAVisible) ⇒ <code>boolean</code>
+        * [.getProgressPercent(heater)](#TempETAViewModel.getProgressPercent) ⇒ <code>number</code>
 
 <a name="new_TempETAViewModel_new"></a>
 
@@ -629,6 +759,44 @@ non-invasive JSDoc typedefs and an overview for documentation generation.</p>
 <p>This comment block documents the public class <code>TempETAViewModel</code> used by the
 plugin. It is intentionally brief and only contains descriptive JSDoc so
 adding it should not alter runtime behavior.</p>
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
+
+<a name="TempETAViewModel+onDataUpdaterPluginMessage"></a>
+
+### tempETAViewModel.onDataUpdaterPluginMessage(plugin, data) ⇒ <code>void</code>
+<p>Handle incoming plugin messages delivered by OctoPrint's data updater.</p>
+
+**Kind**: instance method of [<code>TempETAViewModel</code>](#TempETAViewModel)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>string</code> | <p>plugin identifier (should be &quot;temp_eta&quot;)</p> |
+| data | <code>Object</code> | <p>plugin message payload</p> |
+| data.type | <code>string</code> | <p>message type (e.g. 'history_reset','settings_reset','heater_update')</p> |
+| [data.heater] | <code>string</code> | <p>heater id when applicable (e.g. 'tool0','bed')</p> |
+| [data.eta] | <code>number</code> | <p>ETA in seconds when provided</p> |
+| [data.eta_kind] | <code>string</code> | <p>kind of ETA ('linear','exponential',...)</p> |
+| [data.cooldown_target] | <code>number</code> \| <code>null</code> |  |
+| [data.actual] | <code>number</code> \| <code>null</code> |  |
+| [data.target] | <code>number</code> \| <code>null</code> |  |
 
 <a name="TempETAViewModel.onSettingsShown"></a>
 
