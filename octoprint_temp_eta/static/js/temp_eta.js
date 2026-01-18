@@ -17,35 +17,7 @@
  */
 
 /**
- * @ignore
- * @typedef {Object} Heater
- * @property {string} name - heater id (e.g. 'tool0', 'bed')
- * @property {Function|number|null} actual - current temperature observable or number
- * @property {Function|number|null} target - target temperature observable or number
- * @property {Function|number|null} [cooldownTarget]
- * @property {Function|string|null} [etaKind]
- * @property {Array<HeaterHistoryEntry>} [_history]
- * @property {number} [_historyStart]
- */
-
-/**
- * @ignore
- * @typedef {Object} HeaterHistoryEntry
- * @property {number} t - epoch seconds of sample
- * @property {number} a - actual temp
- * @property {number|null} [tg] - recorded target
- */
-
-/**
- * @ignore
- * @typedef {Object} PluginMessage
- * @property {string} type
- * @property {string} [heater]
- * @property {number} [eta]
- * @property {string} [eta_kind]
- * @property {number|null} [cooldown_target]
- * @property {number|null} [actual]
- * @property {number|null} [target]
+ * Type documentation lives in `temp_eta.docs.js` (non-runtime) to keep this file runtime-focused.
  */
 $(function () {
   function _attrOr($el, name, fallback) {
