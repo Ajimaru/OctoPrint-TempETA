@@ -62,7 +62,7 @@
  * The runtime implementation lives in `temp_eta.js`; this file provides
  * non-invasive JSDoc typedefs and an overview for documentation generation.
  */
-function TempETAViewModelDocs() {}
+function TempETAViewModel() {}
 
 /**
  * Called when the settings dialog is shown.
