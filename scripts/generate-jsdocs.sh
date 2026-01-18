@@ -57,6 +57,22 @@ if ! (cd "$PROJECT_ROOT" && "$JSdoc2md" --configure "jsdoc.json" "octoprint_temp
     exit 1
 fi
 
+# Normalize generated output to avoid accidental diffs from trailing whitespace
+# and ensure consistent formatting across environments. This prevents
+# pre-commit hooks from modifying the file in CI.
+if command -v sed >/dev/null 2>&1; then
+    sed -E -i 's/[[:space:]]+$//' "$OUTPUT" || true
+fi
+
+# Ensure file ends with exactly one newline (remove extra blank lines at EOF)
+if command -v perl >/dev/null 2>&1; then
+    # Remove trailing whitespace on lines and ensure exactly one newline at EOF
+    perl -0777 -pe 's/[ \t]+$//mg; s/\n+\z/\n/' "$OUTPUT" > "$OUTPUT.tmp" && mv "$OUTPUT.tmp" "$OUTPUT" || true
+else
+    # Fallback: try awk to ensure there is a single trailing newline
+    awk 'BEGIN{ORS=""} {print}' "$OUTPUT" | sed -E ':a;/\n$/{$!{N;ba}};s/\n+$/\n/' > "$OUTPUT.tmp" && mv "$OUTPUT.tmp" "$OUTPUT" || true
+fi
+
 # Check if output is empty (no JSDoc comments)
 if [ ! -s "$OUTPUT" ]; then
     echo "Warning: No JSDoc comments found in JavaScript files"

@@ -45,6 +45,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[develop]"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install JS dependencies
+        run: |
+          npm ci
+
       - name: Fetch base branch (pull_request only)
         if: ${{ github.event_name == 'pull_request' }}
         run: |
