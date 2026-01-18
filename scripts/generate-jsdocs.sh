@@ -65,14 +65,12 @@ if command -v sed >/dev/null 2>&1; then
 fi
 
 # Ensure file ends with exactly one newline (remove extra blank lines at EOF)
-if command -v python3 >/dev/null 2>&1; then
-    python3 - <<'PY'
-from pathlib import Path
-p = Path("""$OUTPUT""")
-text = p.read_text()
-text = text.rstrip('\n') + '\n'
-p.write_text(text)
-PY
+if command -v perl >/dev/null 2>&1; then
+    # Remove trailing whitespace on lines and ensure exactly one newline at EOF
+    perl -0777 -pe 's/[ \t]+$//mg; s/\n+\z/\n/' "$OUTPUT" > "$OUTPUT.tmp" && mv "$OUTPUT.tmp" "$OUTPUT" || true
+else
+    # Fallback: try awk to ensure there is a single trailing newline
+    awk 'BEGIN{ORS=""} {print}' "$OUTPUT" | sed -E ':a;/\n$/{$!{N;ba}};s/\n+$/\n/' > "$OUTPUT.tmp" && mv "$OUTPUT.tmp" "$OUTPUT" || true
 fi
 
 # Check if output is empty (no JSDoc comments)
