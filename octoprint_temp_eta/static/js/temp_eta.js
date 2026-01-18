@@ -35,53 +35,14 @@
  */
 
 /**
- * Called when the settings dialog is shown.
- * @memberof TempETAViewModel
- * @name onSettingsShown
- * @function
- * @param {HTMLElement} dialog - The settings dialog element.
- */
-
-/**
- * Called when the settings dialog is hidden.
- * @memberof TempETAViewModel
- * @name onSettingsHidden
- * @function
- */
-
-/**
- * Handle incoming plugin messages delivered by OctoPrint's data updater.
- * @memberof TempETAViewModel
- * @name onDataUpdaterPluginMessage
- * @function
- * @param {Object} msg - The incoming plugin message payload.
- */
-
-/**
- * Return a user-facing label for a heater id.
- * @memberof TempETAViewModel
- * @name getHeaterLabel
- * @function
- * @param {string} heaterId
- * @returns {string}
- */
-
-/**
- * Whether the ETA should be visible for a given heater.
- * @memberof TempETAViewModel
- * @name isETAVisible
- * @function
- * @param {Object} heater
- * @returns {boolean}
- */
-
-/**
- * Compute a progress percentage (0-100) for the heater towards its target.
- * @memberof TempETAViewModel
- * @name getProgressPercent
- * @function
- * @param {Object} heater
- * @returns {number}
+ * @typedef {Object} PluginMessage
+ * @property {string} type
+ * @property {string} [heater]
+ * @property {number} [eta]
+ * @property {string} [eta_kind]
+ * @property {number|null} [cooldown_target]
+ * @property {number|null} [actual]
+ * @property {number|null} [target]
  */
 $(function () {
   function _attrOr($el, name, fallback) {
