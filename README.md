@@ -378,7 +378,7 @@ Note: For logs and troubleshooting, enable "debug logging" in the plugin setting
 ## Credits
 
 - **Original Request**: [Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469) by [@CptanPanic](https://github.com/CptanPanic) (2014)
-- **Development**: Built following [OctoPrint Plugin Guidelines](https://docs.octoprint.org/en/latest/plugins/index.html)
+- **Development**: Built following [OctoPrint Plugin Guidelines](https://docs.octoprint.org/en/main/plugins/index.html)
 - **Contributors**: See [AUTHORS.md](AUTHORS.md)
 
 ---
