@@ -10,7 +10,7 @@ license: AGPLv3
 
 date: 2026-01-15
 
-homepage: https://github.com/Ajimaru/OctoPrint-TempETA
+homepage: https://ajimaru.github.io/OctoPrint-TempETA
 source: https://github.com/Ajimaru/OctoPrint-TempETA
 archive: https://github.com/Ajimaru/OctoPrint-TempETA/archive/{target_version}.zip
 
@@ -40,7 +40,7 @@ compatibility:
   octoprint:
   - 1.10.2
 
-  python: ">=3.11,<4"
+  python: ">=3.07,<4"
 
 ---
 
