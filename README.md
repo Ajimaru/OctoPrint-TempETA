@@ -100,7 +100,7 @@ The `releases/latest` URL always points to the newest stable release.
 
 ## Configuration
 
-After installation, configure the plugin in **Settings** → **Temperature ETA**:
+Configure the plugin in **Settings** → **Temperature ETA**:
 
 <!-- markdownlint-disable MD033 -->
 
@@ -371,7 +371,7 @@ AGPLv3 - See [LICENSE](LICENSE) for details.
 ## Support
 
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
-- 💬 **Discussion**: [OctoPrint Community Forum](https://community.octoprint.org/)
+- 💬 **Discussion**: [Github Discussions](https://github.com/Ajimaru/OctoPrint-TempETA/discussions)
 
 Note: For logs and troubleshooting, enable "debug logging" in the plugin settings.
 
