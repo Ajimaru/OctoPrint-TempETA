@@ -3,7 +3,7 @@ layout: plugin
 
 id: temp_eta
 title: Temperature ETA
-description: Display real-time countdown/ETA when your 3D printer's bed, hotend, or chamber is heating up or cooling down. No more guessing how long until your print starts or is ready for maintenance!
+description: Show real-time ETA for your printer's bed, hotend, or chamber heating and cooling.
 authors:
 - Ajimaru
 license: AGPLv3
@@ -79,53 +79,6 @@ or manually using this URL:
 https://github.com/Ajimaru/OctoPrint-TempETA/archive/main.zip
 ```
 
-## Configuration
-
-After installation, configure the plugin in **Settings** → **Temperature ETA**:
-
-### General
-
-- **Enable Temperature ETA**: Master switch for the plugin
-- **Hide ETA while printing**: Optionally suppress ETA during active print jobs
-- **Show in sidebar / navbar / tab**: Independently enable the UI placements
-- **Show progress bars**: Show progress bars in sidebar and tab
-- **Show historical graph** + **Historical graph window (seconds)**: Configure the history graph in the tab
-- **Temperature display**: Use OctoPrint's preference or override it
-- **Status colors**: Configure time-based bands or fixed status colors (heating/cooling/idle)
-- **Update & Logging**:
-  - **Update interval** + **Temperature history size**: Control refresh rate and retained samples
-  - **Debug logging** (optional): Enables additional log output (may be noisy)
-- **Sound alerts** (optional): Enable per-event sounds, volume, rate limit, and a test button
-- **Browser notifications** (optional): Enable per-event toasts, timeout, and rate limit
-
-### Heating ETA
-
-- **Enable heating ETA**: Controls whether heating ETAs are shown/calculated
-- **Heating threshold** + **Threshold unit**: Start ETA when within a configured delta to the target
-- **Calculation algorithm**: Linear (default) or exponential
-
-### Cool-down ETA
-
-- **Enable cool-down ETA**: Turn cool-down ETA on/off
-- **Mode**:
-  - **Threshold target (default)**: Estimate time until a fixed, per-heater target is reached
-  - **Ambient-based target**: Estimate time until near ambient temperature (best-effort)
-- **Cool-down targets**: Configure per-heater targets (tool0/bed/chamber) for threshold mode
-- **Ambient temperature** (optional): Provide a fixed ambient value for ambient mode
-- **Hysteresis / fit window**: Controls when cool-down ETA disappears and how much recent data is used
-
-### MQTT
-
-- **Enable MQTT**: Master switch for MQTT integration (publishes ETA data to external broker)
-- **Broker Host**: MQTT broker hostname or IP address
-- **Broker Port**: MQTT broker port (default: 1883)
-- **Username/Password**: Optional authentication credentials
-- **Use TLS/SSL**: Enable encrypted connection
-- **Base Topic**: Root MQTT topic for publishing messages (default: `octoprint/temp_eta`)
-- **QoS**: MQTT Quality of Service level
-- **Retain Messages**: Enable MQTT retain flag
-- **Publish Interval**: Minimum seconds between MQTT publishes
-
 ## How It Works
 
 1. **Temperature Monitoring**: Plugin registers for temperature callbacks (~2Hz frequency)
@@ -134,49 +87,10 @@ After installation, configure the plugin in **Settings** → **Temperature ETA**
 4. **Display Update**: Sends countdown to frontend via WebSocket (1Hz default)
 5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
 
-## MQTT Integration
-
-When MQTT is enabled, the plugin publishes temperature ETA updates and state changes to your MQTT broker.
-This allows integration with home automation systems like Home Assistant, Node-RED, or any MQTT-compatible platform.
-
-**ETA Updates** (`{base_topic}/{heater}/eta`):
-
-```json
-{
-  "heater": "bed",
-  "eta_seconds": 120.5,
-  "eta_kind": "heating",
-  "target": 60.0,
-  "actual": 40.2,
-  "cooldown_target": null,
-  "timestamp": 1234567890.123,
-  "state": "heating"
-}
-```
-
-**State Changes** (`{base_topic}/{heater}/state_change`):
-
-```json
-{
-  "heater": "bed",
-  "state": "at_target",
-  "previous_state": "heating",
-  "timestamp": 1234567890.456,
-  "actual": 60.0,
-  "target": 60.0
-}
-```
-
 ## Origin Story
 
 This plugin implements a feature request from 2014 ([OctoPrint Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469))
 by [@CptanPanic](https://github.com/CptanPanic) to show estimated time remaining for printer heating.
-
-## Support
-
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
-- 💬 **Discussion**: [OctoPrint Community Forum](https://community.octoprint.org/)
-- 📖 **Documentation**: [Full Documentation](https://ajimaru.github.io/OctoPrint-TempETA/)
 
 ## Privacy & Data
 

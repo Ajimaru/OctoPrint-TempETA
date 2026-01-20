@@ -1,0 +1,3 @@
+[flake8]
+per-file-ignores =
+    setup.py: E266,E501,E402,E722
