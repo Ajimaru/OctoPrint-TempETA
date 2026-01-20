@@ -36,7 +36,7 @@ mkdocs build
 
 ## Documentation Structure
 
-```
+```files
 docs/
 ├── index.md                          # Overview
 ├── getting-started.md                # Development setup
@@ -75,6 +75,7 @@ docs/
 Python API documentation is automatically generated from docstrings using mkdocstrings.
 
 To update:
+
 1. Add/update docstrings in Python files
 2. Run `mkdocs build`
 
@@ -83,11 +84,13 @@ To update:
 JavaScript API documentation is generated from JSDoc comments.
 
 To update:
+
 1. Add JSDoc comments to JavaScript files
 2. Run `./scripts/generate-jsdocs.sh`
 3. Run `mkdocs build`
 
 Example JSDoc comment:
+
 ```javascript
 /**
  * Calculate ETA for a heater.
@@ -96,7 +99,7 @@ Example JSDoc comment:
  * @returns {number} ETA in seconds
  */
 function calculateETA(heater, data) {
-    // Implementation
+  // Implementation
 }
 ```
 
@@ -111,6 +114,7 @@ Workflow: `.github/workflows/docs.yml`
 ### mkdocs.yml
 
 Main configuration file for MkDocs:
+
 - Theme settings
 - Navigation structure
 - Plugin configuration
@@ -119,6 +123,7 @@ Main configuration file for MkDocs:
 ### jsdoc.json
 
 Configuration for JavaScript documentation:
+
 - Source file patterns
 - Output format
 - Plugins
@@ -136,6 +141,7 @@ Configuration for JavaScript documentation:
 ### Markdown Extensions
 
 Available extensions:
+
 - **Admonitions**: `!!! note "Title"`
 - **Code blocks**: ` ```python ` with syntax highlighting
 - **Tables**: Standard Markdown tables
@@ -146,10 +152,10 @@ Available extensions:
 
 ```markdown
 !!! warning "Important"
-    This is a warning message.
+This is a warning message.
 
 !!! note
-    This is a note without a title.
+This is a note without a title.
 ```
 
 ### Example: Mermaid Diagram

@@ -5,7 +5,7 @@ id: temp_eta
 title: Temperature ETA
 description: Show real-time ETA for your printer's bed, hotend, or chamber heating and cooling.
 authors:
-- Ajimaru
+  - Ajimaru
 license: AGPLv3
 
 date: 2026-01-15
@@ -15,33 +15,31 @@ source: https://github.com/Ajimaru/OctoPrint-TempETA
 archive: https://github.com/Ajimaru/OctoPrint-TempETA/archive/{target_version}.zip
 
 tags:
-- temperature
-- eta
-- heating
-- cooling
-- countdown
-- monitoring
-- ui
+  - temperature
+  - eta
+  - heating
+  - cooling
+  - countdown
+  - monitoring
 
 screenshots:
-- url: /assets/img/plugins/temp_eta/Temperature_ETA_heating.png
-  alt: Heating ETA display showing countdown
-  caption: Real-time heating ETA countdown
-- url: /assets/img/plugins/temp_eta/Temperature_ETA_cooling.png
-  alt: Cooling ETA display
-  caption: Cool-down ETA estimation
-- url: /assets/img/plugins/temp_eta/Temperature_ETA_settings.png
-  alt: Plugin settings interface
-  caption: Comprehensive settings panel
+  - url: /assets/img/plugins/temp_eta/Temperature_ETA_heating.png
+    alt: Heating ETA display showing countdown
+    caption: Real-time heating ETA countdown
+  - url: /assets/img/plugins/temp_eta/Temperature_ETA_cooling.png
+    alt: Cooling ETA display
+    caption: Cool-down ETA estimation
+  - url: /assets/img/plugins/temp_eta/Temperature_ETA_settings.png
+    alt: Plugin settings interface
+    caption: Comprehensive settings panel
 
 featuredimage: /assets/img/plugins/temp_eta/Temperature_ETA_heating.png
 
 compatibility:
   octoprint:
-  - 1.10.2
+    - 1.10.2
 
   python: ">=3.11,<4"
-
 ---
 
 ## Temperature ETA Plugin for OctoPrint
