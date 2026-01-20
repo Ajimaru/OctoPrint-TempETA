@@ -5,17 +5,20 @@
 <h1 align="center">OctoPrint Temperature ETA Plugin</h1>
 <!-- markdownlint-enable MD041 MD033-->
 
-[![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.10.2%2B-blue.svg)](https://octoprint.org)
 [![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
-[![Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
 [![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
 [![CI](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml?query=branch%3Amain)
 [![i18n](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml?query=branch%3Amain)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Language Count](https://img.shields.io/github/languages/count/Ajimaru/OctoPrint-TempETA)
+[![Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls)
+[![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
+![Stars](https://img.shields.io/github/stars/Ajimaru/OctoPrint-TempETA)
+![Forks](https://img.shields.io/github/forks/Ajimaru/OctoPrint-TempETA)
 
 ### Heat Up and Cool Down with Confidence
 
@@ -92,11 +95,18 @@
 
 ### Manual Installation
 
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary>Manual pip install (advanced users)</summary>
+
 ```bash
 pip install https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest/download/octoprint_tempeta-latest.zip
 ```
 
 The `releases/latest` URL always points to the newest stable release.
+
+</details>
+<!-- markdownlint-enable MD033 -->
 
 ## Configuration
 
@@ -136,6 +146,14 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 
 </details>
 <!-- markdownlint-enable MD033 -->
+
+## How It Works
+
+1. **Temperature Monitoring**: Plugin registers for temperature callbacks (~2Hz frequency)
+2. **Rate Calculation**: Analyzes temperature history to determine heating rate (°C/second)
+3. **ETA Estimation**: Uses selected algorithm (linear/exponential) to predict time to target
+4. **Display Update**: Sends countdown to frontend via WebSocket (1Hz default)
+5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
 
 ### Heating ETA
 <!-- markdownlint-disable MD033 -->
@@ -288,14 +306,6 @@ The following defaults apply to the user-editable plugin settings:
 
 </details>
 <!-- markdownlint-enable MD033 MD040 -->
-
-## How It Works
-
-1. **Temperature Monitoring**: Plugin registers for temperature callbacks (~2Hz frequency)
-2. **Rate Calculation**: Analyzes temperature history to determine heating rate (°C/second)
-3. **ETA Estimation**: Uses selected algorithm (linear/exponential) to predict time to target
-4. **Display Update**: Sends countdown to frontend via WebSocket (1Hz default)
-5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
 
 ## MQTT Message Format
 <!-- markdownlint-disable MD033 -->
