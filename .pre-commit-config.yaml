@@ -44,7 +44,8 @@ repos:
     hooks:
       - id: jsdoc-gen
         name: Generate JavaScript docs
-        entry: bash scripts/generate-jsdocs.sh
-        language: system
+        entry: node scripts/generate-jsdocs.js
+        language: node
+        additional_dependencies: [jsdoc-to-markdown]
         files: '^octoprint_temp_eta/static/js/.*\.js$'
         pass_filenames: false
