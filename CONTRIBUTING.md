@@ -78,7 +78,7 @@ pre-commit install
 ```bash
 pre-commit run --all-files
 # or use the helper which runs pre-commit and only commits on success
-./scripts/commit-if-clean.sh -m "Your commit message"
+./.development/commit-if-clean.sh -m "Your commit message"
 ```
 
 - CI runs the same `pre-commit` checks and `fail_fast` is enabled in the repository configuration. If a hook fails, fix the issues and re-run the checks — the commit should not be forced when hooks are failing.

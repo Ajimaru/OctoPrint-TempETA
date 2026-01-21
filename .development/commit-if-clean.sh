@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Helper to run pre-commit checks and only commit if they all pass.
-# Usage: ./scripts/commit-if-clean.sh -m "Commit message"
+# Usage: .development/commit-if-clean.sh -m "Commit message"
 
 MSG=""
 while getopts ":m:" opt; do
