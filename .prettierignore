@@ -1,2 +1,4 @@
 docs/
+octoprint_temp_eta/static/js/
+static/js/
 .github/workflows/
