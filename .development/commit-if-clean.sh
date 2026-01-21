@@ -26,4 +26,4 @@ fi
 echo "Staging all changes and committing..."
 git add -A
 git commit -m "${MSG}"
-echo "Committed." 
+echo "Committed."
