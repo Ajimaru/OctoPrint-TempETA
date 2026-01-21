@@ -45,6 +45,8 @@ resolve_octoprint_bin() {
   local candidate
   for candidate in \
     "$WORKSPACE_ROOT/venv/bin/octoprint" \
+    "$WORKSPACE_ROOT/.venv/bin/octoprint" \
+    "$WORKSPACE_ROOT/../OctoPrint/.venv/bin/octoprint" \
     "$WORKSPACE_ROOT/../OctoPrint/venv/bin/octoprint"; do
     if [[ -x "$candidate" ]]; then
       echo "$candidate"

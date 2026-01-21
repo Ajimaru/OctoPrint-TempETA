@@ -34,13 +34,18 @@ This plugin is a standard Python project.
 - Install in editable mode
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e ".[develop]"
 ```
 
 If you use the helper scripts, see `.development/README.md`.
+
+Notes:
+
+- The helper scripts target a Python 3.10+ development environment. The plugin runtime supports Python 3.11+.
+- If you downloaded the repo as a ZIP, executable bits may be missing. In that case run `bash .development/setup_dev.sh` (or `chmod +x .development/setup_dev.sh`).
 
 ## Running tests
 
@@ -53,9 +58,10 @@ pytest
 We use `pre-commit` to enforce consistent formatting and basic quality checks.
 
 ```bash
-pre-commit install
 pre-commit run --hook-stage manual --all-files
 ```
+
+If you use `.development/setup_dev.sh`, it enables repo-local git hooks via `core.hooksPath=.githooks`.
 
 ## Coding style
 

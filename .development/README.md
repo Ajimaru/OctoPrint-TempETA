@@ -11,6 +11,22 @@ None of these scripts contain hardcoded, machine-specific absolute paths. Wherev
 .development/setup_dev.sh
 ```
 
+If you downloaded the repository as a ZIP from GitHub, your unzip tool may have dropped executable bits.
+In that case, run the script explicitly via bash:
+
+```bash
+bash .development/setup_dev.sh
+```
+
+Alternatively, you can restore the executable bit and run it directly:
+
+```bash
+chmod +x .development/setup_dev.sh
+.development/setup_dev.sh
+```
+
+`setup_dev.sh` will also try to restore executable permissions for repo scripts and hooks (best-effort).
+
 ## Scripts
 
 ### setup_dev.sh
@@ -23,8 +39,16 @@ Creates/uses a local Python virtual environment in `./venv`, installs the plugin
 
 Notes:
 
+- The helper scripts target a Python 3.10+ development environment. The plugin itself supports Python 3.11+ as declared in `pyproject.toml`.
 - It automatically sets `git config core.hooksPath .githooks` (if the repo is a git checkout).
 - `pre-commit` is optional: if it is not installed, it will be skipped with a warning.
+- To use a specific Python interpreter for the venv (e.g. Python 3.12), set `PYTHON_BIN`: `PYTHON_BIN=python3.12 .development/setup_dev.sh`.
+- To run an initial `pre-commit run --all-files` during setup, set `RUN_PRE_COMMIT_ALL_FILES=1`.
+
+Git hooks behavior:
+
+- `pre-commit` hook: runs from `./venv/bin/pre-commit` and requires the venv Python to be 3.10+. If unavailable, it fails with an error and instructs you to run `.development/setup_dev.sh`.
+- `post-commit` hook: builds dist artifacts on version bumps using Python 3.10+ (prefers `./venv/bin/python`, otherwise `python3`). If Python/build tooling is unavailable, it fails with an error.
 
 ### restart_octoprint_dev.sh
 
@@ -83,6 +107,42 @@ Prints a human-readable quick checklist (versions, file presence, rough counts).
 ```bash
 .development/test_checklist.sh
 ```
+
+### run_ci_locally.sh
+
+Runs a fast, CI-like verification locally (pytest, pre-commit, i18n check, build).
+
+By default it will **not** keep auto-fixes made by pre-commit (it reverts them and fails). Use `--apply-fixes` if you want it to apply changes.
+
+If your working tree is not clean, the script will refuse to run unless you pass `--allow-dirty`.
+
+```bash
+.development/run_ci_locally.sh
+```
+
+### monitor_octoprint_performance.sh
+
+Lightweight performance monitoring for long-running OctoPrint/plugin tests.
+
+It samples OctoPrint process metrics (CPU, RSS, threads, open FDs), watches the plugin data directory
+(`~/.octoprint/data/temp_eta/` by default), and records basic log growth stats.
+
+Logs are written to the repo-local `.logs/` folder (gitignored).
+
+Examples:
+
+```bash
+# run until Ctrl+C (sample every 10s)
+.development/monitor_octoprint_performance.sh
+
+# sample every 5s for 10 hours
+.development/monitor_octoprint_performance.sh --interval 5 --duration 36000
+
+# take a single snapshot
+.development/monitor_octoprint_performance.sh --once
+```
+
+If PID auto-detection fails (e.g. non-default port), pass `--pid` or `--port`.
 
 ## Git hooks
 

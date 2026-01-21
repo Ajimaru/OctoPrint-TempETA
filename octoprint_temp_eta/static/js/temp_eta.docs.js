@@ -1,0 +1,83 @@
+/**
+ * Non-runtime JSDoc-only file for TempETA frontend.
+ *
+ * This file contains typedefs and high-level documentation used solely for
+ * generating JavaScript API docs. It is intentionally separated from the
+ * runtime `temp_eta.js` to avoid modifying code that executes in OctoPrint.
+ *
+ * Do NOT import this file at runtime; it exists only for documentation tools.
+ */
+
+/**
+ * @typedef {Object} Heater
+ * @property {string} name - heater id (e.g. 'tool0', 'bed')
+ * @property {Function|number|null} actual - current temperature observable or number
+ * @property {Function|number|null} target - target temperature observable or number
+ * @property {Function|number|null} [cooldownTarget]
+ * @property {Function|string|null} [etaKind]
+ * @property {Array<HeaterHistoryEntry>} [_history]
+ * @property {number} [_historyStart]
+ */
+
+/**
+ * @typedef {Object} HeaterHistoryEntry
+ * @property {number} t - epoch seconds of sample
+ * @property {number} a - actual temp
+ * @property {number|null} [tg] - recorded target
+ */
+
+/**
+ * @typedef {Object} PluginSettings
+ * @property {string} [color_mode]
+ * @property {boolean} [show_in_sidebar]
+ * @property {boolean} [show_in_navbar]
+ * @property {boolean} [show_in_tab]
+ * @property {number} [historical_graph_window_seconds]
+ * @property {boolean} [debug_logging]
+ */
+
+/**
+ * @typedef {Object} SoundConfig
+ * @property {boolean} enabled
+ * @property {number} volume
+ * @property {Array<string>} files
+ */
+
+/**
+ * @typedef {Object} PluginMessage
+ * @property {string} type
+ * @property {string} [heater]
+ * @property {number} [eta]
+ * @property {string} [eta_kind]
+ * @property {number|null} [cooldown_target]
+ * @property {number|null} [actual]
+ * @property {number|null} [target]
+ */
+
+/**
+ * High-level documented surface of the TempETA view model.
+ *
+ * @class TempETAViewModel
+ * @description Knockout view model for the Temperature ETA plugin.
+ * The runtime implementation lives in `temp_eta.js`; this file provides
+ * non-invasive JSDoc typedefs and an overview for documentation generation.
+ */
+(function () {
+  // Safety: if this file is ever loaded outside a Node docs build, do nothing.
+  if (typeof process === "undefined" || !process.versions || !process.versions.node) return;
+
+  function TempETAViewModel() {}
+  globalThis.TempETAViewModel = TempETAViewModel;
+
+  TempETAViewModel.prototype.onSettingsShown = function (dialog) {};
+
+  TempETAViewModel.prototype.onSettingsHidden = function () {};
+
+  TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (plugin, msg) {};
+
+  TempETAViewModel.prototype.getHeaterLabel = function (heaterId) {};
+
+  TempETAViewModel.prototype.isETAVisible = function (eta) {};
+
+  TempETAViewModel.prototype.getProgressPercent = function (heater) {};
+})();

@@ -5,6 +5,20 @@
  * Author: Ajimaru
  * License: AGPLv3
  */
+/**
+ * TempETA runtime JSDoc (small safe step).
+ *
+ * This comment block exists in the runtime file but should not be used as a
+ * source for generated API documentation (see `temp_eta.docs.js`).
+ *
+ * @ignore
+ * @class TempETAViewModel
+ * @classdesc Knockout view model for the Temperature ETA plugin.
+ */
+
+/**
+ * Type documentation lives in `temp_eta.docs.js` (non-runtime) to keep this file runtime-focused.
+ */
 $(function () {
   function _attrOr($el, name, fallback) {
     var v = $el && $el.length ? $el.attr(name) : null;
@@ -250,15 +264,20 @@ $(function () {
     self.printerState = parameters[1];
     self.printerProfiles = parameters[2];
 
-    self._bindSettingsIfNeeded = function () {
-      // With custom_bindings=True the settings template is injected lazily when the
-      // settings dialog opens. Bind it then, and guard against double-binding.
-      self.settings = self._resolveSettingsRoot();
+    self._getSettingsDialogRoot = function () {
       var $root = $("#settings_plugin_temp_eta");
       if (!$root.length) {
         $root = $(".temp-eta-settings");
       }
-      if (!$root.length) {
+      return $root.length ? $root : null;
+    };
+
+    self._bindSettingsIfNeeded = function () {
+      // With custom_bindings=True the settings template is injected lazily when the
+      // settings dialog opens. Bind it then, and guard against double-binding.
+      self.settings = self._resolveSettingsRoot();
+      var $root = self._getSettingsDialogRoot();
+      if (!$root) {
         return;
       }
 
@@ -270,18 +289,207 @@ $(function () {
       try {
         ko.applyBindings(self, rootEl);
         $(rootEl).data("tempEtaKoBound", true);
+
+        // Install validation handlers for numeric inputs in the settings dialog.
+        self._installSettingsValidationHandlers(rootEl);
       } catch (e) {
         // Ignore binding errors; OctoPrint may re-render parts of the dialog.
         // Keeping this quiet avoids spamming the log for transient timing issues.
       }
     };
 
-    self._unbindSettingsIfBound = function () {
-      var $root = $("#settings_plugin_temp_eta");
-      if (!$root.length) {
-        $root = $(".temp-eta-settings");
+    self._getValidationMessages = function () {
+      var $m = $("#temp_eta_validation_messages");
+      return {
+        title: _attrOr($m, "data-title", "TempETA"),
+        invalid: _attrOr(
+          $m,
+          "data-msg-invalid",
+          "Please enter a valid number.",
+        ),
+        min: _attrOr(
+          $m,
+          "data-msg-min",
+          "Please enter a value of at least {min}.",
+        ),
+        max: _attrOr(
+          $m,
+          "data-msg-max",
+          "Please enter a value of at most {max}.",
+        ),
+        range: _attrOr(
+          $m,
+          "data-msg-range",
+          "Please enter a value between {min} and {max}.",
+        ),
+        fix: _attrOr(
+          $m,
+          "data-msg-fix",
+          "Please fix the highlighted settings values before saving.",
+        ),
+      };
+    };
+
+    self._formatValidationMessage = function (template, params) {
+      var msg = String(template || "");
+      params = params || {};
+      Object.keys(params).forEach(function (k) {
+        msg = msg.replace("{" + k + "}", String(params[k]));
+      });
+      return msg;
+    };
+
+    self._clearValidationForInput = function (inputEl) {
+      var $input = $(inputEl);
+      $input.removeAttr("aria-invalid");
+      var $cg = $input.closest(".control-group");
+      $cg.removeClass("error");
+      var $controls = $input.closest(".controls");
+      $controls.find(".temp-eta-validation-error").remove();
+    };
+
+    self._setValidationForInput = function (inputEl, message) {
+      var $input = $(inputEl);
+      $input.attr("aria-invalid", "true");
+      var $cg = $input.closest(".control-group");
+      $cg.addClass("error");
+      var $controls = $input.closest(".controls");
+      $controls.find(".temp-eta-validation-error").remove();
+      $('<p class="help-block temp-eta-validation-error"></p>')
+        .text(String(message || ""))
+        .appendTo($controls);
+    };
+
+    self._isEmptyValue = function (v) {
+      return v === undefined || v === null || String(v).trim() === "";
+    };
+
+    self._parseFiniteNumber = function (v) {
+      var n = parseFloat(v);
+      if (!isFinite(n)) {
+        return null;
       }
-      if (!$root.length) {
+      return n;
+    };
+
+    self._validateNumberInput = function (inputEl) {
+      var $input = $(inputEl);
+      self._clearValidationForInput(inputEl);
+
+      if (!$input.is(":enabled")) {
+        return true;
+      }
+
+      var allowEmpty =
+        String($input.attr("data-allow-empty") || "").toLowerCase() === "true";
+      var raw = $input.val();
+      if (allowEmpty && self._isEmptyValue(raw)) {
+        return true;
+      }
+
+      var msgs = self._getValidationMessages();
+      var n = self._parseFiniteNumber(raw);
+      if (n === null) {
+        self._setValidationForInput(inputEl, msgs.invalid);
+        return false;
+      }
+
+      // Default rule: numeric settings should never be negative.
+      var minAttr = $input.attr("min");
+      var maxAttr = $input.attr("max");
+      var minVal = self._parseFiniteNumber(minAttr);
+      var maxVal = self._parseFiniteNumber(maxAttr);
+
+      // Special-case: threshold input is displayed in the selected unit and
+      // represents a delta, not an absolute temperature.
+      if ($input.attr("id") === "temp_eta_threshold") {
+        try {
+          if (self._effectiveThresholdUnit() === "f") {
+            minVal = (1.0 * 9.0) / 5.0;
+            maxVal = (50.0 * 9.0) / 5.0;
+          } else {
+            minVal = 1.0;
+            maxVal = 50.0;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (minVal === null) {
+        minVal = 0.0;
+      }
+      minVal = Math.max(0.0, minVal);
+
+      if (n < minVal) {
+        self._setValidationForInput(
+          inputEl,
+          self._formatValidationMessage(msgs.min, { min: minVal }),
+        );
+        return false;
+      }
+
+      if (maxVal !== null && n > maxVal) {
+        self._setValidationForInput(
+          inputEl,
+          self._formatValidationMessage(msgs.max, { max: maxVal }),
+        );
+        return false;
+      }
+
+      return true;
+    };
+
+    self._validateAllSettingsNumbers = function () {
+      var $root = self._getSettingsDialogRoot();
+      if (!$root) {
+        return true;
+      }
+
+      var ok = true;
+      var firstInvalid = null;
+
+      $root.find('input[type="number"]').each(function () {
+        var valid = self._validateNumberInput(this);
+        if (!valid) {
+          ok = false;
+          if (!firstInvalid) {
+            firstInvalid = this;
+          }
+        }
+      });
+
+      if (!ok) {
+        var msgs = self._getValidationMessages();
+        _notify("error", msgs.title, msgs.fix);
+        try {
+          if (firstInvalid && typeof firstInvalid.focus === "function") {
+            firstInvalid.focus();
+          }
+        } catch (e) {}
+      }
+
+      return ok;
+    };
+
+    self._installSettingsValidationHandlers = function (rootEl) {
+      if (!rootEl) {
+        return;
+      }
+      var $root = $(rootEl);
+      if ($root.data("tempEtaValidationBound")) {
+        return;
+      }
+      $root.data("tempEtaValidationBound", true);
+
+      $root.on("input change blur", 'input[type="number"]', function () {
+        self._validateNumberInput(this);
+      });
+    };
+
+    self._unbindSettingsIfBound = function () {
+      var $root = self._getSettingsDialogRoot();
+      if (!$root) {
         return;
       }
       var rootEl = $root.get(0);
@@ -304,11 +512,8 @@ $(function () {
         attempts += 1;
         self._bindSettingsIfNeeded();
 
-        var $root = $("#settings_plugin_temp_eta");
-        if (!$root.length) {
-          $root = $(".temp-eta-settings");
-        }
-        if ($root.length && $root.data("tempEtaKoBound")) {
+        var $root = self._getSettingsDialogRoot();
+        if ($root && $root.data("tempEtaKoBound")) {
           return;
         }
 
@@ -1027,7 +1232,9 @@ $(function () {
       }
 
       // Only show if we have at least a couple of points recorded.
-      if (!heater._history || heater._history.length < 2) {
+      var hist = heater._history || [];
+      var start = heater._historyStart || 0;
+      if (hist.length - start < 2) {
         return false;
       }
 
@@ -1043,9 +1250,14 @@ $(function () {
         heaterObj._history = [];
       }
 
+      if (!heaterObj._historyStart) {
+        heaterObj._historyStart = 0;
+      }
+
       // Only record when the feature is enabled.
       if (!self.isHistoricalGraphEnabled()) {
         heaterObj._history = [];
+        heaterObj._historyStart = 0;
         return;
       }
 
@@ -1058,14 +1270,154 @@ $(function () {
       // Prune to configured window (keep a small margin).
       var windowSec = self.getHistoricalGraphWindowSeconds();
       var cutoff = tsSec - windowSec - 5;
-      while (heaterObj._history.length && heaterObj._history[0].t < cutoff) {
-        heaterObj._history.shift();
+
+      // Avoid O(n) shift() in a hot path by keeping a moving start index.
+      var hist = heaterObj._history;
+      var start = heaterObj._historyStart || 0;
+      while (start < hist.length && hist[start].t < cutoff) {
+        start++;
+      }
+
+      // Compact occasionally to keep memory bounded.
+      if (start > 0 && (start > 200 || start > hist.length / 2)) {
+        heaterObj._history = hist.slice(start);
+        heaterObj._historyStart = 0;
+      } else {
+        heaterObj._historyStart = start;
       }
 
       // Hard cap as a safety net (shouldn't be hit in normal operation).
-      if (heaterObj._history.length > 5000) {
+      var activeLen =
+        heaterObj._history.length - (heaterObj._historyStart || 0);
+      if (activeLen > 5000) {
         heaterObj._history = heaterObj._history.slice(-5000);
+        heaterObj._historyStart = 0;
       }
+    };
+
+    self._resetHistoricalGraphState = function (info) {
+      try {
+        self._graphElementCache = {};
+      } catch (e) {
+        // ignore
+      }
+
+      var heaterKeys = [];
+      try {
+        heaterKeys = Object.keys(self.heaterData || {});
+      } catch (e) {
+        heaterKeys = [];
+      }
+
+      for (var i = 0; i < heaterKeys.length; i++) {
+        var heaterName = heaterKeys[i];
+        var h = self.heaterData[heaterName];
+        if (h) {
+          h._history = [];
+          h._historyStart = 0;
+          h._lastGraphRenderMs = 0;
+          h._lastGraphViewBoxW = null;
+        }
+
+        // Best-effort clear of currently visible SVG graph elements.
+        try {
+          var els = self._getGraphElements(heaterName);
+          if (els && els.poly && typeof els.poly.setAttribute === "function") {
+            els.poly.setAttribute("points", "");
+          }
+          if (
+            els &&
+            els.targetLine &&
+            typeof els.targetLine.setAttribute === "function"
+          ) {
+            els.targetLine.setAttribute("points", "");
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      self._debugLog(
+        "history_reset",
+        "[TempETA] Cleared historical graph state",
+        info,
+        5000,
+      );
+    };
+
+    self._getGraphElements = function (heaterName) {
+      if (!heaterName) {
+        return null;
+      }
+
+      if (!self._graphElementCache) {
+        self._graphElementCache = {};
+      }
+
+      function isConnected(el) {
+        if (!el) return false;
+        if (typeof el.isConnected === "boolean") return el.isConnected;
+        return document.documentElement.contains(el);
+      }
+
+      var cached = self._graphElementCache[heaterName] || null;
+      if (cached && isConnected(cached.svg) && isConnected(cached.poly)) {
+        return cached;
+      }
+
+      var svg = document.getElementById("temp_eta_graph_" + heaterName);
+      if (!svg) {
+        self._graphElementCache[heaterName] = null;
+        return null;
+      }
+
+      var poly = document.getElementById("temp_eta_graph_actual_" + heaterName);
+      var targetLine = document.getElementById(
+        "temp_eta_graph_target_" + heaterName,
+      );
+      if (!poly || !targetLine) {
+        self._graphElementCache[heaterName] = null;
+        return null;
+      }
+
+      cached = {
+        svg: svg,
+        poly: poly,
+        targetLine: targetLine,
+        axisY: svg.querySelector(".temp-eta-graph-axis-y"),
+        axisX: svg.querySelector(".temp-eta-graph-axis-x"),
+        unitX: document.getElementById("temp_eta_graph_unit_x_" + heaterName),
+        tickYMax: document.getElementById(
+          "temp_eta_graph_tick_ymax_" + heaterName,
+        ),
+        tickYMid: document.getElementById(
+          "temp_eta_graph_tick_ymid_" + heaterName,
+        ),
+        tickYMin: document.getElementById(
+          "temp_eta_graph_tick_ymin_" + heaterName,
+        ),
+        labelYMax: document.getElementById(
+          "temp_eta_graph_label_ymax_" + heaterName,
+        ),
+        labelYMid: document.getElementById(
+          "temp_eta_graph_label_ymid_" + heaterName,
+        ),
+        labelYMin: document.getElementById(
+          "temp_eta_graph_label_ymin_" + heaterName,
+        ),
+        labelXLeft: document.getElementById(
+          "temp_eta_graph_label_xleft_" + heaterName,
+        ),
+        labelXMid: document.getElementById(
+          "temp_eta_graph_label_xmid_" + heaterName,
+        ),
+        labelXRight: document.getElementById(
+          "temp_eta_graph_label_xright_" + heaterName,
+        ),
+      };
+
+      self._graphElementCache[heaterName] = cached;
+      return cached;
     };
 
     self._formatAxisTime = function (seconds) {
@@ -1126,42 +1478,89 @@ $(function () {
         return;
       }
 
-      var poly = document.getElementById(
-        "temp_eta_graph_actual_" + heaterObj.name,
-      );
-      var targetLine = document.getElementById(
-        "temp_eta_graph_target_" + heaterObj.name,
-      );
-      if (!poly || !targetLine) {
+      var els = self._getGraphElements(heaterObj.name);
+      if (!els) {
         return;
       }
 
+      var svg = els.svg;
+
+      // Keep text legible under wide layouts by avoiding non-uniform scaling.
+      // We dynamically adjust the viewBox width to match the viewport aspect ratio.
+      var vbH = 40;
+      var vbW = 100;
+      try {
+        var rect = svg.getBoundingClientRect();
+        var wPx = svg.clientWidth || (rect && rect.width ? rect.width : 0);
+        var hPx = svg.clientHeight || (rect && rect.height ? rect.height : 0);
+        if (wPx > 0 && hPx > 0) {
+          vbW = vbH * (wPx / hPx);
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // Clamp for sanity: below 100 the labels start to collide.
+      vbW = Math.max(100, Math.min(400, vbW));
+
+      if (heaterObj._lastGraphViewBoxW !== vbW) {
+        heaterObj._lastGraphViewBoxW = vbW;
+        svg.setAttribute(
+          "viewBox",
+          "0 0 " + vbW.toFixed(2).replace(/\.00$/, "") + " " + vbH,
+        );
+        svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+      }
+
+      var poly = els.poly;
+      var targetLine = els.targetLine;
+
       var hist = heaterObj._history || [];
-      if (hist.length < 2) {
+      var histStart = heaterObj._historyStart || 0;
+      if (hist.length - histStart < 2) {
         poly.setAttribute("points", "");
         return;
       }
 
-      // ViewBox: 0..100 (x), 0..40 (y)
-      var vbW = 100;
-      var vbH = 40;
+      // ViewBox: 0..vbW (x), 0..40 (y)
       var plotLeft = 12;
-      var plotRight = 99;
+      var plotRight = vbW - 1;
       var plotTop = 2;
       var plotBottom = 30;
       var plotW = plotRight - plotLeft;
       var plotH = plotBottom - plotTop;
 
+      // Update static axes geometry to match the dynamic viewBox width.
+      var axisY = els.axisY;
+      if (axisY) {
+        axisY.setAttribute("x1", String(plotLeft));
+        axisY.setAttribute("x2", String(plotLeft));
+        axisY.setAttribute("y1", String(plotTop));
+        axisY.setAttribute("y2", String(plotBottom));
+      }
+      var axisX = els.axisX;
+      if (axisX) {
+        axisX.setAttribute("x1", String(plotLeft));
+        axisX.setAttribute("x2", String(plotRight));
+        axisX.setAttribute("y1", String(plotBottom));
+        axisX.setAttribute("y2", String(plotBottom));
+      }
+
       var windowSec = self.getHistoricalGraphWindowSeconds();
       var nowSec = hist[hist.length - 1].t;
       var minT = nowSec - windowSec;
 
+      // Only consider points in the current window.
+      var idxStart = histStart;
+      while (idxStart < hist.length && hist[idxStart].t < minT) {
+        idxStart++;
+      }
+
       // Determine min/max for scaling.
       var minTemp = Infinity;
       var maxTemp = -Infinity;
-      for (var i = 0; i < hist.length; i++) {
+      for (var i = idxStart; i < hist.length; i++) {
         var p = hist[i];
-        if (p.t < minT) continue;
         if (p.a < minTemp) minTemp = p.a;
         if (p.a > maxTemp) maxTemp = p.a;
         if (isFinite(p.tg) && p.tg > 0) {
@@ -1202,13 +1601,26 @@ $(function () {
       }
 
       var points = [];
-      for (var j = 0; j < hist.length; j++) {
+      var count = hist.length - idxStart;
+      var maxPoints = 250;
+      var step = count > maxPoints ? Math.ceil(count / maxPoints) : 1;
+      var lastIncludedIndex = -1;
+
+      for (var j = idxStart; j < hist.length; j += step) {
         var h = hist[j];
-        if (h.t < minT) continue;
 
         var x = xForTime(h.t);
         var y = yForTemp(h.a);
         points.push(x.toFixed(2) + "," + y.toFixed(2));
+        lastIncludedIndex = j;
+      }
+
+      // Always include the most recent point to keep the graph "alive".
+      if (hist.length > idxStart && lastIncludedIndex !== hist.length - 1) {
+        var last = hist[hist.length - 1];
+        points.push(
+          xForTime(last.t).toFixed(2) + "," + yForTemp(last.a).toFixed(2),
+        );
       }
 
       poly.setAttribute("points", points.join(" "));
@@ -1231,32 +1643,20 @@ $(function () {
       var yMax = maxTemp;
       var yMid = (yMin + yMax) / 2.0;
 
-      var unitX = document.getElementById(
-        "temp_eta_graph_unit_x_" + heaterObj.name,
-      );
+      var unitX = els.unitX;
       if (unitX) {
         unitX.textContent = "mm:ss";
+        unitX.setAttribute("x", String(plotRight));
+        unitX.setAttribute("y", String(plotBottom + 4));
       }
 
-      var tickYMax = document.getElementById(
-        "temp_eta_graph_tick_ymax_" + heaterObj.name,
-      );
-      var tickYMid = document.getElementById(
-        "temp_eta_graph_tick_ymid_" + heaterObj.name,
-      );
-      var tickYMin = document.getElementById(
-        "temp_eta_graph_tick_ymin_" + heaterObj.name,
-      );
+      var tickYMax = els.tickYMax;
+      var tickYMid = els.tickYMid;
+      var tickYMin = els.tickYMin;
 
-      var labelYMax = document.getElementById(
-        "temp_eta_graph_label_ymax_" + heaterObj.name,
-      );
-      var labelYMid = document.getElementById(
-        "temp_eta_graph_label_ymid_" + heaterObj.name,
-      );
-      var labelYMin = document.getElementById(
-        "temp_eta_graph_label_ymin_" + heaterObj.name,
-      );
+      var labelYMax = els.labelYMax;
+      var labelYMid = els.labelYMid;
+      var labelYMin = els.labelYMin;
 
       if (
         tickYMax &&
@@ -1266,6 +1666,14 @@ $(function () {
         labelYMid &&
         labelYMin
       ) {
+        var tickX1 = plotLeft - 1.5;
+        tickYMax.setAttribute("x1", tickX1.toFixed(2));
+        tickYMax.setAttribute("x2", String(plotLeft));
+        tickYMid.setAttribute("x1", tickX1.toFixed(2));
+        tickYMid.setAttribute("x2", String(plotLeft));
+        tickYMin.setAttribute("x1", tickX1.toFixed(2));
+        tickYMin.setAttribute("x2", String(plotLeft));
+
         var yTickMaxPos = yForTemp(yMax);
         var yTickMidPos = yForTemp(yMid);
         var yTickMinPos = yForTemp(yMin);
@@ -1286,27 +1694,29 @@ $(function () {
         labelYMin.setAttribute("y", yTickMinPos.toFixed(2));
       }
 
-      // X labels are relative time within the window.
-      var labelXLeft = document.getElementById(
-        "temp_eta_graph_label_xleft_" + heaterObj.name,
-      );
-      var labelXMid = document.getElementById(
-        "temp_eta_graph_label_xmid_" + heaterObj.name,
-      );
-      var labelXRight = document.getElementById(
-        "temp_eta_graph_label_xright_" + heaterObj.name,
-      );
+      var labelXLeft = els.labelXLeft;
+      var labelXMid = els.labelXMid;
+      var labelXRight = els.labelXRight;
       if (labelXLeft && labelXMid && labelXRight) {
         labelXLeft.textContent = "-" + self._formatAxisTime(windowSec);
         labelXMid.textContent = "-" + self._formatAxisTime(windowSec / 2.0);
         labelXRight.textContent = "0:00";
+
+        labelXLeft.setAttribute("x", String(plotLeft));
+        labelXMid.setAttribute("x", (plotLeft + plotW / 2.0).toFixed(2));
+        labelXRight.setAttribute("x", String(plotRight));
       }
     };
 
     /**
-     * Format seconds to MM:SS format
-     * @param {number} seconds - Seconds to format
-     * @returns {string} Formatted time string
+     * Format seconds into a human-readable minutes:seconds string.
+     *
+     * This is a pure documentation block (JSDoc) and does not alter runtime
+     * behavior; it must be kept as a comment-only insertion to avoid parse
+     * issues during documentation generation.
+     *
+     * @param {number} seconds - Seconds until target (positive integer)
+     * @returns {string} Formatted ETA like "M:SS" or "--:--" if unknown
      */
     self.formatETA = function (seconds) {
       if (!seconds || seconds <= 0) {
@@ -1315,18 +1725,6 @@ $(function () {
       var mins = Math.floor(seconds / 60);
       var secs = Math.floor(seconds % 60);
       return mins + ":" + (secs < 10 ? "0" : "") + secs;
-    };
-
-    /**
-     * Format temperature with one decimal place
-     * @param {number} temp - Temperature value
-     * @returns {string} Formatted temperature
-     */
-    self.formatTemp = function (temp) {
-      if (!temp && temp !== 0) {
-        return "--";
-      }
-      return Math.round(temp * 10) / 10;
     };
 
     self._getTempDisplayMode = function () {
@@ -1395,6 +1793,16 @@ $(function () {
       return ((fahrenheit - 32.0) * 5.0) / 9.0;
     };
 
+    // Delta conversions (used for settings like threshold_start which represent
+    // a temperature difference, not an absolute temperature).
+    self._cDeltaToF = function (deltaC) {
+      return (deltaC * 9.0) / 5.0;
+    };
+
+    self._fDeltaToC = function (deltaF) {
+      return (deltaF * 5.0) / 9.0;
+    };
+
     self._effectiveThresholdUnit = function () {
       var ps = self._pluginSettings();
       if (!ps || !ps.threshold_unit) {
@@ -1439,7 +1847,7 @@ $(function () {
         }
 
         if (self._effectiveThresholdUnit() === "f") {
-          return self._cToF(thresholdC).toFixed(1);
+          return self._cDeltaToF(thresholdC).toFixed(1);
         }
         return thresholdC.toFixed(1);
       },
@@ -1458,21 +1866,47 @@ $(function () {
           return;
         }
 
+        var minDisplay =
+          self._effectiveThresholdUnit() === "f" ? (1.0 * 9.0) / 5.0 : 1.0;
+        var maxDisplay =
+          self._effectiveThresholdUnit() === "f" ? (50.0 * 9.0) / 5.0 : 50.0;
+        if (numeric < minDisplay) numeric = minDisplay;
+        if (numeric > maxDisplay) numeric = maxDisplay;
+
         var thresholdC =
           self._effectiveThresholdUnit() === "f"
-            ? self._fToC(numeric)
+            ? self._fDeltaToC(numeric)
             : numeric;
         ps.threshold_start(parseFloat(thresholdC.toFixed(3)));
       },
     });
 
+    // Block settings save if any numeric fields are invalid.
+    self.onSettingsBeforeSave = function () {
+      return self._validateAllSettingsNumbers();
+    };
+
     /**
-     * Handle plugin messages from backend
-     * @param {string} plugin - Plugin identifier
-     * @param {object} data - Message data
+     * Handle incoming plugin messages delivered by OctoPrint's data updater.
+     * @function TempETAViewModel#onDataUpdaterPluginMessage
+     * @param {string} plugin - plugin identifier (should be "temp_eta")
+     * @param {Object} data - plugin message payload
+     * @param {string} data.type - message type (e.g. 'history_reset','settings_reset','heater_update')
+     * @param {string} [data.heater] - heater id when applicable (e.g. 'tool0','bed')
+     * @param {number} [data.eta] - ETA in seconds when provided
+     * @param {string} [data.eta_kind] - kind of ETA ('linear','exponential',...)
+     * @param {number|null} [data.cooldown_target]
+     * @param {number|null} [data.actual]
+     * @param {number|null} [data.target]
+     * @returns {void}
      */
     self.onDataUpdaterPluginMessage = function (plugin, data) {
       if (plugin !== "temp_eta") {
+        return;
+      }
+
+      if (data.type === "history_reset") {
+        self._resetHistoricalGraphState(data);
         return;
       }
 
@@ -1501,7 +1935,6 @@ $(function () {
             ? parseFloat(data.cooldown_target)
             : null;
 
-        // Dynamically register heaters as they appear
         if (!self.heaterData[heater]) {
           self.heaterData[heater] = {
             name: heater,
@@ -1537,16 +1970,38 @@ $(function () {
           ? parseFloat(heaterObj.target())
           : NaN;
 
-        // Update heater data
-        heaterObj.eta(eta);
-        heaterObj.etaKind(etaKind);
-        heaterObj.actual(data.actual);
-        heaterObj.target(data.target);
-        heaterObj.cooldownTarget(
+        var prevCooldown = heaterObj.cooldownTarget
+          ? heaterObj.cooldownTarget()
+          : null;
+
+        // Update heater data (avoid redundant KO notifications).
+        if (prevEta !== eta) {
+          heaterObj.eta(eta);
+        }
+        if (prevEtaKind !== etaKind) {
+          heaterObj.etaKind(etaKind);
+        }
+        if (heaterObj.actual() !== data.actual) {
+          heaterObj.actual(data.actual);
+        }
+        if (heaterObj.target() !== data.target) {
+          heaterObj.target(data.target);
+        }
+
+        var normalizedCooldown =
           cooldownTarget !== null && isFinite(cooldownTarget)
             ? cooldownTarget
-            : null,
-        );
+            : null;
+        if (
+          prevCooldown !== normalizedCooldown &&
+          !(
+            isFinite(prevCooldown) &&
+            isFinite(normalizedCooldown) &&
+            Math.abs(prevCooldown - normalizedCooldown) < 1e-9
+          )
+        ) {
+          heaterObj.cooldownTarget(normalizedCooldown);
+        }
 
         // Track start temperature for progress bars.
         // We reset this when a new target is set (or the target changes), so
@@ -1659,12 +2114,8 @@ $(function () {
         }
 
         // Record and render history graph (tab view).
-        self._recordHeaterHistory(
-          heaterObj,
-          Date.now() / 1000.0,
-          actualNow,
-          targetNow,
-        );
+        var tsSec = Date.now() / 1000.0;
+        self._recordHeaterHistory(heaterObj, tsSec, actualNow, targetNow);
         self._renderHistoricalGraph(heaterObj);
 
         // Ensure sidebar becomes visible even if it was injected late.
@@ -1716,88 +2167,15 @@ $(function () {
     };
 
     /**
-     * Check if ETA should be shown
-     * @param {number} eta - ETA value in seconds
-     * @returns {boolean} True if ETA is valid and should be shown
+     * Determine whether an ETA value should be considered visible.
+     * @function TempETAViewModel#isETAVisible
+     * @param {number|null|undefined} eta - ETA in seconds (may be null/undefined)
+     * @returns {boolean} true if ETA should be shown to the user
      */
     self.isETAVisible = function (eta) {
       return eta !== null && eta !== undefined && eta >= 1;
     };
 
-    function toBoolFlag(value) {
-      if (value === true || value === false) return value;
-      if (typeof value === "string") {
-        return value.toLowerCase() === "true" || value === "1";
-      }
-      if (typeof value === "number") {
-        return value === 1;
-      }
-      return false;
-    }
-
-    /**
-     * Check if heater is part of the active printer profile
-     * @param {string} heaterName
-     * @returns {boolean}
-     */
-    self.isHeaterSupported = function (heaterName) {
-      var profile = null;
-
-      // Prefer printerProfilesViewModel (authoritative for current profile)
-      if (self.printerProfiles && self.printerProfiles.currentProfileData) {
-        profile = self.printerProfiles.currentProfileData();
-      }
-
-      // Fallback to printerStateViewModel if needed
-      if (
-        !profile &&
-        self.printerState &&
-        typeof self.printerState.printerProfile === "function"
-      ) {
-        profile = self.printerState.printerProfile();
-      } else if (
-        !profile &&
-        self.printerState &&
-        typeof self.printerState.currentPrinterProfileData === "function"
-      ) {
-        profile = self.printerState.currentPrinterProfileData();
-      }
-
-      if (!profile) {
-        return true; // no profile info available, do not hide
-      }
-
-      var rawCount = profile.extruder && profile.extruder.count;
-      var extruderCount = parseInt(rawCount, 10);
-      if (isNaN(extruderCount) || extruderCount <= 0) {
-        extruderCount = 1;
-      }
-      var hasBed =
-        profile.heatedBed === undefined ? true : toBoolFlag(profile.heatedBed);
-      var hasChamber = toBoolFlag(profile.heatedChamber);
-
-      if (heaterName === "bed") {
-        return hasBed;
-      }
-
-      if (heaterName === "chamber") {
-        return hasChamber;
-      }
-
-      if (heaterName && heaterName.indexOf("tool") === 0) {
-        var idx = parseInt(heaterName.replace("tool", ""), 10);
-        if (isNaN(idx)) {
-          return true;
-        }
-        return idx < extruderCount;
-      }
-
-      return true;
-    };
-
-    /**
-     * Computed: CSS class for ETA display based on time
-     */
     self.getETAClass = function (heater) {
       if (!heater || !heater.eta) return "hidden";
 
@@ -1925,7 +2303,10 @@ $(function () {
     };
 
     /**
-     * Get display name for heater (friendly name)
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
      */
     self.getHeaterLabel = function (heaterName) {
       var labels = {
@@ -1935,13 +2316,22 @@ $(function () {
       if (labels[heaterName]) {
         return labels[heaterName];
       }
-      // Default for tool0, tool1, tool2, etc
       return heaterName.charAt(0).toUpperCase() + heaterName.slice(1);
     };
 
-    self.getNotHeatingText = function () {
-      return _gettext("Idle");
-    };
+    /**
+     * Return the localized idle text for a heater (e.g. 'Idle' or 'Cooling').
+     * @function TempETAViewModel#getHeaterIdleText
+     * @param {Heater} heater - heater object
+     * @returns {string} localized idle text
+     */
+
+    /**
+     * Return a user-facing label for a heater id.
+     * @function TempETAViewModel#getHeaterLabel
+     * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
+     * @returns {string} localized label
+     */
 
     self.getHeaterIdleText = function (heater) {
       if (heater && heater.etaKind && heater.etaKind() === "cooling") {
@@ -1957,9 +2347,6 @@ $(function () {
       return "eta-idle";
     };
 
-    /**
-     * Sort heaters in logical order: tools first, then bed, then chamber
-     */
     self.sortHeaters = function (heaters) {
       return heaters.slice().sort(function (a, b) {
         var nameA = a.name;
@@ -1968,7 +2355,6 @@ $(function () {
         var orderA = 999;
         var orderB = 999;
 
-        // Tools: tool0=0, tool1=1, tool2=2, etc
         if (nameA.indexOf("tool") === 0) {
           orderA = parseInt(nameA.replace("tool", ""), 10);
         } else if (nameA === "bed") {
@@ -1989,20 +2375,16 @@ $(function () {
       });
     };
 
-    /**
-     * Get icon class for heater type
-     */
     self.getHeaterIcon = function (heaterName) {
       if (heaterName === "bed") {
         return "fa-bed";
       } else if (heaterName === "chamber") {
         return "fa-cube";
       } else {
-        return "fa-fire"; // tools/hotends
+        return "fa-fire";
       }
     };
 
-    // Show only heaters with actual data from backend
     self.displayHeaters = ko.computed(function () {
       var heaters = self.heaters().filter(function (h) {
         return (
@@ -2022,7 +2404,6 @@ $(function () {
       });
     });
 
-    // Navbar visibility (used by template binding)
     self.showETA = ko.pureComputed(function () {
       return (
         self.isComponentEnabled("navbar") && self.visibleHeaters().length > 0
@@ -2030,12 +2411,10 @@ $(function () {
     });
 
     self._applyComponentVisibility = function () {
-      // Sidebar: hide whole box wrapper if disabled or no ETA to show.
       var showSidebar =
         self.isComponentEnabled("sidebar") && self.displayHeaters().length > 0;
       $("#sidebar_plugin_temp_eta_wrapper").toggle(!!showSidebar);
 
-      // Tab: hide nav entry and content wrapper if disabled.
       var showTab = self.isComponentEnabled("tab");
       $("#tab_plugin_temp_eta_link").toggle(!!showTab);
 
@@ -2086,7 +2465,6 @@ $(function () {
       self._applyComponentVisibility();
     };
 
-    // Group heaters into columns of 2 (each column has max 2 rows)
     self.heaterColumns = ko.computed(function () {
       var visible = self.visibleHeaters();
       var columns = [];
@@ -2096,19 +2474,13 @@ $(function () {
       return columns;
     });
 
-    self.onBeforeBinding = function () {
-      // Called before the view model is bound to the DOM
-    };
+    self.onBeforeBinding = function () {};
 
     self.onAfterBinding = function () {
-      // Called after the view model is bound to the DOM
       self._setupVisibilitySubscriptions();
       self._installSettingsDialogHooks();
 
-      // Extended settings (colors + sound)
       self._setupExtendedSettingsSubscriptions();
-
-      // Try binding the sidebar root even if it gets injected after startup.
       self._ensureSidebarBound();
     };
 
@@ -2121,7 +2493,6 @@ $(function () {
     };
   }
 
-  // This is how our plugin registers itself with the application
   OCTOPRINT_VIEWMODELS.push({
     construct: TempETAViewModel,
     dependencies: [

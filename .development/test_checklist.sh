@@ -1,5 +1,47 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Temperature ETA Plugin - Quick Test Checklist
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT=""
+if command -v git >/dev/null 2>&1; then
+
+    REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+fi
+if [[ -z "$REPO_ROOT" ]]; then
+
+    REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
+cd "$REPO_ROOT"
+
+PYTHON_BIN="python3"
+PIP_BIN="pip"
+if [[ -x "$REPO_ROOT/venv/bin/python" ]]; then
+
+    PYTHON_BIN="$REPO_ROOT/venv/bin/python"
+    PIP_BIN="$REPO_ROOT/venv/bin/pip"
+fi
+
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+
+    echo "ERROR: $PYTHON_BIN not found" >&2
+    exit 1
+fi
+
+if ! "$PYTHON_BIN" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 10) else 1)' >/dev/null 2>&1; then
+
+    "$PYTHON_BIN" --version >&2 || true
+    echo "ERROR: Python 3.10+ is required to run this checklist" >&2
+    echo "Hint: Run .development/setup_dev.sh to create ./venv" >&2
+    exit 1
+fi
+
+REPO_ROOT_CMD="<repo-root>"
+if command -v git >/dev/null 2>&1; then
+
+    REPO_ROOT_CMD='"$(git rev-parse --show-toplevel)"'
+fi
 
 echo "======================================"
 echo "Temperature ETA Plugin - Test Setup"
@@ -8,8 +50,8 @@ echo ""
 
 # Step 1: Check Python
 echo "1️⃣  Python & pip:"
-python3 --version
-pip --version
+"$PYTHON_BIN" --version
+"$PIP_BIN" --version
 echo ""
 
 # Step 2: Check pyproject.toml
@@ -57,16 +99,17 @@ echo "Installation Instructions"
 echo "======================================"
 echo ""
 echo "Method A: Development Installation (for existing OctoPrint)"
-echo "   cd /home/robby/Temp/print_temp_eta"
-echo "   pip install -e ."
+echo "   cd $REPO_ROOT_CMD"
+echo "   source venv/bin/activate"
+echo "   python -m pip install -e \".[develop]\""
 echo "   # Restart OctoPrint"
 echo ""
 echo "Method B: Isolated Testing Environment"
 echo "   python3 -m venv /tmp/octoprint_test"
 echo "   source /tmp/octoprint_test/bin/activate"
 echo "   pip install OctoPrint"
-echo "   cd /home/robby/Temp/print_temp_eta"
-echo "   pip install -e ."
+echo "   cd $REPO_ROOT_CMD"
+echo "   pip install -e \".[develop]\""
 echo "   octoprint serve"
 echo "   # Open http://localhost:5000"
 echo ""

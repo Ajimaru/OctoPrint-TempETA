@@ -1,22 +1,28 @@
 [build-system]
-requires = ["setuptools>=68,<81", "wheel", "octoprint-setuptools", "OctoPrint>=1.12.0"]
+requires = ["setuptools>=77,<81", "wheel", "octoprint-setuptools", "OctoPrint>=1.12.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-TempETA"
-version = "0.5.0rc1"
+version = "0.7.4rc1"
 description = "OctoPrint plugin to show estimated time remaining for printer heating"
 authors = [
     {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
-license = {file = "LICENSE"}
 
 requires-python = ">=3.7, <4"
 
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
 # any additional requirements (besides OctoPrint) should be listed here
 dependencies = [
-    "typing_extensions>=4.0; python_version<'3.8'"
+    "paho-mqtt>=1.6.0,<3.0.0"
 ]
 
 [tool.setuptools]
@@ -46,14 +52,10 @@ Issues = "https://github.com/Ajimaru/OctoPrint-TempETA/issues"
 
 [project.optional-dependencies]
 develop = [
-    "pytest>=7,<8; python_version<'3.8'",
-    "pytest>=7; python_version>='3.8'",
+    "pytest>=7,<9",
     "pytest-cov",
-    "pre-commit<3; python_version<'3.8'",
-    "pre-commit>=3,<5; python_version>='3.8'",
-    "black==23.3.0; python_version<'3.8'",
-    "black>=24.0.0; python_version>='3.8'",
+    "pre-commit>=3,<5",
+    "black>=24.0.0",
     "isort>=5,<7",
-    "flake8<7; python_version<'3.8'",
-    "flake8>=7.0.0; python_version>='3.8'"
+    "flake8>=7.0.0"
 ]

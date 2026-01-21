@@ -1,4 +1,12 @@
 <form id="settings_plugin_temp_eta" class="form-horizontal temp-eta-settings">
+    <div id="temp_eta_validation_messages"
+         style="display: none;"
+         data-title="{{ _('Temperature ETA') }}"
+         data-msg-invalid="{{ _('Please enter a valid number.') }}"
+         data-msg-min="{{ _('Please enter a value of at least {min}.') }}"
+         data-msg-max="{{ _('Please enter a value of at most {max}.') }}"
+         data-msg-range="{{ _('Please enter a value between {min} and {max}.') }}"
+         data-msg-fix="{{ _('Please fix the highlighted settings values before saving.') }}"></div>
     <fieldset>
         <legend>{{ _('Temperature ETA Settings') }}</legend>
 
@@ -6,6 +14,7 @@
             <li class="active"><a href="#temp_eta_settings_tab_shared" data-toggle="tab">{{ _('General') }}</a></li>
             <li><a href="#temp_eta_settings_tab_heating" data-toggle="tab">{{ _('Heating ETA') }}</a></li>
             <li><a href="#temp_eta_settings_tab_cooldown" data-toggle="tab">{{ _('Cool-down ETA') }}</a></li>
+            <li><a href="#temp_eta_settings_tab_mqtt" data-toggle="tab">{{ _('MQTT') }}</a></li>
             <li><a href="#temp_eta_settings_tab_maintenance" data-toggle="tab">{{ _('Maintenance') }}</a></li>
             <li><a href="#temp_eta_settings_tab_help" data-toggle="tab">{{ _('Help') }}</a></li>
         </ul>
@@ -202,35 +211,40 @@
 
         <div class="temp-eta-settings-divider"><hr></div>
 
-        <!-- Update Interval -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_update_interval">{{ _('Update Interval (seconds)') }}</label>
-            <div class="controls">
-                <input type="number" class="input-small" id="temp_eta_update_interval"
-                       data-bind="value: settings.plugins.temp_eta.update_interval, enable: settings.plugins.temp_eta.enabled"
-                       min="0.1" max="5" step="0.1">
-                <p class="help-block">{{ _('How often to update ETA display (lower = more responsive, higher = less CPU)') }}</p>
-            </div>
-        </div>
+        <div class="temp-eta-settings-group">
+            <h4>{{ _('Update & Logging') }}</h4>
 
-        <!-- History Size -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_history_size">{{ _('Temperature History Size') }}</label>
-            <div class="controls">
-                <input type="number" class="input-small" id="temp_eta_history_size"
-                       data-bind="value: settings.plugins.temp_eta.history_size, enable: settings.plugins.temp_eta.enabled"
-                       min="10" max="300" step="10">
-                <p class="help-block">{{ _('Number of temperature samples to keep in history') }}</p>
+            <!-- Update Interval -->
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_update_interval">{{ _('Update Interval (seconds)') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_update_interval"
+                           data-bind="value: settings.plugins.temp_eta.update_interval, enable: settings.plugins.temp_eta.enabled"
+                           min="0.1" max="5" step="0.1">
+                    <p class="help-block">{{ _('How often to update ETA display (lower = more responsive, higher = less CPU)') }}</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Debug Logging -->
-        <div class="control-group">
-            <label class="control-label" for="temp_eta_debug_logging">{{ _('Enable debug logging') }}</label>
-            <div class="controls">
-                <input type="checkbox" id="temp_eta_debug_logging" data-bind="checked: settings.plugins.temp_eta.debug_logging, enable: settings.plugins.temp_eta.enabled">
-                <p class="help-block">{{ _('Write additional debug information to the OctoPrint log (may be noisy)') }}</p>
+            <!-- History Size -->
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_history_size">{{ _('Temperature History Size') }}</label>
+                <div class="controls">
+                    <input type="number" class="input-small" id="temp_eta_history_size"
+                           data-bind="value: settings.plugins.temp_eta.history_size, enable: settings.plugins.temp_eta.enabled"
+                           min="10" max="300" step="10">
+                    <p class="help-block">{{ _('Number of temperature samples to keep in history') }}</p>
+                </div>
             </div>
+
+            <!-- Debug Logging -->
+            <div class="control-group">
+                <label class="control-label" for="temp_eta_debug_logging">{{ _('Enable debug logging') }}</label>
+                <div class="controls">
+                    <input type="checkbox" id="temp_eta_debug_logging" data-bind="checked: settings.plugins.temp_eta.debug_logging, enable: settings.plugins.temp_eta.enabled">
+                    <p class="help-block">{{ _('Write additional debug information to the OctoPrint log (may be noisy)') }}</p>
+                </div>
+            </div>
+
         </div>
 
         <div class="temp-eta-settings-divider"><hr></div>
@@ -404,7 +418,7 @@
             <div class="controls">
                 <input type="number" class="input-small" id="temp_eta_cooldown_ambient_temp"
                        data-bind="value: settings.plugins.temp_eta.cooldown_ambient_temp, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta && settings.plugins.temp_eta.cooldown_mode() === 'ambient'"
-                       min="-20" max="80" step="0.5">
+                       min="0" max="80" step="0.5" data-allow-empty="true">
                 <p class="help-block">{{ _('If empty, the plugin estimates ambient temperature from recent cooldown data.') }}</p>
             </div>
         </div>
@@ -426,6 +440,130 @@
                        data-bind="value: settings.plugins.temp_eta.cooldown_fit_window_seconds, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_cooldown_eta"
                        min="10" max="1800" step="10">
                 <p class="help-block">{{ _('How many seconds of recent cooldown data to use for the ETA estimate.') }}</p>
+            </div>
+        </div>
+
+            </div>
+
+            <div class="tab-pane" id="temp_eta_settings_tab_mqtt">
+
+        <!-- Enable MQTT -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_enabled">{{ _('Enable MQTT') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_mqtt_enabled"
+                       data-bind="checked: settings.plugins.temp_eta.mqtt_enabled, enable: settings.plugins.temp_eta.enabled">
+                <p class="help-block">{{ _('Enable MQTT integration to publish temperature ETA data and state changes.') }}</p>
+            </div>
+        </div>
+
+        <!-- Broker Host -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_broker_host">{{ _('Broker Host') }}</label>
+            <div class="controls">
+                <input type="text" class="input-xlarge" id="temp_eta_mqtt_broker_host"
+                       data-bind="value: settings.plugins.temp_eta.mqtt_broker_host, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                       placeholder="localhost">
+                <p class="help-block">{{ _('MQTT broker hostname or IP address') }}</p>
+            </div>
+        </div>
+
+        <!-- Broker Port -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_broker_port">{{ _('Broker Port') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_mqtt_broker_port"
+                       data-bind="value: settings.plugins.temp_eta.mqtt_broker_port, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                       min="1" max="65535">
+                <p class="help-block">{{ _('MQTT broker port (default: 1883)') }}</p>
+            </div>
+        </div>
+
+        <!-- Username -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_username">{{ _('Username') }}</label>
+            <div class="controls">
+                <input type="text" class="input-xlarge" id="temp_eta_mqtt_username"
+                       data-bind="value: settings.plugins.temp_eta.mqtt_username, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                       placeholder="{{ _('Optional') }}">
+                <p class="help-block">{{ _('MQTT username (leave empty for no authentication)') }}</p>
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_password">{{ _('Password') }}</label>
+            <div class="controls">
+                <input type="password" class="input-xlarge" id="temp_eta_mqtt_password"
+                       data-bind="value: settings.plugins.temp_eta.mqtt_password, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                       placeholder="{{ _('Optional') }}">
+                <p class="help-block">{{ _('MQTT password') }}</p>
+            </div>
+        </div>
+
+        <!-- Use TLS -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_use_tls">{{ _('Use TLS/SSL') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_mqtt_use_tls"
+                       data-bind="checked: settings.plugins.temp_eta.mqtt_use_tls, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled">
+                <p class="help-block">{{ _('Enable TLS/SSL encryption for MQTT connection') }}</p>
+            </div>
+        </div>
+
+        <!-- TLS Insecure -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_tls_insecure">{{ _('Skip TLS certificate verification') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_mqtt_tls_insecure"
+                       data-bind="checked: settings.plugins.temp_eta.mqtt_tls_insecure, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled && settings.plugins.temp_eta.mqtt_use_tls">
+                <p class="help-block">{{ _('Skip certificate verification (not recommended for production)') }}</p>
+            </div>
+        </div>
+
+        <!-- Base Topic -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_base_topic">{{ _('Base Topic') }}</label>
+            <div class="controls">
+                <input type="text" class="input-xlarge" id="temp_eta_mqtt_base_topic"
+                       data-bind="value: settings.plugins.temp_eta.mqtt_base_topic, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                       placeholder="octoprint/temp_eta">
+                <p class="help-block">{{ _('Base MQTT topic for publishing. Messages will be published to {base_topic}/{heater}/eta and {base_topic}/{heater}/state_change') }}</p>
+            </div>
+        </div>
+
+        <!-- QoS -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_qos">{{ _('Quality of Service (QoS)') }}</label>
+            <div class="controls">
+                <select class="input-small" id="temp_eta_mqtt_qos"
+                        data-bind="value: settings.plugins.temp_eta.mqtt_qos, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled">
+                    <option value="0">0 - At most once</option>
+                    <option value="1">1 - At least once</option>
+                    <option value="2">2 - Exactly once</option>
+                </select>
+                <p class="help-block">{{ _('MQTT Quality of Service level') }}</p>
+            </div>
+        </div>
+
+        <!-- Retain -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_retain">{{ _('Retain Messages') }}</label>
+            <div class="controls">
+                <input type="checkbox" id="temp_eta_mqtt_retain"
+                       data-bind="checked: settings.plugins.temp_eta.mqtt_retain, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled">
+                <p class="help-block">{{ _('Enable MQTT retain flag (new subscribers receive last message)') }}</p>
+            </div>
+        </div>
+
+        <!-- Publish Interval -->
+        <div class="control-group">
+            <label class="control-label" for="temp_eta_mqtt_publish_interval">{{ _('Publish Interval (seconds)') }}</label>
+            <div class="controls">
+                <input type="number" class="input-small" id="temp_eta_mqtt_publish_interval"
+                       data-bind="value: settings.plugins.temp_eta.mqtt_publish_interval, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                       min="0.1" max="60" step="0.1">
+                <p class="help-block">{{ _('Minimum interval between MQTT publishes (default: 1.0 seconds)') }}</p>
             </div>
         </div>
 
