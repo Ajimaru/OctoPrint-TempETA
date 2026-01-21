@@ -304,9 +304,10 @@ ETA should show realistic time estimate.
 ETA shows zero immediately.
 
 **Logs**
-
 ```
+
 2024-01-15 10:30:00 - octoprint.plugins.temp_eta - DEBUG - ...
+
 ```
 
 **Screenshots**
@@ -374,18 +375,21 @@ Follow OctoPrint's JavaScript style:
 
 ```javascript
 // Good
-self.updateETA = function(heater, data) {
-    var obs = self.heaters[heater];
-    if (obs) {
-        obs.eta(data.eta_seconds);
-        obs.rate(data.rate);
-    }
+self.updateETA = function (heater, data) {
+  var obs = self.heaters[heater];
+  if (obs) {
+    obs.eta(data.eta_seconds);
+    obs.rate(data.rate);
+  }
 };
 
 // Bad
-self.updateETA=function(h,d){
-    var o=self.heaters[h];
-    if(o){o.eta(d.eta_seconds);o.rate(d.rate);}
+self.updateETA = function (h, d) {
+  var o = self.heaters[h];
+  if (o) {
+    o.eta(d.eta_seconds);
+    o.rate(d.rate);
+  }
 };
 ```
 
@@ -396,23 +400,23 @@ Use semantic naming:
 ```less
 // Good
 .temp-eta-sidebar {
-    .heater-name {
-        font-weight: bold;
-    }
+  .heater-name {
+    font-weight: bold;
+  }
 
-    .eta-value {
-        color: @brand-primary;
-    }
+  .eta-value {
+    color: @brand-primary;
+  }
 }
 
 // Bad
 .sidebar-1 {
-    .text1 {
-        font-weight: bold;
-    }
-    .text2 {
-        color: blue;
-    }
+  .text1 {
+    font-weight: bold;
+  }
+  .text2 {
+    color: blue;
+  }
 }
 ```
 

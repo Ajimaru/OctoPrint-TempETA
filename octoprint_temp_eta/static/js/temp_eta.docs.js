@@ -64,7 +64,12 @@
  */
 (function () {
   // Safety: if this file is ever loaded outside a Node docs build, do nothing.
-  if (typeof process === "undefined" || !process.versions || !process.versions.node) return;
+  if (
+    typeof process === "undefined" ||
+    !process.versions ||
+    !process.versions.node
+  )
+    return;
 
   function TempETAViewModel() {}
   globalThis.TempETAViewModel = TempETAViewModel;
@@ -73,7 +78,10 @@
 
   TempETAViewModel.prototype.onSettingsHidden = function () {};
 
-  TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (plugin, msg) {};
+  TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (
+    plugin,
+    msg,
+  ) {};
 
   TempETAViewModel.prototype.getHeaterLabel = function (heaterId) {};
 

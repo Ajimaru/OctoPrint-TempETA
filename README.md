@@ -122,6 +122,7 @@ Configure the plugin in **Settings** → **Temperature ETA**:
 The settings UI is organized into multiple tabs:
 
 ### General
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>General Settings</strong> (click to expand)</summary>
@@ -153,6 +154,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 5. **Smart Thresholds**: Only shows ETA when heating or cooling and within configured threshold
 
 ### Heating ETA
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>Heating ETA Settings</strong> (click to expand)</summary>
@@ -165,6 +167,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 <!-- markdownlint-enable MD033 -->
 
 ### Cool-down ETA
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>Cool-down ETA Settings</strong> (click to expand)</summary>
@@ -181,6 +184,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 <!-- markdownlint-enable MD033 -->
 
 ### MQTT
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>MQTT Settings</strong> (click to expand)</summary>
@@ -202,6 +206,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 <!-- markdownlint-enable MD033 -->
 
 ### Maintenance
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>Maintenance Actions</strong> (click to expand)</summary>
@@ -213,6 +218,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 <!-- markdownlint-enable MD033 -->
 
 ### Help
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>How is ETA calculated?</strong> (click to expand)</summary>
@@ -240,6 +246,7 @@ The plugin estimates how long it will take for each heater (bed, hotend, chamber
 <!-- markdownlint-enable MD033 -->
 
 ### Settings Defaults
+
 <!-- markdownlint-disable MD033 MD040 -->
 <details>
 <summary><strong>Default Plugin Settings</strong> (click to expand)</summary>
@@ -305,6 +312,7 @@ The following defaults apply to the user-editable plugin settings:
 <!-- markdownlint-enable MD033 MD040 -->
 
 ## MQTT Message Format
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary><strong>MQTT Message Format Details</strong> (click to expand)</summary>

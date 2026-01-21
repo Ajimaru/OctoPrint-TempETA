@@ -149,20 +149,20 @@ graph LR
 ### JavaScript Processing
 
 ```javascript
-self.onDataUpdaterPluginMessage = function(plugin, data) {
-    if (plugin !== "temp_eta") return;
+self.onDataUpdaterPluginMessage = function (plugin, data) {
+  if (plugin !== "temp_eta") return;
 
-    if (data.type === "eta_update") {
-        self.updateETA(data.heater, data.data);
-    }
+  if (data.type === "eta_update") {
+    self.updateETA(data.heater, data.data);
+  }
 };
 
-self.updateETA = function(heater, data) {
-    var obs = self.heaters[heater];
-    if (obs) {
-        obs.eta(data.eta_seconds);
-        obs.rate(data.rate);
-    }
+self.updateETA = function (heater, data) {
+  var obs = self.heaters[heater];
+  if (obs) {
+    obs.eta(data.eta_seconds);
+    obs.rate(data.rate);
+  }
 };
 ```
 
@@ -217,8 +217,8 @@ octoprint/temp_eta/chamber
 Frontend updates are throttled to reduce load:
 
 ```javascript
-self.throttledUpdate = _.throttle(function(data) {
-    self.realUpdate(data);
+self.throttledUpdate = _.throttle(function (data) {
+  self.realUpdate(data);
 }, self.settings.update_interval() * 1000);
 ```
 
