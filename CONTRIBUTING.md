@@ -63,6 +63,34 @@ pre-commit run --hook-stage manual --all-files
 
 If you use `.development/setup_dev.sh`, it enables repo-local git hooks via `core.hooksPath=.githooks`.
 
+## Pre-commit & Committing
+
+We use `pre-commit` to enforce formatting, linting, and documentation generation. To avoid broken commits in CI, follow these guidelines:
+
+- Install pre-commit hooks locally once per clone:
+
+```bash
+pre-commit install
+```
+
+- Run all checks locally before pushing (or use the helper script):
+
+```bash
+pre-commit run --all-files
+# or use the helper which runs pre-commit and only commits on success
+./scripts/commit-if-clean.sh -m "Your commit message"
+```
+
+- CI runs the same `pre-commit` checks and `fail_fast` is enabled in the repository configuration. If a hook fails, fix the issues and re-run the checks — the commit should not be forced when hooks are failing.
+
+- The JavaScript docs generator hook (`jsdoc-gen`) runs inside a node-based hook environment and installs `jsdoc-to-markdown` automatically. If you run the generator manually, you can also install it locally:
+
+```bash
+npm install --save-dev jsdoc-to-markdown
+```
+
+If you prefer git hooks managed by your system or IDE, ensure they call `pre-commit` or otherwise run the same checks locally before pushing.
+
 ## Coding style
 
 - Indentation: **4 spaces** (no tabs)
