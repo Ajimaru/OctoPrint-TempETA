@@ -66,7 +66,10 @@ function main() {
     // If the binary is missing, try npx as a fallback so CI runners without a global install work
     if (res && res.error && res.error.code === "ENOENT") {
       console.warn("jsdoc2md not found, attempting to run via npx...");
-      res = spawnSync("npx", ["jsdoc-to-markdown", ...args], { cwd: root, encoding: "utf8" });
+      res = spawnSync("npx", ["jsdoc-to-markdown", ...args], {
+        cwd: root,
+        encoding: "utf8",
+      });
     }
 
     if (res && res.error) {
