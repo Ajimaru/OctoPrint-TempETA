@@ -44,10 +44,13 @@ jobs:
           node-version: "20"
 
       - name: Install Node.js dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Verify JS tools
+        run: ls -la node_modules/.bin || true
 
       - name: Generate JavaScript API docs
-        run: ./scripts/generate-jsdocs.sh
+        run: node scripts/generate-jsdocs.js
 
       - name: Build MkDocs site
         run: mkdocs build
