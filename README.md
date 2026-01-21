@@ -5,17 +5,20 @@
 <h1 align="center">OctoPrint Temperature ETA Plugin</h1>
 <!-- markdownlint-enable MD041 MD033-->
 
+[![License](https://img.shields.io/github/license/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA#license)
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://python.org)
+![Top Language](https://img.shields.io/github/languages/top/Ajimaru/OctoPrint-TempETA)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.10.2%2B-blue.svg)](https://octoprint.org)
 [![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
-[![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
-[![CI](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml?query=branch%3Amain)
-[![i18n](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml?query=branch%3Amain)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Language Count](https://img.shields.io/github/languages/count/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA)
-[![Stars](https://img.shields.io/github/stars/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/stargazers)
-[![Forks](https://img.shields.io/github/forks/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/network/members)
+![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/total.svg)
+![Maintenance](https://img.shields.io/maintenance/yes/2026)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls)
+
+![Stars](https://img.shields.io/github/stars/Ajimaru/OctoPrint-TempETA?style=social)
+![Forks](https://img.shields.io/github/forks/Ajimaru/OctoPrint-TempETA?style=social)
+![Watchers](https://img.shields.io/github/watchers/Ajimaru/OctoPrint-TempETA?style=social)
+
+---
 
 ### Heat Up and Cool Down with Confidence
 
@@ -35,6 +38,8 @@
 <!-- markdownlint-enable MD033-->
 
 ## Table of Contents
+
+<details>
 
 - [Table of Contents](#table-of-contents)
 - [Features](#features)
@@ -56,6 +61,8 @@
 - [License](#license)
 - [Support](#support)
 - [Credits](#credits)
+
+</details>
 
 ## Features
 
@@ -378,6 +385,24 @@ Contributions welcome! Please:
 7. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 Note: `main` is protected on GitHub, so changes go through PRs.
+
+[![Open Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues?q=is%3Aissue%20state%3Aopen)
+[![Closed Issues](https://img.shields.io/github/issues-closed-raw/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues?q=is%3Aissue%20state%3Aclosed)
+[![Open PRs](https://img.shields.io/github/issues-pr/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls?q=is%3Aopen+is%3Apr)
+[![Closed PRs](https://img.shields.io/github/issues-pr-closed/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls?q=is%3Apr+is%3Aclosed)
+
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
+![Commit Activity (year)](https://img.shields.io/github/commit-activity/y/Ajimaru/OctoPrint-TempETA)
+![Last Commit](https://img.shields.io/github/last-commit/Ajimaru/OctoPrint-TempETA)
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/Ajimaru/OctoPrint-TempETA/ci.yml)
+[![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
+[![CI](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml?query=branch%3Amain)
+[![i18n](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml?query=branch%3Amain)
+![Release Date](https://img.shields.io/github/release-date/Ajimaru/OctoPrint-TempETA)
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Languages Count](https://img.shields.io/github/languages/count/Ajimaru/OctoPrint-TempETA)
 
 ## License
 
