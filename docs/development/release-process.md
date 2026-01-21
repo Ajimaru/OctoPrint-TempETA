@@ -37,13 +37,11 @@ Examples:
 Update version in:
 
 1. `pyproject.toml`:
-
    ```toml
    version = "0.8.0"
    ```
 
 2. `octoprint_temp_eta/__init__.py`:
-
    ```python
    __version__ = "0.8.0"
    ```
@@ -61,31 +59,25 @@ Add release notes to `CHANGELOG.md`:
 ## [0.8.0] - 2024-01-15
 
 ### Added
-
 - Exponential ETA algorithm
 - MQTT retain option
 - German translations
 
 ### Changed
-
 - Improved ETA accuracy near target
 - Updated UI for better contrast
 
 ### Fixed
-
 - ETA calculation for cooling
 - MQTT reconnection logic
 
 ### Deprecated
-
 - Old settings format (migration automatic)
 
 ### Removed
-
 - Python 3.10 support
 
 ### Security
-
 - Updated paho-mqtt to address CVE-XXXX-XXXX
 ```
 
@@ -220,7 +212,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 jobs:
   release:
@@ -231,7 +223,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install build tools
         run: |
@@ -401,30 +393,24 @@ See [SECURITY.md](https://github.com/Ajimaru/OctoPrint-TempETA/blob/main/SECURIT
 Brief overview of major changes.
 
 ### Added
-
 - New feature 1
 - New feature 2
 
 ### Changed
-
 - Improvement 1
 - Improvement 2
 
 ### Fixed
-
 - Bug fix 1
 - Bug fix 2
 
 ### Deprecated
-
 - Old API 1 (use X instead)
 
 ### Removed
-
 - Dropped support for Python 3.10
 
 ### Security
-
 - Fixed vulnerability CVE-XXXX-XXXX
 
 ### Upgrade Notes

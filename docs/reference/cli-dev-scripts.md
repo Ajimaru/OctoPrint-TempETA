@@ -92,7 +92,7 @@ Check JavaScript files have JSDoc comments:
  * @returns {number} ETA in seconds
  */
 function calculateETA(heater, data) {
-  // ...
+    // ...
 }
 ```
 

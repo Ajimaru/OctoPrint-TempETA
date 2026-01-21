@@ -222,7 +222,7 @@ The plugin allows users to choose:
 ```yaml
 plugins:
   temp_eta:
-    algorithm: "linear" # or "exponential"
+    algorithm: "linear"  # or "exponential"
 ```
 
 ### Recommendation
@@ -328,10 +328,10 @@ Algorithm-specific settings:
 plugins:
   temp_eta:
     algorithm: "linear"
-    min_rate: 0.1 # Minimum rate (°C/s) to show ETA
-    max_eta: 3600 # Maximum ETA (seconds)
-    history_window: 10 # Seconds of history for linear
-    fitting_window: 30 # Seconds for exponential fitting
+    min_rate: 0.1          # Minimum rate (°C/s) to show ETA
+    max_eta: 3600          # Maximum ETA (seconds)
+    history_window: 10     # Seconds of history for linear
+    fitting_window: 30     # Seconds for exponential fitting
 ```
 
 ## References

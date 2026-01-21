@@ -4,30 +4,33 @@ Auto-generated Python API documentation for OctoPrint-TempETA.
 
 ## Main Plugin Class
 
-::: octoprint*temp_eta.TempETAPlugin
-handler: python
-options:
-members_order: source
-show_source: true
-filters: - "!^*"
+::: octoprint_temp_eta.TempETAPlugin
+    handler: python
+    options:
+        members_order: source
+        show_source: true
+        filters:
+            - "!^_"
 
 ## Calculator Module
 
-::: octoprint*temp_eta.calculator
-handler: python
-options:
-members_order: source
-show_source: true
-filters: - "!^*"
+::: octoprint_temp_eta.calculator
+        handler: python
+        options:
+            members_order: source
+            show_source: true
+            filters:
+                - "!^_"
 
 ## MQTT Client Module
 
-::: octoprint*temp_eta.mqtt_client.MQTTClientWrapper
-handler: python
-options:
-members_order: source
-show_source: true
-filters: - "!^*"
+::: octoprint_temp_eta.mqtt_client.MQTTClientWrapper
+        handler: python
+        options:
+            members_order: source
+            show_source: true
+            filters:
+                - "!^_"
 
 ## Usage Examples
 
