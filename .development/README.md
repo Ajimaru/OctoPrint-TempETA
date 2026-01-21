@@ -152,3 +152,18 @@ The repo uses a versioned hooks directory:
 - Enabled via: `git config core.hooksPath .githooks`
 
 The `post-commit` hook triggers `post_commit_build_dist.sh` after version bumps.
+
+## commit-if-clean helper
+
+We provide a small helper script to run the repository `pre-commit` checks and only commit when they all pass.
+
+Location: `.development/commit-if-clean.sh`
+
+Usage:
+
+```bash
+# from repository root
+.development/commit-if-clean.sh -m "Your commit message"
+```
+
+This script is useful when you want a single command that runs the full `pre-commit` suite and ensures that no commit is created if any hook fails (matching the CI behaviour). The script is a convenience wrapper — developers can also run `pre-commit run --all-files` directly.
