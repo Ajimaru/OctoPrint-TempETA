@@ -22,7 +22,7 @@ classifiers = [
 
 # any additional requirements (besides OctoPrint) should be listed here
 dependencies = [
-    "paho-mqtt>=1.6.0,<3.0.0"
+    "paho-mqtt>=2.1.0,<3.0.0"
 ]
 
 [tool.setuptools]
