@@ -5,7 +5,7 @@
 
 ## Code Standards (CRITICAL)
 
-**Docs**: https://docs.octoprint.org/en/main/plugins/index.html | Contributing: https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md
+**Docs**: <https://docs.octoprint.org/en/main/plugins/index.html> | Contributing: <https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md>
 
 **Template Autoescape**: [How do I improve my plugin's security by enabling autoescape?](https://faq.octoprint.org/plugin-autoescape)
 
@@ -123,12 +123,12 @@ message = gettext("Heating to {target}°C, ETA: {eta}").format(target=X, eta=Y)
 
 ## Files to Ignore (Don't Commit)
 
-`.development/`, `venv/`, `__pycache__/`, `.pytest_cache/`, `.coverage/`, `.idea/`, `.vscode/`
+`.development/`, `.venv/`, `__pycache__/`, `.pytest_cache/`, `.coverage/`, `.idea/`, `.vscode/`
 
 ## Key References
 
-- Issue #469: https://github.com/OctoPrint/OctoPrint/issues/469
-- Plugin Docs: https://docs.octoprint.org/en/main/plugins/
-- Mixins: https://docs.octoprint.org/en/main/plugins/mixins.html
-- Contributing: https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md
-- Knockout.js: https://knockoutjs.com/documentation/introduction.html
+- Issue #469: <https://github.com/OctoPrint/OctoPrint/issues/469>
+- Plugin Docs: <https://docs.octoprint.org/en/main/plugins/>
+- Mixins: <https://docs.octoprint.org/en/main/plugins/mixins.html>
+- Contributing: <https://github.com/OctoPrint/OctoPrint/blob/main/CONTRIBUTING.md>
+- Knockout.js: <https://knockoutjs.com/documentation/introduction.html>

@@ -6,7 +6,7 @@ Reference for all development and maintenance scripts in the OctoPrint-TempETA p
 
 All scripts are located in the `scripts/` directory:
 
-```
+```text
 scripts/
 ├── generate-jsdocs.sh    # Generate JavaScript API docs
 └── (future scripts)
@@ -58,7 +58,7 @@ Creates `docs/api/javascript.md` with:
 
 ### Troubleshooting
 
-**Error: "npx: command not found"**
+#### Error: "npx: command not found"
 
 Install Node.js:
 
@@ -72,7 +72,7 @@ brew install node
 # Or download from nodejs.org
 ```
 
-**Error: "jsdoc2md: not found"**
+#### Error: "jsdoc2md: not found"
 
 Install dependencies:
 
@@ -80,7 +80,7 @@ Install dependencies:
 npm install
 ```
 
-**No output generated**
+#### No output generated
 
 Check JavaScript files have JSDoc comments:
 
@@ -214,7 +214,7 @@ Serve documentation locally:
 mkdocs serve
 ```
 
-Access at: http://localhost:8000
+Access at: <http://localhost:8000>
 
 Build documentation:
 
@@ -353,11 +353,11 @@ rm -rf node_modules
 deactivate
 
 # Remove
-rm -rf venv
+rm -rf .venv
 
 # Recreate
-python -m venv venv
-source venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 pip install -e ".[develop]"
 ```
 
@@ -397,7 +397,7 @@ open htmlcov/index.html
 ### Install in OctoPrint
 
 ```bash
-# In OctoPrint venv
+# In OctoPrint .venv
 source ~/oprint/bin/activate
 
 # Install plugin
@@ -467,11 +467,11 @@ find tests -name "*.py" -exec wc -l {} + | tail -1
 python --version
 
 # Create venv
-python -m venv venv
+python -m venv .venv
 
 # Activate
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate    # Windows
 
 # Install
 pip install -e ".[develop]"
