@@ -7,7 +7,6 @@
 *.egg-info
 dist
 build
-venv
 .venv
 __pycache__
 .pytest_cache
@@ -34,6 +33,10 @@ out
 .ideas/
 .logs
 .development/
+.codacy/
+.venv-octoprint-*/
+.octoprint-master/
+.cache/
 
 
 #Ignore vscode AI rules
