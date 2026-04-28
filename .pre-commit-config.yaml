@@ -41,6 +41,7 @@ repos:
     hooks:
       - id: prettier
         types_or: [javascript, css, markdown, json, yaml]
+        exclude: ^(docs/|octoprint_temp_eta/static/js/|static/js/|\.github/workflows/)
 
   - repo: local
     hooks:
