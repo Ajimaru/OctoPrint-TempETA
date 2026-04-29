@@ -2110,7 +2110,7 @@ class TempETAPlugin(
 
 
 __plugin_name__ = "Temperature ETA"
-__plugin_pythoncompat__ = ">=3.11,<4"
+__plugin_pythoncompat__ = ">=3.9,<4"
 __plugin_implementation__ = TempETAPlugin()
 
 __plugin_hooks__ = {

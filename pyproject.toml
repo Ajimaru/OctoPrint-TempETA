@@ -1,5 +1,8 @@
 [build-system]
-requires = ["setuptools>=77,<82", "wheel", "octoprint-setuptools", "OctoPrint>=1.11.0,<2"]
+requires = [
+    "setuptools>=77,<83",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,10 +14,14 @@ authors = [
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 
-requires-python = ">=3.7, <4"
+requires-python = ">=3.9, <4"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

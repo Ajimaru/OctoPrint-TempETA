@@ -131,9 +131,8 @@ OctoPrint-TempETA/
 ├── docs/                        # Documentation source
 ├── scripts/                     # Utility scripts
 ├── translations/                # i18n files
-├── requirements.txt             # Runtime dependencies
 ├── requirements-docs.txt        # Documentation dependencies
-├── pyproject.toml              # Project configuration
+├── pyproject.toml              # Project + runtime + dev dependencies
 ├── mkdocs.yml                  # Documentation config
 └── package.json                # Node.js dependencies
 ```

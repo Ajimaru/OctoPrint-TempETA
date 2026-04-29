@@ -25,6 +25,7 @@ class TempETAPlugin(octoprint.plugin.StartupPlugin):
 ```
 
 **Use Cases:**
+
 - Initialize data structures
 - Start background services (MQTT)
 - Register event handlers
@@ -59,12 +60,14 @@ class TempETAPlugin(octoprint.plugin.TemplatePlugin):
 ```
 
 **Template Types:**
+
 - **settings**: Plugin settings page
 - **sidebar**: Sidebar widget
 - **tab**: Main content tab
 - **navbar**: Navigation bar item
 
 **Template Location:**
+
 ```
 octoprint_temp_eta/templates/
 ├── temp_eta_settings.jinja2
@@ -112,6 +115,7 @@ class TempETAPlugin(octoprint.plugin.SettingsPlugin):
 ```
 
 **Settings Access:**
+
 ```python
 # Get setting
 value = self._settings.get(["key"])
@@ -139,6 +143,7 @@ class TempETAPlugin(octoprint.plugin.AssetPlugin):
 ```
 
 **Asset Location:**
+
 ```
 octoprint_temp_eta/static/
 ├── js/
@@ -154,6 +159,7 @@ octoprint_temp_eta/static/
 ```
 
 **Asset URLs:**
+
 ```
 /plugin/temp_eta/static/js/temp_eta.js
 /plugin/temp_eta/static/css/temp_eta.css
@@ -180,6 +186,7 @@ class TempETAPlugin(octoprint.plugin.EventHandlerPlugin):
 ```
 
 **Key Events:**
+
 - **CurrentTemperatureUpdated**: Temperature change (~2Hz)
 - **PrintStarted**: Print job starts
 - **PrintDone**: Print job completes
@@ -217,12 +224,14 @@ class TempETAPlugin(octoprint.plugin.SimpleApiPlugin):
 ```
 
 **API Endpoints:**
+
 ```
 GET  /api/plugin/temp_eta
 POST /api/plugin/temp_eta
 ```
 
 **Example Request:**
+
 ```bash
 # Get ETA
 curl http://octopi.local/api/plugin/temp_eta
@@ -286,7 +295,7 @@ def __plugin_check__():
 
 ```python
 __plugin_name__ = "Temperature ETA"
-__plugin_pythoncompat__ = ">=3.11,<4"
+__plugin_pythoncompat__ = ">=3.9,<4"
 __plugin_version__ = "0.7.1"
 __plugin_description__ = "Show ETA for printer heating/cooling"
 __plugin_author__ = "Ajimaru"
@@ -330,13 +339,15 @@ self.onDataUpdaterPluginMessage = function(plugin, data) {
 
 ### Required
 
-```python
-# In setup.py or pyproject.toml
-install_requires = [
-    "OctoPrint>=1.10.2",
-    "paho-mqtt>=1.6.0,<3.0.0"
+```toml
+# In pyproject.toml
+[project]
+dependencies = [
+    "paho-mqtt>=1.6.0,<3.0.0",
 ]
 ```
+
+OctoPrint itself is the runtime environment, not a pip dependency of the plugin.
 
 ### Optional
 
@@ -384,6 +395,7 @@ self._logger.exception("Exception with traceback")
 ```
 
 **Configure in OctoPrint:**
+
 ```
 Settings → Logging → Add logger
 Logger: octoprint.plugins.temp_eta
