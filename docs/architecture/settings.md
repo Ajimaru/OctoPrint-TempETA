@@ -448,7 +448,7 @@ def on_settings_migrate(self, target, current):
 
 Via OctoPrint UI:
 
-```
+```text
 Settings → Temperature ETA → Reset to Defaults
 ```
 

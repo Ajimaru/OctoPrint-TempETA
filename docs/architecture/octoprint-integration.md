@@ -68,7 +68,7 @@ class TempETAPlugin(octoprint.plugin.TemplatePlugin):
 
 **Template Location:**
 
-```
+```text
 octoprint_temp_eta/templates/
 ├── temp_eta_settings.jinja2
 ├── temp_eta_sidebar.jinja2
@@ -144,7 +144,7 @@ class TempETAPlugin(octoprint.plugin.AssetPlugin):
 
 **Asset Location:**
 
-```
+```text
 octoprint_temp_eta/static/
 ├── js/
 │   └── temp_eta.js
@@ -160,7 +160,7 @@ octoprint_temp_eta/static/
 
 **Asset URLs:**
 
-```
+```text
 /plugin/temp_eta/static/js/temp_eta.js
 /plugin/temp_eta/static/css/temp_eta.css
 ```
@@ -225,7 +225,7 @@ class TempETAPlugin(octoprint.plugin.SimpleApiPlugin):
 
 **API Endpoints:**
 
-```
+```text
 GET  /api/plugin/temp_eta
 POST /api/plugin/temp_eta
 ```
@@ -396,7 +396,7 @@ self._logger.exception("Exception with traceback")
 
 **Configure in OctoPrint:**
 
-```
+```text
 Settings → Logging → Add logger
 Logger: octoprint.plugins.temp_eta
 Level: DEBUG
@@ -449,7 +449,7 @@ octoprint serve --debug
 
 Use OctoPrint's virtual printer for testing:
 
-```
+```text
 Settings → Serial Connection → Additional serial ports
 Add: /dev/ttyFAKE
 

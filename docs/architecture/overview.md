@@ -83,7 +83,7 @@ The plugin uses two ETA calculation methods:
 
 Simple and fast, assumes constant heating/cooling rate:
 
-```
+```text
 rate = ΔT / Δt
 ETA = (target - current) / rate
 ```
@@ -92,7 +92,7 @@ ETA = (target - current) / rate
 
 Models thermal dynamics more accurately:
 
-```
+```text
 T(t) = T_final - (T_final - T_0) * e^(-t/tau)
 ```
 
@@ -196,7 +196,7 @@ The plugin tracks its own performance:
 
 Enable debug logging to see performance metrics:
 
-```
+```text
 Settings → Logging → octoprint.plugins.temp_eta → DEBUG
 ```
 

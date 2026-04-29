@@ -39,6 +39,7 @@
 
 ## Table of Contents
 
+<!-- markdownlint-disable MD033 -->
 <details>
 
 - [Table of Contents](#table-of-contents)
@@ -63,6 +64,7 @@
 - [Credits](#credits)
 
 </details>
+<!-- markdownlint-enable MD033 -->
 
 ## Features
 
@@ -233,7 +235,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 **ETA Logic Overview**
 The plugin estimates how long it will take for each heater (bed, hotend, chamber) to reach its target temperature (heating) or cool down to a set value (cooling). It does this by analyzing recent temperature history and applying a calculation algorithm.
 
-**Algorithms Used**
+#### Algorithms Used
 
 - **Linear ETA (default):**
   Calculates the rate of temperature change (°C/s) using the last 10 seconds of data. ETA is the remaining temperature difference divided by this rate.
@@ -243,7 +245,7 @@ The plugin estimates how long it will take for each heater (bed, hotend, chamber
   Models heating/cooling as an exponential curve, which can be more accurate for some hardware.
   This option can be enabled in the settings.
 
-**Key Points**
+#### Key Points
 
 - ETA is only shown when the heater is actively heating/cooling and within a configurable threshold of the target.
 - The plugin automatically handles multiple heaters and adapts to target changes.

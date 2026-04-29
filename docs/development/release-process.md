@@ -6,7 +6,7 @@ This document describes the release process for OctoPrint-TempETA.
 
 We follow [Semantic Versioning](https://semver.org/):
 
-```
+```text
 MAJOR.MINOR.PATCH[-PRERELEASE]
 ```
 
@@ -37,16 +37,19 @@ Examples:
 Update version in:
 
 1. `pyproject.toml`:
+
    ```toml
    version = "0.8.0"
    ```
 
 2. `octoprint_temp_eta/__init__.py`:
+
    ```python
    __version__ = "0.8.0"
    ```
 
 3. `package.json` (if changed):
+
    ```json
    "version": "0.8.0"
    ```
@@ -270,7 +273,7 @@ Documentation is automatically deployed on release:
 1. Tag triggers docs workflow
 2. MkDocs builds site
 3. Deployed to GitHub Pages
-4. Available at https://ajimaru.github.io/OctoPrint-TempETA/
+4. Available at <https://ajimaru.github.io/OctoPrint-TempETA/>
 
 ## Post-Release Tasks
 
@@ -309,20 +312,20 @@ If critical issue found after release:
 
 ### 2. Options
 
-**Option A: Immediate Hotfix**
+#### Option A: Immediate Hotfix
 
 - Create hotfix branch
 - Fix and release patch version
 - Announce fix available
 
-**Option B: Rollback Release**
+#### Option B: Rollback Release
 
 - Delete GitHub release (if just released)
 - Delete git tag
 - Fix issue
 - Re-release with same version
 
-**Option C: Yanked Release**
+#### Option C: Yanked Release
 
 - Mark release as broken
 - Recommend users downgrade

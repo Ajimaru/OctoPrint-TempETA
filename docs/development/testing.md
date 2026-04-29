@@ -56,7 +56,7 @@ pytest -x
 
 ## Test Structure
 
-```
+```text
 tests/
 ├── __init__.py
 ├── test_print_temp_eta.py    # Main plugin tests
@@ -257,7 +257,7 @@ pytest --cov=octoprint_temp_eta --cov-report=term-missing
 
 Output:
 
-```
+```text
 Name                               Stmts   Miss  Cover   Missing
 ----------------------------------------------------------------
 octoprint_temp_eta/__init__.py       150      5    97%   234-238
