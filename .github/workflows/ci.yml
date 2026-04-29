@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.run-coverage && github.repository == 'Ajimaru/OctoPrint-TempETA' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: coverage.xml
           flags: unittests
