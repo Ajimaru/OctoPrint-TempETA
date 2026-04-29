@@ -37,6 +37,7 @@ out
 .venv-octoprint-*/
 .octoprint-master/
 .cache/
+.claude/
 
 
 #Ignore vscode AI rules
