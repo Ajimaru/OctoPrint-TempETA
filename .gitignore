@@ -18,6 +18,10 @@ htmlcov
 .vscode
 *.bak
 
+# Local-only Git hook configuration
+.pre-commit-config.yaml
+.githooks/
+
 # pre-commit/prettier temporary install artifacts
 node_modules/
 
