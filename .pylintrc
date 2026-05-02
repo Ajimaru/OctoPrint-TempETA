@@ -10,7 +10,17 @@ disable =
     broad-exception-caught,
     # too-many-arguments / too-many-positional-arguments: publish_eta_update public API
     too-many-arguments,
-    too-many-positional-arguments
+    too-many-positional-arguments,
+    # Large plugin module: keep behavior stable, avoid risky large refactors for complexity thresholds
+    too-many-branches,
+    too-many-return-statements,
+    too-many-locals,
+    too-many-boolean-expressions,
+    too-many-statements,
+    too-many-nested-blocks,
+    # Protocol and compatibility stubs intentionally use concise signatures
+    missing-function-docstring,
+    unnecessary-pass
 
 [BASIC]
 # Allow the stdlib logging override isEnabledFor alongside snake_case methods
