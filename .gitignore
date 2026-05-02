@@ -17,6 +17,7 @@ htmlcov
 .idea
 .vscode
 *.bak
+.ruff_cache/
 
 # Local-only Git hook configuration
 .pre-commit-config.yaml
@@ -42,7 +43,6 @@ out
 .octoprint-master/
 .cache/
 .claude/
-
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
