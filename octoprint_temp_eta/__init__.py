@@ -1,7 +1,5 @@
-# coding=utf-8
 # flake8: noqa
 # pylint: disable=line-too-long
-from __future__ import absolute_import
 
 import json
 import math
@@ -9,8 +7,9 @@ import re
 import threading
 import time
 from collections import deque
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol, Sequence, Type, runtime_checkable
+from typing import Any, Dict, Optional, Protocol, Type, runtime_checkable
 
 try:
     import octoprint.plugin  # type: ignore
@@ -25,7 +24,7 @@ except ModuleNotFoundError:  # pragma: no cover
             pass
 
         class SettingsPlugin:
-            def on_settings_save(self: Any, data: Dict[str, Any]) -> Dict[str, Any]:
+            def on_settings_save(self: Any, data: dict[str, Any]) -> dict[str, Any]:
                 return data
 
         class AssetPlugin:
@@ -45,22 +44,22 @@ except ModuleNotFoundError:  # pragma: no cover
 
 # OctoPrint's mixin base classes don't ship type information. Provide typed
 # aliases so Pylance accepts them as valid base classes.
-StartupPluginBase: Type[Any] = getattr(
+StartupPluginBase: type[Any] = getattr(
     octoprint.plugin, "StartupPlugin", object
 )  # type: ignore[attr-defined]
-TemplatePluginBase: Type[Any] = getattr(
+TemplatePluginBase: type[Any] = getattr(
     octoprint.plugin, "TemplatePlugin", object
 )  # type: ignore[attr-defined]
-SettingsPluginBase: Type[Any] = getattr(
+SettingsPluginBase: type[Any] = getattr(
     octoprint.plugin, "SettingsPlugin", object
 )  # type: ignore[attr-defined]
-AssetPluginBase: Type[Any] = getattr(
+AssetPluginBase: type[Any] = getattr(
     octoprint.plugin, "AssetPlugin", object
 )  # type: ignore[attr-defined]
-EventHandlerPluginBase: Type[Any] = getattr(
+EventHandlerPluginBase: type[Any] = getattr(
     octoprint.plugin, "EventHandlerPlugin", object
 )  # type: ignore[attr-defined]
-SimpleApiPluginBase: Type[Any] = getattr(
+SimpleApiPluginBase: type[Any] = getattr(
     octoprint.plugin, "SimpleApiPlugin", object
 )  # type: ignore[attr-defined]
 
@@ -127,12 +126,12 @@ class SettingsLike(Protocol):
 
 @runtime_checkable
 class PluginManagerLike(Protocol):
-    def send_plugin_message(self, identifier: str, payload: Dict[str, Any]) -> None: ...
+    def send_plugin_message(self, identifier: str, payload: dict[str, Any]) -> None: ...
 
 
 @runtime_checkable
 class PrinterProfileManagerLike(Protocol):
-    def get_current_or_default(self) -> Dict[str, Any]: ...
+    def get_current_or_default(self) -> dict[str, Any]: ...
 
 
 @runtime_checkable
@@ -178,7 +177,7 @@ class TempETAPlugin(
         self._debug_logging_enabled = False
         self._last_debug_log_time = 0.0
         self._last_heater_support_decision = {}
-        self._heater_supported_cache: Dict[str, bool] = {}
+        self._heater_supported_cache: dict[str, bool] = {}
 
         # MQTT client (initialized in on_after_startup when logger is available)
         self._mqtt_client: Optional[Any] = None
@@ -225,7 +224,7 @@ class TempETAPlugin(
         # If the user doesn't provide an ambient temperature, we rely on the
         # lowest temperature observed while the heater target is OFF (within a
         # reasonable range) as a proxy for ambient.
-        self._cooldown_ambient_baseline: Dict[str, Optional[float]] = {
+        self._cooldown_ambient_baseline: dict[str, Optional[float]] = {
             "bed": None,
             "tool0": None,
             "chamber": None,
@@ -240,7 +239,7 @@ class TempETAPlugin(
 
         # Track last seen target per heater so we can detect transitions like
         # heating -> off (cooldown start).
-        self._last_target_by_heater: Dict[str, float] = {}
+        self._last_target_by_heater: dict[str, float] = {}
 
         # When enabled, suppress ETA updates while a print job is active.
         # This keeps the UI focused on the pre-print heat-up phase.
@@ -634,7 +633,7 @@ class TempETAPlugin(
         self._refresh_runtime_caches()
         self._set_history_maxlen(self._read_history_maxlen_setting())
 
-    def _load_profile_history(self, profile_id: str) -> Dict[str, deque]:
+    def _load_profile_history(self, profile_id: str) -> dict[str, deque]:
         """Load persisted history for a profile id.
 
         Returns a dict mapping heater name to a deque with current maxlen.
@@ -660,7 +659,7 @@ class TempETAPlugin(
         now = time.time()
         min_ts = now - self._persist_max_age_seconds
 
-        loaded: Dict[str, deque] = {}
+        loaded: dict[str, deque] = {}
         for heater, points in samples.items():
             if not isinstance(heater, str) or not isinstance(points, list):
                 continue
@@ -877,7 +876,7 @@ class TempETAPlugin(
         with self._lock:
             # IMPORTANT: Do not carry over samples from the previous profile.
             # Start strictly from what's persisted for this profile (or empty).
-            new_history: Dict[str, deque] = {}
+            new_history: dict[str, deque] = {}
             for heater, history in loaded.items():
                 new_history[heater] = deque(history, maxlen=self._history_maxlen)
 
@@ -922,9 +921,9 @@ class TempETAPlugin(
         return max(10, min(300, value))
 
     def _set_history_maxlen(self, maxlen: int) -> None:
-        """Update internal history deques to a new maxlen.
+        """Update internal history queues to a new maxlen.
 
-        Rebuilds existing deques to apply the new maxlen and trims old samples if
+        Rebuilds existing queues to apply the new maxlen and trims old samples if
         needed. Must be fast and thread-safe.
 
         Args:
@@ -1238,11 +1237,15 @@ class TempETAPlugin(
 
     def on_printer_send_current_data(self, data):
         """Stub: Called when current printer data is sent (required by callback interface)."""
-        pass
+        return None
 
     def on_printer_add_log(self, data):
         """Stub: Called when log entry is added (required by callback interface)."""
-        pass
+        return None
+
+    def on_printer_add_message(self, data):
+        """Stub: Called when printer message is added (required by callback interface)."""
+        return None
 
     def on_event(self, event, payload):
         """Handle OctoPrint events to keep UI state consistent.
@@ -1842,7 +1845,7 @@ class TempETAPlugin(
             dict(type="tab", custom_bindings=False),
         ]
 
-    def on_settings_save(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def on_settings_save(self, data: dict[str, Any]) -> dict[str, Any]:
         """Persist settings and clear UI/state when disabling the plugin.
 
         OctoPrint applies settings changes only on save. When the plugin is disabled,
@@ -1883,7 +1886,7 @@ class TempETAPlugin(
 
         return saved if isinstance(saved, dict) else {}
 
-    def _sanitize_settings_payload(self, data: Dict[str, Any]) -> None:
+    def _sanitize_settings_payload(self, data: dict[str, Any]) -> None:
         """Sanitize posted settings values in-place.
 
         This is a safety net in addition to UI validation.
@@ -2008,7 +2011,7 @@ class TempETAPlugin(
         if not getattr(self, "_plugin_manager", None):
             return
 
-        payload: Dict[str, Any] = {"type": "history_reset", "reason": str(reason)}
+        payload: dict[str, Any] = {"type": "history_reset", "reason": str(reason)}
         if old_profile_id is not None:
             payload["old_profile_id"] = str(old_profile_id)
         if profile_id is not None:
@@ -2041,14 +2044,14 @@ class TempETAPlugin(
         """Whether the Simple API is restricted to admin users."""
         return True
 
-    def get_api_commands(self) -> Dict[str, list]:  # type: ignore[override]
+    def get_api_commands(self) -> dict[str, list]:  # type: ignore[override]
         """Return supported Simple API commands for the plugin."""
         return {
             "reset_profile_history": [],
             "reset_settings_defaults": [],
         }
 
-    def on_api_command(self, command: str, data: Dict[str, Any]):  # type: ignore[override]
+    def on_api_command(self, command: str, data: dict[str, Any]):  # type: ignore[override]
         """Handle Simple API commands."""
         if command == "reset_profile_history":
             deleted_count = self._reset_all_profile_histories()
