@@ -68,11 +68,11 @@ class MQTTClientWrapperHarness(MQTTClientWrapper):
 
     def run_on_connect(self, rc: int) -> None:
         """Invoke the connect callback with minimal dummy arguments."""
-        self._on_connect(client=None, userdata=None, flags={}, rc=rc)
+        self._on_connect(_client=None, _userdata=None, _flags={}, rc=rc)
 
     def run_on_disconnect(self, rc: int) -> None:
         """Invoke the disconnect callback with minimal dummy arguments."""
-        self._on_disconnect(client=None, userdata=None, rc=rc)
+        self._on_disconnect(_client=None, _userdata=None, rc=rc)
 
     def publish_message(self, topic: str, payload: dict[str, Any]) -> None:
         """Invoke internal publish logic through a test helper."""

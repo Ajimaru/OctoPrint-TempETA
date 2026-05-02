@@ -3,7 +3,14 @@
 # too-many-lines: single large test module is acceptable
 disable =
     too-few-public-methods,
-    too-many-lines
+    too-many-lines,
+    # too-many-instance-attributes: MQTTClientWrapper holds many config fields
+    too-many-instance-attributes,
+    # broad-exception-caught: paho-mqtt raises undocumented exceptions; all catches log+recover
+    broad-exception-caught,
+    # too-many-arguments / too-many-positional-arguments: publish_eta_update public API
+    too-many-arguments,
+    too-many-positional-arguments
 
 [BASIC]
 # Allow the stdlib logging override isEnabledFor alongside snake_case methods
