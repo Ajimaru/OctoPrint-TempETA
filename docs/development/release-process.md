@@ -36,23 +36,9 @@ Examples:
 
 Update version in:
 
-1. `pyproject.toml`:
-
-   ```toml
-   version = "0.8.0"
-   ```
-
-2. `octoprint_temp_eta/__init__.py`:
-
-   ```python
-   __version__ = "0.8.0"
-   ```
-
-3. `package.json` (if changed):
-
-   ```json
-   "version": "0.8.0"
-   ```
+1. `pyproject.toml`: set `version = "0.8.0"`
+2. `octoprint_temp_eta/_version.py`: set `VERSION = "0.8.0"`
+3. `package.json` (if changed): set `"version": "0.8.0"`
 
 ### 3. Update CHANGELOG
 
@@ -88,7 +74,7 @@ Add release notes to `CHANGELOG.md`:
 
 ```bash
 git checkout -b release/v0.8.0
-git add pyproject.toml octoprint_temp_eta/__init__.py CHANGELOG.md
+git add pyproject.toml octoprint_temp_eta/_version.py package.json CHANGELOG.md
 git commit -m "Bump version to 0.8.0"
 git push origin release/v0.8.0
 ```
@@ -115,16 +101,14 @@ git tag -a v0.8.0 -m "Release v0.8.0"
 git push origin v0.8.0
 ```
 
-### 8. Create GitHub Release
+### 8. Verify GitHub Release
 
-Go to [Releases](https://github.com/Ajimaru/OctoPrint-TempETA/releases) → "Draft a new release"
+Pushing the tag triggers the release workflow in `.github/workflows/release.yml`, which automatically:
 
-- Tag: `v0.8.0`
-- Title: `OctoPrint-TempETA v0.8.0`
-- Description: Copy from CHANGELOG
-- Attach build artifacts (auto-generated)
-- Check "Set as latest release"
-- Publish
+- builds the wheel and sdist
+- creates the versioned and `latest` zip assets
+- generates release notes
+- publishes the GitHub Release
 
 ### 9. Verify Release
 
@@ -205,7 +189,7 @@ When ready, release as `v0.8.0` (without rc suffix)
 
 ## Automated Release
 
-The project uses GitHub Actions for automated releases:
+The project uses GitHub Actions for automated releases. Keep the version bump consistent across `pyproject.toml` and `octoprint_temp_eta/_version.py`; update `package.json` only if its published metadata changes.
 
 `.github/workflows/release.yml`:
 
