@@ -39,7 +39,7 @@ compatibility:
   octoprint:
     - 1.10.2
 
-  python: ">=3.11,<4"
+  python: ">=3.9,<4"
 ---
 
 ## Temperature ETA Plugin for OctoPrint

@@ -1,5 +1,5 @@
-# coding=utf-8
-"""Temperature ETA calculation algorithms.
+"""
+Temperature ETA calculation algorithms.
 
 This module provides pure calculation logic for estimating time remaining
 until a printer heater reaches its target temperature or cools down.
@@ -8,8 +8,7 @@ All functions are stateless and independent of OctoPrint plugin mechanics,
 making them easy to test and maintain.
 """
 
-from __future__ import absolute_import
-
+import logging
 import math
 from collections import deque
 from typing import Optional
@@ -18,7 +17,8 @@ from typing import Optional
 def calculate_linear_eta(
     history: deque, target: float, window_seconds: float = 10.0
 ) -> Optional[float]:
-    """Calculate ETA assuming constant heating rate.
+    """
+    Calculate ETA assuming constant heating rate.
 
     Uses linear regression on recent temperature samples to estimate
     the rate of temperature change and predict time to target.
@@ -92,7 +92,8 @@ def calculate_linear_eta(
 def calculate_exponential_eta(
     history: deque, target: float, window_seconds: float = 30.0
 ) -> Optional[float]:
-    """Calculate ETA accounting for thermal asymptotic behavior.
+    """
+    Calculate ETA accounting for thermal asymptotic behavior.
 
     Uses exponential model: T(t) = T_final - (T_final - T_0) * e^(-t/tau)
     Falls back to linear estimation when insufficient data or poor fit.
@@ -145,7 +146,7 @@ def calculate_exponential_eta(
         return calculate_linear_eta(history, target)
 
     # Current sample
-    t_now, temp_now, _ = recent[-1]
+    _, temp_now, _ = recent[-1]
     remaining_now = target - temp_now
     if remaining_now <= 0:
         return None
@@ -210,8 +211,6 @@ def calculate_exponential_eta(
         eta = tau * math.log(remaining_now / epsilon_c)
     except ValueError as e:
         # Log mathematische Fehler für bessere Nachvollziehbarkeit
-        import logging
-
         logging.getLogger("octoprint_temp_eta").debug(
             "Exponential ETA math error: %s", e
         )
@@ -232,7 +231,8 @@ def calculate_exponential_eta(
 def calculate_cooldown_linear_eta(
     cooldown_history: deque, goal_c: float, window_seconds: float = 60.0
 ) -> Optional[float]:
-    """Linear cooldown ETA from recent slope.
+    """
+    Linear cooldown ETA from recent slope.
 
     Uses linear regression on recent cooldown samples to estimate
     the rate of temperature decrease and predict time to goal.
@@ -303,7 +303,8 @@ def calculate_cooldown_exponential_eta(
     goal_c: float,
     window_seconds: float = 60.0,
 ) -> Optional[float]:
-    """Exponential cooldown ETA (Newton's law of cooling).
+    """
+    Exponential cooldown ETA (Newton's law of cooling).
 
     Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
     """
@@ -382,8 +383,6 @@ def calculate_cooldown_exponential_eta(
     try:
         eta = tau * math.log(numerator / denominator)
     except (ValueError, ZeroDivisionError) as e:
-        import logging
-
         logging.getLogger("octoprint_temp_eta").debug(
             "Exponential ETA math error: %s", e
         )

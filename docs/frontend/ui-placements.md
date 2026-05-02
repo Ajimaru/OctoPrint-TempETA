@@ -18,7 +18,7 @@ The ETA is displayed directly in the temperature graph area, next to each heater
 
 ### Display Format
 
-```
+```text
 Tool 0: 150.0°C / 200.0°C ⏱ 01:30
 Bed: 60.0°C / 80.0°C ⏱ 00:45
 ```
@@ -79,7 +79,7 @@ Right sidebar, temperature section
 
 ### Display Format
 
-```
+```text
 ╔════════════════════╗
 ║ Temperature ETA    ║
 ╠════════════════════╣

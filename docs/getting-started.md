@@ -21,8 +21,8 @@ cd OctoPrint-TempETA
 ### Create Virtual Environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 ### Install Dependencies
@@ -107,7 +107,7 @@ mkdocs serve
 
 Then open [http://localhost:8000](http://localhost:8000) in your browser.
 
-### Build Documentation
+### Build Static Site
 
 ```bash
 mkdocs build
@@ -117,7 +117,7 @@ Output will be in the `site/` directory.
 
 ## Project Structure
 
-```
+```text
 OctoPrint-TempETA/
 ├── octoprint_temp_eta/          # Main plugin code
 │   ├── __init__.py              # Plugin entry point
@@ -131,9 +131,8 @@ OctoPrint-TempETA/
 ├── docs/                        # Documentation source
 ├── scripts/                     # Utility scripts
 ├── translations/                # i18n files
-├── requirements.txt             # Runtime dependencies
 ├── requirements-docs.txt        # Documentation dependencies
-├── pyproject.toml              # Project configuration
+├── pyproject.toml              # Project + runtime + dev dependencies
 ├── mkdocs.yml                  # Documentation config
 └── package.json                # Node.js dependencies
 ```
@@ -160,7 +159,7 @@ OctoPrint-TempETA/
 
 The plugin uses OctoPrint's logging system. Enable debug logging in OctoPrint settings:
 
-```
+```text
 Settings → Logging → Set octoprint.plugins.temp_eta to DEBUG
 ```
 
@@ -169,7 +168,7 @@ Settings → Logging → Set octoprint.plugins.temp_eta to DEBUG
 To test the plugin with a real OctoPrint instance:
 
 ```bash
-# Install OctoPrint in your venv
+# Install OctoPrint in your .venv
 pip install "OctoPrint>=1.11.0,<2"
 
 # Install the plugin in development mode

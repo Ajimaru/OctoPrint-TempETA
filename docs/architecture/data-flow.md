@@ -204,7 +204,7 @@ sequenceDiagram
 
 ### Topic Structure
 
-```
+```text
 octoprint/temp_eta/tool0
 octoprint/temp_eta/bed
 octoprint/temp_eta/chamber

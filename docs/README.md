@@ -6,7 +6,7 @@ This directory contains the source files for the [OctoPrint-TempETA developer do
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.9+
 - Node.js 20+
 
 ### Setup

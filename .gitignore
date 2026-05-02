@@ -7,7 +7,6 @@
 *.egg-info
 dist
 build
-venv
 .venv
 __pycache__
 .pytest_cache
@@ -18,6 +17,11 @@ htmlcov
 .idea
 .vscode
 *.bak
+.ruff_cache/
+
+# Local-only Git hook configuration
+.pre-commit-config.yaml
+.githooks/
 
 # pre-commit/prettier temporary install artifacts
 node_modules/
@@ -33,4 +37,12 @@ out
 .notes/
 .ideas/
 .logs
-.qodo
+.development/
+.codacy/
+.venv-octoprint-*/
+.octoprint-master/
+.cache/
+.claude/
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

@@ -1,7 +1,7 @@
 include README.md
+include CHANGELOG.md
 include LICENSE
 include AUTHORS.md
-include requirements.txt
 include babel.cfg
 include translations/messages.pot
 recursive-include octoprint_temp_eta/templates *

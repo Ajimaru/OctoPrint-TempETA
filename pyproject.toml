@@ -1,20 +1,27 @@
 [build-system]
-requires = ["setuptools>=77,<81", "wheel", "octoprint-setuptools", "OctoPrint>=1.11.0,<2"]
+requires = [
+    "setuptools>=77,<83",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OctoPrint-TempETA"
-version = "0.7.4rc1"
+name = "octoprint-temp-eta"
+version = "0.8.0"
 description = "OctoPrint plugin to show estimated time remaining for printer heating"
 authors = [
     {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 
-requires-python = ">=3.7, <4"
+requires-python = ">=3.9, <4"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

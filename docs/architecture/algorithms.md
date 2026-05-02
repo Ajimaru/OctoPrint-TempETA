@@ -10,7 +10,7 @@ The default algorithm assumes a constant heating/cooling rate.
 
 For heating/cooling with approximately constant power:
 
-```
+```text
 rate = ΔT / Δt  (°C per second)
 ETA = (T_target - T_current) / rate
 ```
@@ -93,13 +93,13 @@ Models thermal dynamics using first-order exponential decay/growth.
 
 Temperature change follows Newton's Law of Cooling:
 
-```
+```text
 T(t) = T_ambient + (T_initial - T_ambient) * e^(-t/tau)
 ```
 
 For heating to target with thermal losses:
 
-```
+```text
 T(t) = T_target - (T_target - T_0) * e^(-t/tau)
 ```
 

@@ -34,18 +34,17 @@ This plugin is a standard Python project.
 - Install in editable mode
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e ".[develop]"
 ```
 
-If you use the helper scripts, see `.development/README.md`.
-
 Notes:
 
-- The helper scripts target a Python 3.10+ development environment. The plugin runtime supports Python 3.11+.
-- If you downloaded the repo as a ZIP, executable bits may be missing. In that case run `bash .development/setup_dev.sh` (or `chmod +x .development/setup_dev.sh`).
+- The plugin runtime and development environment target Python 3.9+.
+- Install tooling directly from project metadata with `python -m pip install -e ".[develop]"`.
+- If you downloaded the repo as a ZIP, executable bits may be missing on scripts. Restore them with `chmod +x scripts/*.sh` if needed.
 
 ## Running tests
 
@@ -61,7 +60,11 @@ We use `pre-commit` to enforce consistent formatting and basic quality checks.
 pre-commit run --hook-stage manual --all-files
 ```
 
-If you use `.development/setup_dev.sh`, it enables repo-local git hooks via `core.hooksPath=.githooks`.
+Install hooks once per clone if you want them to run automatically on commit:
+
+```bash
+pre-commit install
+```
 
 ## Pre-commit & Committing
 
@@ -73,12 +76,10 @@ We use `pre-commit` to enforce formatting, linting, and documentation generation
 pre-commit install
 ```
 
-- Run all checks locally before pushing (or use the helper script):
+- Run all checks locally before pushing:
 
 ```bash
 pre-commit run --all-files
-# or use the helper which runs pre-commit and only commits on success
-./.development/commit-if-clean.sh -m "Your commit message"
 ```
 
 - CI runs the same `pre-commit` checks and `fail_fast` is enabled in the repository configuration. If a hook fails, fix the issues and re-run the checks — the commit should not be forced when hooks are failing.
@@ -124,5 +125,5 @@ Do not commit generated or environment-specific files such as:
 
 - `dist/`, `build/`, `*.egg-info/`
 - `__pycache__/`, `.pytest_cache/`, `.coverage/`, `htmlcov/`
-- local virtual environments (`venv/`, `.venv/`)
+- local virtual environments (`.venv/`)
 - IDE/editor configs (`.idea/`, `.vscode/`)

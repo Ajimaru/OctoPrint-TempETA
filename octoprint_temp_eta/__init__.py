@@ -1,7 +1,11 @@
-# coding=utf-8
+"""OctoPrint Temperature ETA plugin implementation.
+
+Contains the main plugin class, fallback stubs for type checking environments,
+and runtime hooks used by OctoPrint.
+"""
+
 # flake8: noqa
 # pylint: disable=line-too-long
-from __future__ import absolute_import
 
 import json
 import math
@@ -9,8 +13,9 @@ import re
 import threading
 import time
 from collections import deque
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol, Sequence, Type, runtime_checkable
+from typing import Any, Dict, Optional, Protocol, Type, runtime_checkable
 
 try:
     import octoprint.plugin  # type: ignore
@@ -18,26 +23,43 @@ except ModuleNotFoundError:  # pragma: no cover
     # Allow importing this module in environments where OctoPrint isn't installed
     # (e.g. CI or static analysis). The real runtime always provides these.
     class _OctoPrintPluginStubs:
+        """Minimal stand-ins for OctoPrint plugin mixins when OctoPrint is absent."""
+
         class StartupPlugin:
+            """Stub for octoprint.plugin.StartupPlugin."""
+
             pass
 
         class TemplatePlugin:
+            """Stub for octoprint.plugin.TemplatePlugin."""
+
             pass
 
         class SettingsPlugin:
-            def on_settings_save(self: Any, data: Dict[str, Any]) -> Dict[str, Any]:
+            """Stub for octoprint.plugin.SettingsPlugin."""
+
+            def on_settings_save(self: Any, data: dict[str, Any]) -> dict[str, Any]:
+                """Return settings data unchanged in non-OctoPrint environments."""
                 return data
 
         class AssetPlugin:
+            """Stub for octoprint.plugin.AssetPlugin."""
+
             pass
 
         class EventHandlerPlugin:
+            """Stub for octoprint.plugin.EventHandlerPlugin."""
+
             pass
 
         class SimpleApiPlugin:
+            """Stub for octoprint.plugin.SimpleApiPlugin."""
+
             pass
 
     class _OctoPrintStubs:
+        """Container exposing plugin stubs under an octoprint-like namespace."""
+
         plugin = _OctoPrintPluginStubs
 
     octoprint = _OctoPrintStubs()  # type: ignore
@@ -45,22 +67,22 @@ except ModuleNotFoundError:  # pragma: no cover
 
 # OctoPrint's mixin base classes don't ship type information. Provide typed
 # aliases so Pylance accepts them as valid base classes.
-StartupPluginBase: Type[Any] = getattr(
+StartupPluginBase: type[Any] = getattr(
     octoprint.plugin, "StartupPlugin", object
 )  # type: ignore[attr-defined]
-TemplatePluginBase: Type[Any] = getattr(
+TemplatePluginBase: type[Any] = getattr(
     octoprint.plugin, "TemplatePlugin", object
 )  # type: ignore[attr-defined]
-SettingsPluginBase: Type[Any] = getattr(
+SettingsPluginBase: type[Any] = getattr(
     octoprint.plugin, "SettingsPlugin", object
 )  # type: ignore[attr-defined]
-AssetPluginBase: Type[Any] = getattr(
+AssetPluginBase: type[Any] = getattr(
     octoprint.plugin, "AssetPlugin", object
 )  # type: ignore[attr-defined]
-EventHandlerPluginBase: Type[Any] = getattr(
+EventHandlerPluginBase: type[Any] = getattr(
     octoprint.plugin, "EventHandlerPlugin", object
 )  # type: ignore[attr-defined]
-SimpleApiPluginBase: Type[Any] = getattr(
+SimpleApiPluginBase: type[Any] = getattr(
     octoprint.plugin, "SimpleApiPlugin", object
 )  # type: ignore[attr-defined]
 
@@ -69,6 +91,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
 
     def jsonify(*_args: Any, **_kwargs: Any) -> Any:
+        """Fallback that signals Flask is required when API serialization is used."""
         raise RuntimeError("Flask is required to use the plugin's API endpoints")
 
 
@@ -77,6 +100,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
 
     def gettext(message: str) -> str:
+        """Fallback translation passthrough when Flask-Babel is unavailable."""
         return message
 
 
@@ -101,6 +125,8 @@ except ImportError as e:  # pragma: no cover
 
 @runtime_checkable
 class LoggerLike(Protocol):
+    """Logging interface required by the plugin."""
+
     def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
 
     def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
@@ -112,6 +138,8 @@ class LoggerLike(Protocol):
 
 @runtime_checkable
 class SettingsLike(Protocol):
+    """Settings interface required by the plugin."""
+
     def get_boolean(self, path: Sequence[str]) -> bool: ...
 
     def get_float(self, path: Sequence[str]) -> float: ...
@@ -127,16 +155,22 @@ class SettingsLike(Protocol):
 
 @runtime_checkable
 class PluginManagerLike(Protocol):
-    def send_plugin_message(self, identifier: str, payload: Dict[str, Any]) -> None: ...
+    """Plugin manager interface required by the plugin."""
+
+    def send_plugin_message(self, identifier: str, payload: dict[str, Any]) -> None: ...
 
 
 @runtime_checkable
 class PrinterProfileManagerLike(Protocol):
-    def get_current_or_default(self) -> Dict[str, Any]: ...
+    """Printer profile manager interface required by the plugin."""
+
+    def get_current_or_default(self) -> dict[str, Any]: ...
 
 
 @runtime_checkable
 class PrinterLike(Protocol):
+    """Printer interface required by the plugin."""
+
     def register_callback(self, callback: Any) -> None: ...
 
     def is_printing(self) -> bool: ...
@@ -178,7 +212,7 @@ class TempETAPlugin(
         self._debug_logging_enabled = False
         self._last_debug_log_time = 0.0
         self._last_heater_support_decision = {}
-        self._heater_supported_cache: Dict[str, bool] = {}
+        self._heater_supported_cache: dict[str, bool] = {}
 
         # MQTT client (initialized in on_after_startup when logger is available)
         self._mqtt_client: Optional[Any] = None
@@ -225,7 +259,7 @@ class TempETAPlugin(
         # If the user doesn't provide an ambient temperature, we rely on the
         # lowest temperature observed while the heater target is OFF (within a
         # reasonable range) as a proxy for ambient.
-        self._cooldown_ambient_baseline: Dict[str, Optional[float]] = {
+        self._cooldown_ambient_baseline: dict[str, Optional[float]] = {
             "bed": None,
             "tool0": None,
             "chamber": None,
@@ -240,7 +274,7 @@ class TempETAPlugin(
 
         # Track last seen target per heater so we can detect transitions like
         # heating -> off (cooldown start).
-        self._last_target_by_heater: Dict[str, float] = {}
+        self._last_target_by_heater: dict[str, float] = {}
 
         # When enabled, suppress ETA updates while a print job is active.
         # This keeps the UI focused on the pre-print heat-up phase.
@@ -269,7 +303,7 @@ class TempETAPlugin(
             show_navbar = bool(self._settings.get_boolean(["show_in_navbar"]))
             cooldown_enabled = bool(self._settings.get_boolean(["enable_cooldown_eta"]))
             cooldown_mode = str(self._settings.get(["cooldown_mode"]) or "")
-        except Exception as e:
+        except (AttributeError, RuntimeError, TypeError, ValueError) as e:
             self._logger.error("Failed to snapshot settings: %s", e)
             return
 
@@ -292,7 +326,7 @@ class TempETAPlugin(
             return True
         try:
             return bool(self._settings.get_boolean(["suppress_while_printing"]))
-        except Exception as e:
+        except (AttributeError, RuntimeError, TypeError, ValueError) as e:
             self._logger.warning("Failed to read 'suppress_while_printing': %s", e)
             return True
 
@@ -309,20 +343,20 @@ class TempETAPlugin(
         try:
             if hasattr(printer, "is_printing") and printer.is_printing():
                 return True
-        except Exception as e:
+        except (AttributeError, RuntimeError, TypeError, ValueError) as e:
             self._logger.debug("printer.is_printing() check failed: %s", e)
 
         try:
             if hasattr(printer, "is_paused") and printer.is_paused():
                 return True
-        except Exception as e:
+        except (AttributeError, RuntimeError, TypeError, ValueError) as e:
             self._logger.debug("printer.is_paused() check failed: %s", e)
 
         try:
             if hasattr(printer, "get_state_id"):
                 state_id = printer.get_state_id()
                 return state_id in ("PRINTING", "PAUSED", "PAUSING", "RESUMING")
-        except Exception as e:
+        except (AttributeError, RuntimeError, TypeError, ValueError) as e:
             self._logger.debug("printer.get_state_id() check failed: %s", e)
 
         return False
@@ -336,7 +370,7 @@ class TempETAPlugin(
             self._debug_logging_enabled = bool(
                 self._settings.get_boolean(["debug_logging"])
             )
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             self._debug_logging_enabled = False
 
     def _debug_log(self, message: str, *args: Any) -> None:
@@ -345,7 +379,7 @@ class TempETAPlugin(
             return
         try:
             self._logger.info("[debug] " + message, *args)
-        except Exception:
+        except (RuntimeError, TypeError, ValueError):
             # Never fail the callback/logging due to formatting issues.
             pass
 
@@ -415,7 +449,7 @@ class TempETAPlugin(
             v = float(self._settings.get_float(["threshold_start"]))
             if math.isfinite(v) and v > 0:
                 self._threshold_start_c = v
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
         try:
@@ -423,7 +457,7 @@ class TempETAPlugin(
             # Allow 0.0 as a special case meaning "update on every callback".
             if math.isfinite(v) and v >= 0:
                 self._update_interval_s = v
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
         # Persistence tuning (advanced settings; safe defaults apply).
@@ -432,26 +466,28 @@ class TempETAPlugin(
             v = float(self._settings.get_float(["persist_backoff_reset_s"]))
             if math.isfinite(v) and 1.0 <= v <= 600.0:
                 self._persist_backoff_reset_s = v
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
         try:
             v = float(self._settings.get_float(["persist_backoff_initial_s"]))
             if math.isfinite(v) and 1.0 <= v <= 600.0:
                 self._persist_backoff_initial_s = v
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
         try:
             v = float(self._settings.get_float(["persist_backoff_max_s"]))
             if math.isfinite(v) and 10.0 <= v <= 3600.0:
                 self._persist_backoff_max_s = v
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
         # Ensure ordering and keep current interval within bounds.
-        if self._persist_backoff_max_s < self._persist_backoff_initial_s:
-            self._persist_backoff_max_s = self._persist_backoff_initial_s
+        self._persist_backoff_max_s = max(
+            self._persist_backoff_max_s,
+            self._persist_backoff_initial_s,
+        )
         if self._persist_backoff_initial_s < self._persist_backoff_reset_s:
             # Reset interval may be shorter than initial.
             pass
@@ -467,7 +503,7 @@ class TempETAPlugin(
             v = int(self._settings.get_int(["persist_max_json_bytes"]))
             if 16 * 1024 <= v <= 10 * 1024 * 1024:
                 self._persist_max_json_bytes = v
-        except Exception:
+        except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
     def _reset_persist_backoff(self, now: float, reason: str) -> None:
@@ -513,7 +549,7 @@ class TempETAPlugin(
                 profile_id = profile.get("id")
                 if profile_id:
                     return str(profile_id)
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             pass
         return "default"
 
@@ -539,7 +575,7 @@ class TempETAPlugin(
             if path.exists():
                 path.unlink()
                 deleted = True
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             self._logger.debug(
                 "Failed to delete history file for profile '%s'",
                 str(profile_id),
@@ -575,11 +611,18 @@ class TempETAPlugin(
                     if path.is_file():
                         path.unlink()
                         deleted_count += 1
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     self._logger.debug(
                         "Failed to delete history file '%s'", str(path), exc_info=True
                     )
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             self._logger.debug(
                 "Failed to enumerate history files in '%s'", str(folder), exc_info=True
             )
@@ -625,7 +668,7 @@ class TempETAPlugin(
 
         try:
             self._settings.save()
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             # Best-effort: UI should still refresh, and errors are logged by OctoPrint.
             pass
 
@@ -634,7 +677,7 @@ class TempETAPlugin(
         self._refresh_runtime_caches()
         self._set_history_maxlen(self._read_history_maxlen_setting())
 
-    def _load_profile_history(self, profile_id: str) -> Dict[str, deque]:
+    def _load_profile_history(self, profile_id: str) -> dict[str, deque]:
         """Load persisted history for a profile id.
 
         Returns a dict mapping heater name to a deque with current maxlen.
@@ -645,7 +688,7 @@ class TempETAPlugin(
 
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             self._logger.debug(
                 "Failed to read history file for profile '%s'",
                 profile_id,
@@ -660,7 +703,7 @@ class TempETAPlugin(
         now = time.time()
         min_ts = now - self._persist_max_age_seconds
 
-        loaded: Dict[str, deque] = {}
+        loaded: dict[str, deque] = {}
         for heater, points in samples.items():
             if not isinstance(heater, str) or not isinstance(points, list):
                 continue
@@ -673,7 +716,14 @@ class TempETAPlugin(
                     ts = float(p[0])
                     actual = float(p[1])
                     target = float(p[2])
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     continue
 
                 if ts < min_ts or ts > now + 5:
@@ -720,7 +770,7 @@ class TempETAPlugin(
             json_bytes = json_text.encode("utf-8")
 
             max_bytes = int(getattr(self, "_persist_max_json_bytes", 256 * 1024))
-            if max_bytes > 0 and len(json_bytes) > max_bytes:
+            if 0 < max_bytes < len(json_bytes):
                 now = time.time()
                 # Throttle warnings to avoid log spam in pathological cases.
                 if (
@@ -767,7 +817,14 @@ class TempETAPlugin(
                 try:
                     if tmp_path.exists():
                         tmp_path.unlink()
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     pass
 
             self._history_dirty = False
@@ -777,7 +834,7 @@ class TempETAPlugin(
                 total_samples,
                 str(path),
             )
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             self._logger.debug(
                 "Failed to persist history for profile '%s'",
                 str(profile_id),
@@ -871,13 +928,20 @@ class TempETAPlugin(
                         str(heated_bed),
                         str(heated_chamber),
                     )
-            except Exception:
+            except (
+                AttributeError,
+                KeyError,
+                OSError,
+                RuntimeError,
+                TypeError,
+                ValueError,
+            ):
                 self._debug_log("Profile summary unavailable id=%s", str(profile_id))
 
         with self._lock:
             # IMPORTANT: Do not carry over samples from the previous profile.
             # Start strictly from what's persisted for this profile (or empty).
-            new_history: Dict[str, deque] = {}
+            new_history: dict[str, deque] = {}
             for heater, history in loaded.items():
                 new_history[heater] = deque(history, maxlen=self._history_maxlen)
 
@@ -915,16 +979,16 @@ class TempETAPlugin(
 
         try:
             value = int(self._settings.get_int(["history_size"]))
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             value = self._default_history_size
 
         # UI constrains to 10..300; keep backend aligned.
         return max(10, min(300, value))
 
     def _set_history_maxlen(self, maxlen: int) -> None:
-        """Update internal history deques to a new maxlen.
+        """Update internal history queues to a new maxlen.
 
-        Rebuilds existing deques to apply the new maxlen and trims old samples if
+        Rebuilds existing queues to apply the new maxlen and trims old samples if
         needed. Must be fast and thread-safe.
 
         Args:
@@ -1032,7 +1096,7 @@ class TempETAPlugin(
             _log_support_if_changed(False, f"profile={profile_name} unknown_heater")
             self._heater_supported_cache[heater_key] = False
             return False
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             if self._debug_logging_enabled:
                 self._debug_log("Heater support error heater=%s", str(heater_name))
             self._heater_supported_cache[heater_key] = False
@@ -1086,7 +1150,7 @@ class TempETAPlugin(
         # Avoid eager f-string formatting in the hot path.
         try:
             is_logger_debug = bool(getattr(self._logger, "isEnabledFor")(10))  # type: ignore[attr-defined]
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             is_logger_debug = False
         if is_logger_debug:
             heaters_in_data = [k for k, v in data.items() if isinstance(v, dict)]
@@ -1121,12 +1185,26 @@ class TempETAPlugin(
                     continue
                 try:
                     actual = float(actual_raw)
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     continue
 
                 try:
                     target = float(target_raw or 0)
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     # Some firmwares/virtual printer formats may provide a non-numeric
                     # target (e.g. "off"). Treat that as OFF for cooldown tracking.
                     target = 0.0
@@ -1236,15 +1314,19 @@ class TempETAPlugin(
 
             self._maybe_persist_history(current_time)
 
-    def on_printer_send_current_data(self, data):
+    def on_printer_send_current_data(self, _data):
         """Stub: Called when current printer data is sent (required by callback interface)."""
-        pass
+        return None
 
-    def on_printer_add_log(self, data):
+    def on_printer_add_log(self, _data):
         """Stub: Called when log entry is added (required by callback interface)."""
-        pass
+        return None
 
-    def on_event(self, event, payload):
+    def on_printer_add_message(self, _data):
+        """Stub: Called when printer message is added (required by callback interface)."""
+        return None
+
+    def on_event(self, event, _payload):
         """Handle OctoPrint events to keep UI state consistent.
 
         Clears all ETAs immediately on disconnect or printer errors so the navbar/tab
@@ -1320,12 +1402,26 @@ class TempETAPlugin(
 
                 try:
                     target = float(target_raw or 0)
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     target = 0.0
 
                 try:
                     actual = float(actual_raw or 0)
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     actual = 0.0
 
                 if target <= 0:
@@ -1380,7 +1476,14 @@ class TempETAPlugin(
                                 try:
                                     h = self._cooldown_history.get(heater)
                                     hist_len = len(h) if h is not None else 0
-                                except Exception:
+                                except (
+                                    AttributeError,
+                                    KeyError,
+                                    OSError,
+                                    RuntimeError,
+                                    TypeError,
+                                    ValueError,
+                                ):
                                     hist_len = 0
                                 self._debug_log_throttled(
                                     time.time(),
@@ -1443,7 +1546,7 @@ class TempETAPlugin(
                     )
                 except (ConnectionError, OSError) as e:
                     self._logger.error("MQTT publish failed (connection): %s", str(e))
-                except Exception as e:
+                except (AttributeError, RuntimeError, TypeError, ValueError) as e:
                     self._logger.debug("MQTT publish failed: %s", str(e))
 
     def _heating_enabled(self) -> bool:
@@ -1452,7 +1555,7 @@ class TempETAPlugin(
             return True
         try:
             return bool(self._settings.get_boolean(["enable_heating_eta"]))
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             return True
 
     def _cooldown_enabled(self) -> bool:
@@ -1461,7 +1564,7 @@ class TempETAPlugin(
             return False
         try:
             return bool(self._settings.get_boolean(["enable_cooldown_eta"]))
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             return False
 
     def _cooldown_mode(self) -> str:
@@ -1472,7 +1575,7 @@ class TempETAPlugin(
             mode = self._settings.get(["cooldown_mode"])
             if mode in ("threshold", "ambient"):
                 return str(mode)
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             pass
         return "threshold"
 
@@ -1485,7 +1588,7 @@ class TempETAPlugin(
             if v <= 0:
                 return 1.0
             return v
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             return 1.0
 
     def _cooldown_fit_window_seconds(self) -> float:
@@ -1499,7 +1602,7 @@ class TempETAPlugin(
             if v > 1800:
                 return 1800.0
             return v
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             return 120.0
 
     def _get_cooldown_threshold_target_c(self, heater_name: str) -> Optional[float]:
@@ -1523,7 +1626,7 @@ class TempETAPlugin(
             if not math.isfinite(value) or value <= 0:
                 return None
             return value
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             return None
 
     def _get_cooldown_ambient_c(self, heater_name: str) -> Optional[float]:
@@ -1538,7 +1641,7 @@ class TempETAPlugin(
                 v = float(raw)
                 if math.isfinite(v) and v > -50:
                     return v
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             pass
 
         base = self._cooldown_ambient_baseline.get(heater_name)
@@ -1563,7 +1666,7 @@ class TempETAPlugin(
         # already learned baseline.
         try:
             current = float(recent[-1])
-        except Exception:
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             current = mn
         if mn >= (current - 2.0):
             return None
@@ -1581,6 +1684,7 @@ class TempETAPlugin(
         hysteresis_c: float,
     ) -> Optional[float]:
         """Return the cooldown goal temperature displayed in the UI."""
+        _ = actual_c
         if mode == "ambient":
             amb = self._get_cooldown_ambient_c(heater_name)
             if amb is None:
@@ -1749,67 +1853,67 @@ class TempETAPlugin(
         Returns:
             dict: Dictionary containing default plugin settings.
         """
-        return dict(
-            enabled=True,
-            enable_heating_eta=True,
-            suppress_while_printing=False,
-            show_in_sidebar=True,
-            show_in_navbar=True,
-            show_in_tab=True,
-            show_progress_bars=True,
-            show_historical_graph=True,
-            historical_graph_window_seconds=180,
-            temp_display="octoprint",
-            threshold_unit="octoprint",
-            debug_logging=False,
-            threshold_start=5.0,
-            algorithm="linear",
-            update_interval=1.0,
-            history_size=60,
+        return {
+            "enabled": True,
+            "enable_heating_eta": True,
+            "suppress_while_printing": False,
+            "show_in_sidebar": True,
+            "show_in_navbar": True,
+            "show_in_tab": True,
+            "show_progress_bars": True,
+            "show_historical_graph": True,
+            "historical_graph_window_seconds": 180,
+            "temp_display": "octoprint",
+            "threshold_unit": "octoprint",
+            "debug_logging": False,
+            "threshold_start": 5.0,
+            "algorithm": "linear",
+            "update_interval": 1.0,
+            "history_size": 60,
             # Persistence (advanced; protects SD cards on long-running phases)
-            persist_backoff_reset_s=30.0,
-            persist_backoff_initial_s=60.0,
-            persist_backoff_max_s=300.0,
-            persist_max_json_bytes=256 * 1024,
+            "persist_backoff_reset_s": 30.0,
+            "persist_backoff_initial_s": 60.0,
+            "persist_backoff_max_s": 300.0,
+            "persist_max_json_bytes": 256 * 1024,
             # Cool Down ETA
-            enable_cooldown_eta=True,
-            cooldown_mode="threshold",
-            cooldown_target_tool0=50.0,
-            cooldown_target_bed=40.0,
-            cooldown_target_chamber=30.0,
-            cooldown_ambient_temp=None,
-            cooldown_hysteresis_c=1.0,
-            cooldown_fit_window_seconds=120,
+            "enable_cooldown_eta": True,
+            "cooldown_mode": "threshold",
+            "cooldown_target_tool0": 50.0,
+            "cooldown_target_bed": 40.0,
+            "cooldown_target_chamber": 30.0,
+            "cooldown_ambient_temp": None,
+            "cooldown_hysteresis_c": 1.0,
+            "cooldown_fit_window_seconds": 120,
             # Extended settings: status colors
-            color_mode="bands",
-            color_heating="#5cb85c",
-            color_cooling="#337ab7",
-            color_idle="#777777",
+            "color_mode": "bands",
+            "color_heating": "#5cb85c",
+            "color_cooling": "#337ab7",
+            "color_idle": "#777777",
             # Extended settings: sound alerts
-            sound_enabled=False,
-            sound_target_reached=False,
-            sound_cooldown_finished=False,
-            sound_volume=0.5,
-            sound_min_interval_s=10.0,
+            "sound_enabled": False,
+            "sound_target_reached": False,
+            "sound_cooldown_finished": False,
+            "sound_volume": 0.5,
+            "sound_min_interval_s": 10.0,
             # Extended settings: browser notifications (toast)
-            notification_enabled=False,
-            notification_target_reached=False,
-            notification_cooldown_finished=False,
-            notification_timeout_s=6.0,
-            notification_min_interval_s=10.0,
+            "notification_enabled": False,
+            "notification_target_reached": False,
+            "notification_cooldown_finished": False,
+            "notification_timeout_s": 6.0,
+            "notification_min_interval_s": 10.0,
             # MQTT settings
-            mqtt_enabled=False,
-            mqtt_broker_host="",
-            mqtt_broker_port=1883,
-            mqtt_username="",
-            mqtt_password="",
-            mqtt_use_tls=False,
-            mqtt_tls_insecure=False,
-            mqtt_base_topic="octoprint/temp_eta",
-            mqtt_qos=0,
-            mqtt_retain=False,
-            mqtt_publish_interval=1.0,
-        )
+            "mqtt_enabled": False,
+            "mqtt_broker_host": "",
+            "mqtt_broker_port": 1883,
+            "mqtt_username": "",
+            "mqtt_password": "",
+            "mqtt_use_tls": False,
+            "mqtt_tls_insecure": False,
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_qos": 0,
+            "mqtt_retain": False,
+            "mqtt_publish_interval": 1.0,
+        }
 
     # TemplatePlugin mixin
     def is_template_autoescaped(self) -> bool:  # pyright: ignore
@@ -1830,19 +1934,19 @@ class TempETAPlugin(
             list: List of template configuration dictionaries.
         """
         return [
-            dict(type="navbar", custom_bindings=True),
-            dict(
-                type="sidebar",
-                custom_bindings=False,
-                name=gettext("Temperature ETA"),
-                icon="fa fa-clock",
-            ),
+            {"type": "navbar", "custom_bindings": True},
+            {
+                "type": "sidebar",
+                "custom_bindings": False,
+                "name": gettext("Temperature ETA"),
+                "icon": "fa fa-clock",
+            },
             # Use OctoPrint's default settingsViewModel binding for settings UI.
-            dict(type="settings", custom_bindings=True),
-            dict(type="tab", custom_bindings=False),
+            {"type": "settings", "custom_bindings": True},
+            {"type": "tab", "custom_bindings": False},
         ]
 
-    def on_settings_save(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def on_settings_save(self, data: dict[str, Any]) -> dict[str, Any]:
         """Persist settings and clear UI/state when disabling the plugin.
 
         OctoPrint applies settings changes only on save. When the plugin is disabled,
@@ -1883,7 +1987,7 @@ class TempETAPlugin(
 
         return saved if isinstance(saved, dict) else {}
 
-    def _sanitize_settings_payload(self, data: Dict[str, Any]) -> None:
+    def _sanitize_settings_payload(self, data: dict[str, Any]) -> None:
         """Sanitize posted settings values in-place.
 
         This is a safety net in addition to UI validation.
@@ -1902,14 +2006,19 @@ class TempETAPlugin(
                 return
             try:
                 value = float(raw)
-            except Exception:
+            except (
+                AttributeError,
+                KeyError,
+                OSError,
+                RuntimeError,
+                TypeError,
+                ValueError,
+            ):
                 data[key] = float(min_value)
                 return
 
-            if value < min_value:
-                value = min_value
-            if value > max_value:
-                value = max_value
+            value = max(min_value, value)
+            value = min(value, max_value)
             data[key] = float(value)
 
         def _clamp_int(key: str, min_value: int, max_value: int) -> None:
@@ -1921,13 +2030,18 @@ class TempETAPlugin(
                 return
             try:
                 value = int(float(raw))
-            except Exception:
+            except (
+                AttributeError,
+                KeyError,
+                OSError,
+                RuntimeError,
+                TypeError,
+                ValueError,
+            ):
                 data[key] = int(min_value)
                 return
-            if value < min_value:
-                value = min_value
-            if value > max_value:
-                value = max_value
+            value = max(min_value, value)
+            value = min(value, max_value)
             data[key] = int(value)
 
         # General / heating ETA
@@ -1957,7 +2071,14 @@ class TempETAPlugin(
             else:
                 try:
                     v = float(raw)
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     v = None
                 if v is None or v < 0.0 or v > 80.0:
                     data["cooldown_ambient_temp"] = None
@@ -2008,7 +2129,7 @@ class TempETAPlugin(
         if not getattr(self, "_plugin_manager", None):
             return
 
-        payload: Dict[str, Any] = {"type": "history_reset", "reason": str(reason)}
+        payload: dict[str, Any] = {"type": "history_reset", "reason": str(reason)}
         if old_profile_id is not None:
             payload["old_profile_id"] = str(old_profile_id)
         if profile_id is not None:
@@ -2023,10 +2144,10 @@ class TempETAPlugin(
         Returns:
             dict: Dictionary with asset types and their file paths.
         """
-        return dict(
-            js=["js/temp_eta.js"],
-            less=["less/temp_eta.less"],
-        )
+        return {
+            "js": ["js/temp_eta.js"],
+            "less": ["less/temp_eta.less"],
+        }
 
     # SimpleApiPlugin mixin
     def is_api_protected(self) -> bool:  # type: ignore[override]
@@ -2041,14 +2162,14 @@ class TempETAPlugin(
         """Whether the Simple API is restricted to admin users."""
         return True
 
-    def get_api_commands(self) -> Dict[str, list]:  # type: ignore[override]
+    def get_api_commands(self) -> dict[str, list]:  # type: ignore[override]
         """Return supported Simple API commands for the plugin."""
         return {
             "reset_profile_history": [],
             "reset_settings_defaults": [],
         }
 
-    def on_api_command(self, command: str, data: Dict[str, Any]):  # type: ignore[override]
+    def on_api_command(self, command: str, _data: dict[str, Any]):  # type: ignore[override]
         """Handle Simple API commands."""
         if command == "reset_profile_history":
             deleted_count = self._reset_all_profile_histories()
@@ -2080,7 +2201,14 @@ class TempETAPlugin(
                     self._plugin_manager.send_plugin_message(
                         self._identifier, {"type": "settings_reset"}
                     )
-                except Exception:
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
                     pass
 
             return jsonify({"success": True, "message": gettext("Defaults restored.")})
@@ -2094,23 +2222,23 @@ class TempETAPlugin(
         Returns:
             dict: Update configuration for the plugin.
         """
-        return dict(
-            temp_eta=dict(
-                displayName="Temperature ETA Plugin",
-                displayVersion=self._plugin_version,
+        return {
+            "temp_eta": {
+                "displayName": "Temperature ETA Plugin",
+                "displayVersion": self._plugin_version,
                 # version check: github repository
-                type="github_release",
-                user="Ajimaru",
-                repo="OctoPrint-TempETA",
-                current=self._plugin_version,
+                "type": "github_release",
+                "user": "Ajimaru",
+                "repo": "OctoPrint-TempETA",
+                "current": self._plugin_version,
                 # update method: pip
-                pip="https://github.com/Ajimaru/OctoPrint-TempETA/archive/{target_version}.zip",
-            )
-        )
+                "pip": "https://github.com/Ajimaru/OctoPrint-TempETA/archive/{target_version}.zip",
+            }
+        }
 
 
 __plugin_name__ = "Temperature ETA"
-__plugin_pythoncompat__ = ">=3.11,<4"
+__plugin_pythoncompat__ = ">=3.9,<4"
 __plugin_implementation__ = TempETAPlugin()
 
 __plugin_hooks__ = {

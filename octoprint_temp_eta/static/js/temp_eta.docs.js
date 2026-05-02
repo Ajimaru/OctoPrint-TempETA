@@ -62,22 +62,46 @@
  * The runtime implementation lives in `temp_eta.js`; this file provides
  * non-invasive JSDoc typedefs and an overview for documentation generation.
  */
-(function () {
-  // Safety: if this file is ever loaded outside a Node docs build, do nothing.
-  if (typeof process === "undefined" || !process.versions || !process.versions.node) return;
+(() => {
+	// Safety: if this file is ever loaded outside a Node docs build, do nothing.
+	if (
+		typeof process === "undefined" ||
+		!process.versions ||
+		!process.versions.node
+	)
+		return;
 
-  function TempETAViewModel() {}
-  globalThis.TempETAViewModel = TempETAViewModel;
+	class TempETAViewModel {
+		onSettingsShown(_dialog) {
+			return undefined;
+		}
 
-  TempETAViewModel.prototype.onSettingsShown = function (dialog) {};
+		onSettingsHidden() {
+			return undefined;
+		}
 
-  TempETAViewModel.prototype.onSettingsHidden = function () {};
+		onDataUpdaterPluginMessage(_plugin, _msg) {
+			return undefined;
+		}
 
-  TempETAViewModel.prototype.onDataUpdaterPluginMessage = function (plugin, msg) {};
+		getHeaterLabel(_heaterId) {
+			return "";
+		}
 
-  TempETAViewModel.prototype.getHeaterLabel = function (heaterId) {};
+		isETAVisible(_eta) {
+			return false;
+		}
 
-  TempETAViewModel.prototype.isETAVisible = function (eta) {};
+		getProgressPercent(_heater) {
+			return 0;
+		}
+	}
 
-  TempETAViewModel.prototype.getProgressPercent = function (heater) {};
+	var docsRoot =
+		typeof global !== "undefined"
+			? global
+			: typeof window !== "undefined"
+				? window
+				: {};
+	docsRoot.TempETAViewModel = TempETAViewModel;
 })();

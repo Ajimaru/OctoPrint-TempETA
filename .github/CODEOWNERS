@@ -8,9 +8,7 @@
 
 # Packaging / build / release metadata
 /pyproject.toml @Ajimaru
-/setup.py @Ajimaru
 /MANIFEST.in @Ajimaru
-/requirements.txt @Ajimaru
 
 # Dev tooling / hooks
 /.development/ @Ajimaru

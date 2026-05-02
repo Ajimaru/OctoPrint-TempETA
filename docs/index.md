@@ -25,7 +25,7 @@ OctoPrint-TempETA is an OctoPrint plugin that displays real-time estimated time 
 
 ## Technology Stack
 
-- **Backend**: Python 3.11+ with OctoPrint plugin framework
+- **Backend**: Python 3.9+ with OctoPrint plugin framework
 - **Frontend**: JavaScript with Knockout.js
 - **Communication**: MQTT (optional)
 - **Build**: setuptools, pytest
@@ -36,7 +36,7 @@ OctoPrint-TempETA is an OctoPrint plugin that displays real-time estimated time 
 - **Repository**: [Ajimaru/OctoPrint-TempETA](https://github.com/Ajimaru/OctoPrint-TempETA)
 - **License**: AGPLv3
 - **OctoPrint Version**: 1.10.2+
-- **Python Version**: 3.11+
+- **Python Version**: 3.9+
 
 ## For Users
 

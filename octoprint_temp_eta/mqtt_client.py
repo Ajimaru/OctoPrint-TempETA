@@ -1,4 +1,3 @@
-# coding=utf-8
 # flake8: noqa
 # pylint: disable=line-too-long
 """MQTT client wrapper for Temperature ETA plugin.
@@ -7,12 +6,12 @@ Handles MQTT broker connection, reconnection, and message publishing with
 configurable settings for broker details, authentication, and QoS.
 """
 
-from __future__ import absolute_import
 
 import json
+import ssl
 import threading
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 try:
     import paho.mqtt.client as mqtt
@@ -64,7 +63,7 @@ class MQTTClientWrapper:
 
         # State tracking for state transition events
         self._last_published_time = 0.0
-        self._last_heater_state: Dict[str, Optional[str]] = {}
+        self._last_heater_state: dict[str, Optional[str]] = {}
 
         # Connection retry logic
         self._last_connect_attempt = 0.0
@@ -85,7 +84,7 @@ class MQTTClientWrapper:
                 "MQTT support disabled: paho-mqtt is not available. Install 'paho-mqtt' to enable MQTT publishing."
             )
 
-    def configure(self, settings: Dict[str, Any]) -> None:
+    def configure(self, settings: dict[str, Any]) -> None:
         """Update MQTT configuration from plugin settings.
 
         Args:
@@ -150,7 +149,7 @@ class MQTTClientWrapper:
                 if self._client is not None:
                     try:
                         self._client.disconnect()
-                    except Exception as e:
+                    except (AttributeError, OSError, RuntimeError, ValueError) as e:
                         # Ignore disconnect errors during reconnect, but log for diagnostics.
                         self._logger.debug(
                             "Error while disconnecting existing MQTT client: %s", str(e)
@@ -159,48 +158,25 @@ class MQTTClientWrapper:
 
                 # Create MQTT client with version-specific API
                 client_id = f"{self._identifier}_{int(now)}"
-                kwargs: Dict[str, Any] = {"client_id": client_id}
-
-                callback_api_version = getattr(mqtt, "CallbackAPIVersion", None)
-                if callback_api_version is not None:
-                    version2 = getattr(callback_api_version, "VERSION2", None)
-                    if version2 is not None:
-                        kwargs["callback_api_version"] = version2
-
-                try:
-                    self._client = mqtt.Client(**kwargs)
-                except TypeError as e:
-                    # Fall back to paho-mqtt 1.x API
-                    self._logger.debug(
-                        "Using paho-mqtt 1.x API (version 2 not available): %s", str(e)
-                    )
-                    self._client = mqtt.Client(client_id=client_id)
-
-                self._client.on_connect = self._on_connect
-                self._client.on_disconnect = self._on_disconnect
-
-                if self._username:
-                    self._client.username_pw_set(self._username, self._password)
-
-                if self._use_tls:
-                    import ssl
-
-                    if self._tls_insecure:
-                        # Skip certificate verification (not recommended for production)
-                        self._client.tls_set(cert_reqs=ssl.CERT_NONE)
-                        self._client.tls_insecure_set(True)
-                    else:
-                        # Use default certificate verification
-                        self._client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
-
+                client = self._create_new_client(client_id)
+                client.on_connect = self._on_connect
+                client.on_disconnect = self._on_disconnect
+                self._configure_client_credentials(client)
+                self._client = client
                 broker_host = self._broker_host
                 broker_port = self._broker_port
 
-            self._logger.info("MQTT connecting to %s:%d", broker_host, broker_port)
-            self._client.connect(broker_host, broker_port, keepalive=60)
-            self._client.loop_start()
+            if client is None:
+                with self._lock:
+                    self._connecting = False
+                    self._connected = False
+                return
 
-        except Exception as e:
+            self._logger.info("MQTT connecting to %s:%d", broker_host, broker_port)
+            client.connect(broker_host, broker_port, keepalive=60)
+            client.loop_start()
+
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
             self._logger.error("MQTT connection failed: %s", str(e))
             with self._lock:
                 self._connecting = False
@@ -208,7 +184,12 @@ class MQTTClientWrapper:
                 if self._client is not None:
                     try:
                         self._client.loop_stop()
-                    except Exception as loop_error:
+                    except (
+                        AttributeError,
+                        OSError,
+                        RuntimeError,
+                        ValueError,
+                    ) as loop_error:
                         # Ignore loop_stop errors during cleanup, but log for diagnostics.
                         self._logger.debug(
                             "Error while stopping MQTT network loop after failure: %s",
@@ -216,8 +197,51 @@ class MQTTClientWrapper:
                         )
                     self._client = None
 
+    def _create_new_client(self, client_id: str) -> Any:
+        """Create a paho-mqtt Client, using the v2 callback API when available.
+
+        Args:
+            client_id: Client identifier string
+
+        Returns:
+            Configured mqtt.Client instance
+        """
+        if mqtt is None:
+            raise RuntimeError("paho-mqtt is not available")
+
+        kwargs: dict[str, Any] = {"client_id": client_id}
+        callback_api_version = getattr(mqtt, "CallbackAPIVersion", None)
+        if callback_api_version is not None:
+            version2 = getattr(callback_api_version, "VERSION2", None)
+            if version2 is not None:
+                kwargs["callback_api_version"] = version2
+        try:
+            return mqtt.Client(**kwargs)
+        except TypeError as e:
+            self._logger.debug(
+                "Using paho-mqtt 1.x API (version 2 not available): %s", str(e)
+            )
+            return mqtt.Client(client_id=client_id)
+
+    def _configure_client_credentials(self, client: Any) -> None:
+        """Configure authentication and TLS on a paho-mqtt Client.
+
+        Args:
+            client: mqtt.Client instance to configure
+        """
+        if self._username:
+            client.username_pw_set(self._username, self._password)
+        if self._use_tls:
+            if self._tls_insecure:
+                # Skip certificate verification (not recommended for production)
+                client.tls_set(cert_reqs=ssl.CERT_NONE)
+                client.tls_insecure_set(True)
+            else:
+                # Use default certificate verification
+                client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
+
     def _on_connect(
-        self, client: Any, userdata: Any, flags: Dict[str, Any], rc: int
+        self, _client: Any, _userdata: Any, _flags: dict[str, Any], rc: int
     ) -> None:
         """Callback when MQTT connection is established.
 
@@ -238,7 +262,7 @@ class MQTTClientWrapper:
                 self._connected = False
                 self._logger.error("MQTT connection failed with code %d", rc)
 
-    def _on_disconnect(self, client: Any, userdata: Any, rc: int) -> None:
+    def _on_disconnect(self, _client: Any, _userdata: Any, rc: int) -> None:
         """Callback when MQTT connection is lost.
 
         Args:
@@ -258,7 +282,7 @@ class MQTTClientWrapper:
             try:
                 self._client.loop_stop()
                 self._client.disconnect()
-            except Exception as e:
+            except (AttributeError, OSError, RuntimeError, ValueError) as e:
                 # Do not raise during shutdown; log for diagnostics instead.
                 self._logger.debug("Error while disconnecting MQTT client: %s", str(e))
             self._client = None
@@ -354,7 +378,7 @@ class MQTTClientWrapper:
                     current_state,
                 )
 
-    def _publish_message(self, topic: str, payload: Dict[str, Any]) -> None:
+    def _publish_message(self, topic: str, payload: dict[str, Any]) -> None:
         """Publish a message to MQTT broker (internal, lock must be held).
 
         Args:
@@ -378,7 +402,7 @@ class MQTTClientWrapper:
                 self._logger.debug(
                     "MQTT publish failed: topic=%s rc=%d", topic, result.rc
                 )
-        except Exception as e:
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
             self._logger.debug("MQTT publish error: %s", str(e))
 
     def is_connected(self) -> bool:

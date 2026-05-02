@@ -1,0 +1,27 @@
+[MESSAGES CONTROL]
+# too-few-public-methods: test stub classes intentionally have few methods
+# too-many-lines: single large test module is acceptable
+disable =
+    too-few-public-methods,
+    too-many-lines,
+    # too-many-instance-attributes: MQTTClientWrapper holds many config fields
+    too-many-instance-attributes,
+    # broad-exception-caught: paho-mqtt raises undocumented exceptions; all catches log+recover
+    broad-exception-caught,
+    # too-many-arguments / too-many-positional-arguments: publish_eta_update public API
+    too-many-arguments,
+    too-many-positional-arguments,
+    # Large plugin module: keep behavior stable, avoid risky large refactors for complexity thresholds
+    too-many-branches,
+    too-many-return-statements,
+    too-many-locals,
+    too-many-boolean-expressions,
+    too-many-statements,
+    too-many-nested-blocks,
+    # Protocol and compatibility stubs intentionally use concise signatures
+    missing-function-docstring,
+    unnecessary-pass
+
+[BASIC]
+# Allow the stdlib logging override isEnabledFor alongside snake_case methods
+method-rgx = (([a-z][a-z0-9_]{2,30})|(_[a-z0-9_]*)|(__[a-z][a-z0-9_]+__)|isEnabledFor)$
