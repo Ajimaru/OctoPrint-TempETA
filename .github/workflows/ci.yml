@@ -62,7 +62,9 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ ! -f ".pre-commit-config.yaml" ]; then
+            echo "No .pre-commit-config.yaml found. Skipping pre-commit run."
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
           else
             pre-commit run --all-files
