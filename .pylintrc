@@ -1,0 +1,10 @@
+[MESSAGES CONTROL]
+# too-few-public-methods: test stub classes intentionally have few methods
+# too-many-lines: single large test module is acceptable
+disable =
+    too-few-public-methods,
+    too-many-lines
+
+[BASIC]
+# Allow the stdlib logging override isEnabledFor alongside snake_case methods
+method-rgx = (([a-z][a-z0-9_]{2,30})|(_[a-z0-9_]*)|(__[a-z][a-z0-9_]+__)|isEnabledFor)$
