@@ -41,6 +41,7 @@ out
 .codacy/
 .venv-octoprint-*/
 .octoprint-master/
+.octoprint-devel/
 .cache/
 .claude/
 

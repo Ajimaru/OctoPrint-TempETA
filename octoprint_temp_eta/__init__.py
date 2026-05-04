@@ -64,6 +64,20 @@ except ModuleNotFoundError:  # pragma: no cover
 
     octoprint = _OctoPrintStubs()  # type: ignore
 
+try:
+    import octoprint.printer as octoprint_printer  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+
+    class _OctoPrintPrinterStubs:
+        """Container exposing printer stubs under an octoprint-like namespace."""
+
+        class PrinterCallback:
+            """Stub for octoprint.printer.PrinterCallback."""
+
+            pass
+
+    octoprint_printer = _OctoPrintPrinterStubs()  # type: ignore
+
 
 # OctoPrint's mixin base classes don't ship type information. Provide typed
 # aliases so Pylance accepts them as valid base classes.
@@ -84,6 +98,9 @@ EventHandlerPluginBase: type[Any] = getattr(
 )  # type: ignore[attr-defined]
 SimpleApiPluginBase: type[Any] = getattr(
     octoprint.plugin, "SimpleApiPlugin", object
+)  # type: ignore[attr-defined]
+PrinterCallbackBase: type[Any] = getattr(
+    octoprint_printer, "PrinterCallback", object
 )  # type: ignore[attr-defined]
 
 try:
@@ -181,6 +198,7 @@ class PrinterLike(Protocol):
 
 
 class TempETAPlugin(
+    PrinterCallbackBase,
     StartupPluginBase,
     TemplatePluginBase,
     SettingsPluginBase,

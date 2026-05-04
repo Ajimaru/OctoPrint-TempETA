@@ -278,7 +278,14 @@ $(() => {
 		self._bindSettingsIfNeeded = () => {
 			// With custom_bindings=True the settings template is injected lazily when the
 			// settings dialog opens. Bind it then, and guard against double-binding.
-			self.settings = self._resolveSettingsRoot();
+			var resolvedSettings = self._resolveSettingsRoot();
+			if (!resolvedSettings?.plugins?.temp_eta) {
+				// First-load race: settings can be temporarily unavailable right after
+				// startup or settings dialog open. Retry later instead of binding against
+				// an incomplete model.
+				return;
+			}
+			self.settings = resolvedSettings;
 			var $root = self._getSettingsDialogRoot();
 			if (!$root) {
 				return;
@@ -448,6 +455,16 @@ $(() => {
 				return true;
 			}
 
+			var rootEl = $root.get(0);
+			if (!$(rootEl).data("tempEtaKoBound")) {
+				// Avoid false negatives when the settings template is visible but KO
+				// binding has not completed yet.
+				self._bindSettingsIfNeeded();
+				if (!$(rootEl).data("tempEtaKoBound")) {
+					return true;
+				}
+			}
+
 			var ok = true;
 			var firstInvalid = null;
 
@@ -507,8 +524,8 @@ $(() => {
 		self._bindSettingsWithRetry = () => {
 			// The settings content is injected lazily; retry a few times to catch it.
 			var attempts = 0;
-			var maxAttempts = 10;
-			var delayMs = 50;
+			var maxAttempts = 60;
+			var delayMs = 100;
 
 			var tick = () => {
 				attempts += 1;
