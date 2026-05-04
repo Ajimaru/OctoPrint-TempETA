@@ -278,13 +278,14 @@ $(() => {
 		self._bindSettingsIfNeeded = () => {
 			// With custom_bindings=True the settings template is injected lazily when the
 			// settings dialog opens. Bind it then, and guard against double-binding.
-			self.settings = self._resolveSettingsRoot();
-			if (!self.settings?.plugins?.temp_eta) {
+			var resolvedSettings = self._resolveSettingsRoot();
+			if (!resolvedSettings?.plugins?.temp_eta) {
 				// First-load race: settings can be temporarily unavailable right after
 				// startup or settings dialog open. Retry later instead of binding against
 				// an incomplete model.
 				return;
 			}
+			self.settings = resolvedSettings;
 			var $root = self._getSettingsDialogRoot();
 			if (!$root) {
 				return;
