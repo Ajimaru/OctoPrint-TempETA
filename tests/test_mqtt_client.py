@@ -66,13 +66,27 @@ class MQTTClientWrapperHarness(MQTTClientWrapper):
         """Execute the internal connect thread body synchronously."""
         self._connect_thread()
 
-    def run_on_connect(self, rc: int) -> None:
-        """Invoke the connect callback with minimal dummy arguments."""
-        self._on_connect(_client=None, _userdata=None, _flags={}, rc=rc)
+    def run_on_connect(self, rc: Any, v2: bool = False) -> None:
+        """Invoke the connect callback as paho would.
 
-    def run_on_disconnect(self, rc: int) -> None:
-        """Invoke the disconnect callback with minimal dummy arguments."""
-        self._on_disconnect(_client=None, _userdata=None, rc=rc)
+        v1 form: (client, userdata, flags, rc)
+        v2 form: (client, userdata, flags, reason_code, properties)
+        """
+        if v2:
+            self._on_connect(None, None, {}, rc, None)
+        else:
+            self._on_connect(None, None, {}, rc)
+
+    def run_on_disconnect(self, rc: Any, v2: bool = False) -> None:
+        """Invoke the disconnect callback as paho would.
+
+        v1 form: (client, userdata, rc)
+        v2 form: (client, userdata, disconnect_flags, reason_code, properties)
+        """
+        if v2:
+            self._on_disconnect(None, None, {}, rc, None)
+        else:
+            self._on_disconnect(None, None, rc)
 
     def publish_message(self, topic: str, payload: dict[str, Any]) -> None:
         """Invoke internal publish logic through a test helper."""
@@ -407,7 +421,8 @@ def test_mqtt_connect_thread_falls_back_to_paho_v1_api(
     with patch("octoprint_temp_eta.mqtt_client.time.time", lambda: 100.0):
         wrapper.run_connect_thread()
 
-    assert any("Using paho-mqtt 1.x API" in msg for msg in test_logger.debug_calls)
+    assert any("falling back to 1.x API" in msg for msg in test_logger.debug_calls)
+    assert wrapper._callback_api_v2 is False
     assert mock_client.connect.called
     assert mock_client.loop_start.called
 
@@ -619,7 +634,9 @@ def test_mqtt_connect_thread_cleanup_ignores_loop_stop_errors(
     assert wrapper.get_internal_state("client") is None
 
 
-def test_mqtt_on_connect_sets_connected_and_logs(test_logger: DummyLogger) -> None:
+def test_mqtt_on_connect_sets_connected_and_logs(
+    test_logger: DummyLogger,
+) -> None:
     """_on_connect should update internal state for success and failure."""
     wrapper = MQTTClientWrapperHarness(test_logger, "temp_eta")
     wrapper.set_internal_state(broker_host="broker", broker_port=1883, connecting=True)
@@ -643,6 +660,77 @@ def test_mqtt_on_disconnect_logs_retry(test_logger: DummyLogger) -> None:
     wrapper.run_on_disconnect(rc=1)
     assert wrapper.is_connected() is False
     assert any("will retry" in msg for msg in test_logger.info_calls)
+
+
+class FakeReasonCode:
+    """Stand-in for paho-mqtt 2.x ReasonCode (has .is_failure, not int 0)."""
+
+    def __init__(self, is_failure: bool, name: str) -> None:
+        self.is_failure = is_failure
+        self._name = name
+
+    def __str__(self) -> str:
+        return self._name
+
+
+def test_mqtt_on_connect_v2_signature_success(test_logger: DummyLogger) -> None:
+    """paho 2.x v2 calls _on_connect with (… , reason_code, properties)."""
+    wrapper = MQTTClientWrapperHarness(test_logger, "temp_eta")
+    wrapper.set_internal_state(broker_host="broker", broker_port=1883, connecting=True)
+
+    wrapper.run_on_connect(rc=FakeReasonCode(False, "Success"), v2=True)
+    assert wrapper.is_connected() is True
+    assert any("MQTT connected" in msg for msg in test_logger.info_calls)
+
+
+def test_mqtt_on_connect_v2_signature_failure(test_logger: DummyLogger) -> None:
+    """v2 reason_code with is_failure=True must mark the client unconnected."""
+    wrapper = MQTTClientWrapperHarness(test_logger, "temp_eta")
+    wrapper.set_internal_state(broker_host="broker", broker_port=1883, connecting=True)
+
+    wrapper.run_on_connect(rc=FakeReasonCode(True, "Not authorized"), v2=True)
+    assert wrapper.is_connected() is False
+    assert any(
+        "MQTT connection failed with code" in msg for msg in test_logger.error_calls
+    )
+
+
+def test_mqtt_on_disconnect_v2_signature(test_logger: DummyLogger) -> None:
+    """paho 2.x v2 passes (client, userdata, flags, reason_code, properties)."""
+    wrapper = MQTTClientWrapperHarness(test_logger, "temp_eta")
+    wrapper.set_internal_state(connected=True, connecting=True)
+
+    wrapper.run_on_disconnect(rc=FakeReasonCode(True, "Connection lost"), v2=True)
+    assert wrapper.is_connected() is False
+    assert any("will retry" in msg for msg in test_logger.info_calls)
+
+
+def test_mqtt_on_disconnect_v2_clean_no_retry_log(test_logger: DummyLogger) -> None:
+    """A clean v2 disconnect (is_failure=False) must not log a retry."""
+    wrapper = MQTTClientWrapperHarness(test_logger, "temp_eta")
+    wrapper.set_internal_state(connected=True, connecting=True)
+
+    wrapper.run_on_disconnect(rc=FakeReasonCode(False, "Success"), v2=True)
+    assert wrapper.is_connected() is False
+    assert not any("will retry" in msg for msg in test_logger.info_calls)
+
+
+def test_mqtt_reason_is_failure_handles_both_apis() -> None:
+    """_reason_is_failure must work for int (1.x) and ReasonCode (2.x)."""
+    assert MQTTClientWrapper._reason_is_failure(0) is False
+    assert MQTTClientWrapper._reason_is_failure(1) is True
+    assert MQTTClientWrapper._reason_is_failure(FakeReasonCode(False, "ok")) is False
+    assert MQTTClientWrapper._reason_is_failure(FakeReasonCode(True, "bad")) is True
+
+
+def test_mqtt_create_new_client_uses_v2_with_real_paho(
+    test_logger: DummyLogger,
+) -> None:
+    """With the real installed paho-mqtt 2.x, the v2 client must be created."""
+    wrapper = MQTTClientWrapperHarness(test_logger, "temp_eta")
+    client = wrapper._create_new_client("temp_eta_test")
+    assert client is not None
+    assert wrapper._callback_api_v2 is True
 
 
 def test_mqtt_disconnect_internal_ignores_exceptions(

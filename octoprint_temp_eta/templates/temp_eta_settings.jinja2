@@ -536,6 +536,7 @@
                         <input type="checkbox"
                                id="temp_eta_mqtt_enabled"
                                data-bind="checked: settings.plugins.temp_eta.mqtt_enabled, enable: settings.plugins.temp_eta.enabled">
+                        <span class="label label-warning" style="margin-left: 8px;">{{ _("Experimental") }}</span>
                         <p class="help-block">{{ _("Enable MQTT integration to publish temperature ETA data and state changes.") }}</p>
                     </div>
                 </div>

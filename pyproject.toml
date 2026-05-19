@@ -29,7 +29,7 @@ classifiers = [
 
 # any additional requirements (besides OctoPrint) should be listed here
 dependencies = [
-    "paho-mqtt>=1.6.0,<3.0.0"
+    "paho-mqtt>=2.0.0,<3.0.0"
 ]
 
 [tool.setuptools]
@@ -64,5 +64,7 @@ develop = [
     "pre-commit>=3,<5",
     "black>=24.0.0",
     "isort>=5,<7",
-    "flake8>=7.0.0"
+    "flake8>=7.0.0",
+    "Babel>=2,<3",
+    "polib>=1.2,<2"
 ]
