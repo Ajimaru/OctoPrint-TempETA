@@ -67,7 +67,8 @@ class MQTTClientWrapperHarness(MQTTClientWrapper):
         self._connect_thread()
 
     def run_on_connect(self, rc: Any, v2: bool = False) -> None:
-        """Invoke the connect callback as paho would.
+        """
+        Invoke the connect callback as paho would.
 
         v1 form: (client, userdata, flags, rc)
         v2 form: (client, userdata, flags, reason_code, properties)
