@@ -202,9 +202,9 @@ class MQTTClientWrapper:
     def _create_new_client(self, client_id: str) -> Any:
         """Create a paho-mqtt Client.
 
-        Targets paho-mqtt 2.x (callback API v2). Falls back to the 1.6.x
-        constructor when the v2 API is unavailable, so the plugin keeps
-        working across the declared ``paho-mqtt>=1.6.0,<3.0.0`` range.
+        Targets paho-mqtt 2.x (callback API v2). Falls back to the legacy
+        constructor when the v2 API is unavailable, matching the declared
+        ``paho-mqtt>=2.0.0,<3.0.0`` dependency range.
 
         Args:
             client_id: Client identifier string

@@ -227,8 +227,10 @@ class TempETAPlugin(
         super().__init__()
         self._lock = threading.Lock()
         # Serializes profile-switch sequences against each other. Acquired
-        # around the persist -> id-swap -> history-replace flow so two switches
-        # (or a switch racing its own persist) cannot interleave.
+        # around the persist -> id-swap -> history-replace flow performed
+        # inside the switch handler so two concurrent switches (and the
+        # switch's own internal persist step) cannot interleave. Persists
+        # triggered elsewhere are not serialized by this lock.
         self._profile_switch_lock = threading.Lock()
 
         self._debug_logging_enabled = False

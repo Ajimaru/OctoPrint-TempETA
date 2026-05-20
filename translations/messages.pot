@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-19 21:30+0200\n"
+"POT-Creation-Date: 2026-05-20 21:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:724
 msgid ""
@@ -148,7 +148,7 @@ msgstr ""
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2306
+#: octoprint_temp_eta/__init__.py:2308
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:701
 msgid "Defaults restored."
 msgstr ""
@@ -278,7 +278,7 @@ msgid "Historical graph"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:160
-msgid "Historical graph window (seconds) "
+msgid "Historical graph window (seconds)"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:130
@@ -654,7 +654,7 @@ msgstr ""
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2033
+#: octoprint_temp_eta/__init__.py:2035
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:674
