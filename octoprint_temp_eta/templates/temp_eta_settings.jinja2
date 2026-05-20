@@ -116,53 +116,51 @@
                         <input type="checkbox"
                                id="temp_eta_show_in_sidebar"
                                data-bind="checked: settings.plugins.temp_eta.show_in_sidebar, enable: settings.plugins.temp_eta.enabled">
-                        <p class="help-block">{{ _('Show ETA in OctoPrint\'s sidebar temperature widget.') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="control-group">
-                                                <label class="control-label" for="temp_eta_show_in_navbar">{{ _('Show in navbar') }}</label>
-                                                <div class="controls">
-                                                    <input type="checkbox"
-                                                           id="temp_eta_show_in_navbar"
-                                                           data-bind="checked: settings.plugins.temp_eta.show_in_navbar, enable: settings.plugins.temp_eta.enabled">
-                                                    <p class="help-block">{{ _('Show ETA in the top navigation bar.') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="control-group">
-                                                <label class="control-label" for="temp_eta_show_in_tab">{{ _('Show in tab') }}</label>
-                                                <div class="controls">
-                                                    <input type="checkbox"
-                                                           id="temp_eta_show_in_tab"
-                                                           data-bind="checked: settings.plugins.temp_eta.show_in_tab, enable: settings.plugins.temp_eta.enabled">
-                                                    <p class="help-block">{{ _('Show ETA in the dedicated Temperature ETA tab.') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="control-group">
-                                                <label class="control-label" for="temp_eta_show_progress_bars">{{ _('Show progress bars') }}</label>
-                                                <div class="controls">
-                                                    <input type="checkbox"
-                                                           id="temp_eta_show_progress_bars"
-                                                           data-bind="checked: settings.plugins.temp_eta.show_progress_bars, enable: settings.plugins.temp_eta.enabled">
-                                                    <p class="help-block">{{ _('Show heating progress bars in the sidebar and tab views.') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="control-group">
-                                                <label class="control-label" for="temp_eta_show_historical_graph">{{ _('Show historical graph') }}</label>
-                                                <div class="controls">
-                                                    <input type="checkbox"
-                                                           id="temp_eta_show_historical_graph"
-                                                           data-bind="checked: settings.plugins.temp_eta.show_historical_graph, enable: settings.plugins.temp_eta.enabled">
-                                                    <p class="help-block">{{ _('Show a small temperature history graph in the Temperature ETA tab.') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="control-group">
-                                                <label class="control-label" for="temp_eta_historical_graph_window_seconds">
-                                                    {{ _('Historical graph window (seconds) ') }}
-                    </label>
+                        <p class="help-block">{{ _("Show ETA in OctoPrint's sidebar temperature widget.") }}</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="temp_eta_show_in_navbar">{{ _("Show in navbar") }}</label>
+                    <div class="controls">
+                        <input type="checkbox"
+                               id="temp_eta_show_in_navbar"
+                               data-bind="checked: settings.plugins.temp_eta.show_in_navbar, enable: settings.plugins.temp_eta.enabled">
+                        <p class="help-block">{{ _("Show ETA in the top navigation bar.") }}</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="temp_eta_show_in_tab">{{ _("Show in tab") }}</label>
+                    <div class="controls">
+                        <input type="checkbox"
+                               id="temp_eta_show_in_tab"
+                               data-bind="checked: settings.plugins.temp_eta.show_in_tab, enable: settings.plugins.temp_eta.enabled">
+                        <p class="help-block">{{ _("Show ETA in the dedicated Temperature ETA tab.") }}</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="temp_eta_show_progress_bars">{{ _("Show progress bars") }}</label>
+                    <div class="controls">
+                        <input type="checkbox"
+                               id="temp_eta_show_progress_bars"
+                               data-bind="checked: settings.plugins.temp_eta.show_progress_bars, enable: settings.plugins.temp_eta.enabled">
+                        <p class="help-block">{{ _("Show heating progress bars in the sidebar and tab views.") }}</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="temp_eta_show_historical_graph">{{ _("Show historical graph") }}</label>
+                    <div class="controls">
+                        <input type="checkbox"
+                               id="temp_eta_show_historical_graph"
+                               data-bind="checked: settings.plugins.temp_eta.show_historical_graph, enable: settings.plugins.temp_eta.enabled">
+                        <p class="help-block">{{ _("Show a small temperature history graph in the Temperature ETA tab.") }}</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="temp_eta_hist_graph_window">{{ _("Historical graph window (seconds)") }}</label>
                     <div class="controls">
                         <input type="number"
                                class="input-small"
-                               id="temp_eta_historical_graph_window_seconds"
+                               id="temp_eta_hist_graph_window"
                                data-bind="value: settings.plugins.temp_eta.historical_graph_window_seconds, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.show_historical_graph"
                                min="30"
                                max="1800"
