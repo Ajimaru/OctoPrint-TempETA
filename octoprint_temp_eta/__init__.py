@@ -226,6 +226,12 @@ class TempETAPlugin(
         """Initialize plugin with temperature history tracking."""
         super().__init__()
         self._lock = threading.Lock()
+        # Serializes profile-switch sequences against each other. Acquired
+        # around the persist -> id-swap -> history-replace flow performed
+        # inside the switch handler so two concurrent switches (and the
+        # switch's own internal persist step) cannot interleave. Persists
+        # triggered elsewhere are not serialized by this lock.
+        self._profile_switch_lock = threading.Lock()
 
         self._debug_logging_enabled = False
         self._last_debug_log_time = 0.0
@@ -254,10 +260,20 @@ class TempETAPlugin(
         self._persist_backoff_current_s = self._persist_backoff_initial_s
         self._next_persist_time = 0.0
         self._persist_phase_active = False
+        # Guards the persist-backoff triplet (_persist_phase_active,
+        # _persist_backoff_current_s, _next_persist_time) which is mutated from
+        # the temperature callback, profile switches, and disconnect events.
+        # Dedicated lock (not self._lock) so these short sections never nest
+        # with the history lock taken by _persist_current_profile_history.
+        self._persist_state_lock = threading.Lock()
         self._last_persist_size_warning_time = 0.0
         self._persist_max_json_bytes = 256 * 1024
         self._persist_max_age_seconds = 180.0
         self._history_dirty = False
+        # Monotonic counter bumped whenever new history data is recorded.
+        # A persist captures this under the lock and only clears the dirty
+        # flag if it is unchanged after the write (no concurrent update).
+        self._history_dirty_epoch = 0
 
         self._temp_history = {
             "bed": deque(maxlen=self._history_maxlen),
@@ -297,6 +313,9 @@ class TempETAPlugin(
         # When enabled, suppress ETA updates while a print job is active.
         # This keeps the UI focused on the pre-print heat-up phase.
         self._suppressing_due_to_print = False
+        # Guards _suppressing_due_to_print so the one-shot frontend clear is
+        # not triggered twice by concurrent temperature callbacks and events.
+        self._suppress_lock = threading.Lock()
 
         self._last_settings_snapshot_log_time = 0.0
 
@@ -531,15 +550,19 @@ class TempETAPlugin(
             now (float): Current epoch time.
             reason (str): Debug reason for reset.
         """
-        self._persist_phase_active = False
-        self._persist_backoff_current_s = float(self._persist_backoff_reset_s)
-        self._next_persist_time = float(now) + float(self._persist_backoff_current_s)
+        with self._persist_state_lock:
+            self._persist_phase_active = False
+            self._persist_backoff_current_s = float(self._persist_backoff_reset_s)
+            self._next_persist_time = float(now) + float(
+                self._persist_backoff_current_s
+            )
+            current_s = float(self._persist_backoff_current_s)
         self._debug_log_throttled(
             now,
             10.0,
             "Persist backoff reset reason=%s next_in=%.1fs",
             str(reason),
-            float(self._persist_backoff_current_s),
+            current_s,
         )
 
     def _enter_persist_phase(self, now: float, reason: str) -> None:
@@ -548,15 +571,19 @@ class TempETAPlugin(
         In an active heating phase we use the backoff sequence starting at
         persist_backoff_initial_s.
         """
-        self._persist_phase_active = True
-        self._persist_backoff_current_s = float(self._persist_backoff_initial_s)
-        self._next_persist_time = float(now) + float(self._persist_backoff_current_s)
+        with self._persist_state_lock:
+            self._persist_phase_active = True
+            self._persist_backoff_current_s = float(self._persist_backoff_initial_s)
+            self._next_persist_time = float(now) + float(
+                self._persist_backoff_current_s
+            )
+            current_s = float(self._persist_backoff_current_s)
         self._debug_log_throttled(
             now,
             10.0,
             "Persist phase enter reason=%s next_in=%.1fs",
             str(reason),
-            float(self._persist_backoff_current_s),
+            current_s,
         )
 
     def _get_current_profile_id(self) -> str:
@@ -757,18 +784,22 @@ class TempETAPlugin(
 
     def _persist_current_profile_history(self) -> None:
         """Persist current in-memory history to the active profile's file."""
-        profile_id = getattr(self, "_active_profile_id", None)
-        if not profile_id:
-            return
-        if not self._history_dirty:
-            return
+        with self._lock:
+            profile_id = getattr(self, "_active_profile_id", None)
+            if not profile_id:
+                return
+            if not self._history_dirty:
+                return
+            # Snapshot the history and the dirty epoch atomically. Any sample
+            # appended after this point increments _history_dirty_epoch, so we
+            # can detect a concurrent update and avoid clearing its dirty signal.
+            dirty_epoch = self._history_dirty_epoch
+            samples = {
+                heater: [[ts, actual, target] for (ts, actual, target) in history]
+                for heater, history in self._temp_history.items()
+            }
         try:
             path = self._get_profile_history_path(profile_id)
-            with self._lock:
-                samples = {
-                    heater: [[ts, actual, target] for (ts, actual, target) in history]
-                    for heater, history in self._temp_history.items()
-                }
 
             total_samples = sum(len(v) for v in samples.values())
             if total_samples <= 0:
@@ -845,7 +876,12 @@ class TempETAPlugin(
                 ):
                     pass
 
-            self._history_dirty = False
+            # Only clear the dirty flag if no new sample landed during the
+            # write. If the epoch advanced, a concurrent callback recorded data
+            # not in this snapshot; leave the flag set so it persists next time.
+            with self._lock:
+                if self._history_dirty_epoch == dirty_epoch:
+                    self._history_dirty = False
             self._debug_log(
                 "Persisted history profile=%s samples=%d path=%s",
                 profile_id,
@@ -861,130 +897,149 @@ class TempETAPlugin(
 
     def _maybe_persist_history(self, now: float) -> None:
         """Persist history using backoff to reduce disk wear."""
+        # Lock-free fast path: a missed True only defers the persist by one
+        # callback cycle. The authoritative dirty check (and flag clear) is
+        # performed under self._lock inside _persist_current_profile_history.
         if not self._history_dirty:
             return
 
-        # If we never scheduled a persist (startup), do it with current interval.
-        if float(getattr(self, "_next_persist_time", 0.0)) <= 0.0:
-            self._next_persist_time = float(now) + float(
-                self._persist_backoff_current_s
-            )
+        with self._persist_state_lock:
+            # If we never scheduled a persist (startup), do it with current interval.
+            if float(getattr(self, "_next_persist_time", 0.0)) <= 0.0:
+                self._next_persist_time = float(now) + float(
+                    self._persist_backoff_current_s
+                )
 
-        if float(now) < float(self._next_persist_time):
-            return
+            if float(now) < float(self._next_persist_time):
+                return
 
+        # Persist outside the backoff lock: _persist_current_profile_history
+        # acquires self._lock, and the two locks must never nest.
         self._persist_current_profile_history()
 
-        # Increase interval (backoff) for ongoing phases.
-        current = float(
-            getattr(self, "_persist_backoff_current_s", self._persist_backoff_initial_s)
-        )
-        initial = float(getattr(self, "_persist_backoff_initial_s", 60.0))
-        maximum = float(getattr(self, "_persist_backoff_max_s", 300.0))
+        with self._persist_state_lock:
+            # Increase interval (backoff) for ongoing phases.
+            current = float(
+                getattr(
+                    self,
+                    "_persist_backoff_current_s",
+                    self._persist_backoff_initial_s,
+                )
+            )
+            initial = float(getattr(self, "_persist_backoff_initial_s", 60.0))
+            maximum = float(getattr(self, "_persist_backoff_max_s", 300.0))
 
-        if current < initial:
-            current = initial
-        else:
-            current = min(current * 2.0, maximum)
+            if current < initial:
+                current = initial
+            else:
+                current = min(current * 2.0, maximum)
 
-        self._persist_backoff_current_s = current
-        self._persist_phase_active = True
-        self._next_persist_time = float(now) + float(current)
+            self._persist_backoff_current_s = current
+            self._persist_phase_active = True
+            self._next_persist_time = float(now) + float(current)
 
     def _switch_active_profile_if_needed(self, force: bool = False) -> None:
         """Persist + swap history when active printer profile changes."""
-        profile_id = self._get_current_profile_id()
-        if not force and profile_id == self._active_profile_id:
-            return
+        # Serialize the entire persist -> id-swap -> history-replace sequence.
+        # Without this, a concurrent persist could pair a stale profile_id with
+        # post-switch in-memory history (or vice versa), writing one profile's
+        # samples into another profile's file.
+        with self._profile_switch_lock:
+            profile_id = self._get_current_profile_id()
+            if not force and profile_id == self._active_profile_id:
+                return
 
-        old_profile_id = self._active_profile_id
+            old_profile_id = self._active_profile_id
 
-        old_heaters = []
-        with self._lock:
-            old_heaters = list(self._temp_history.keys())
+            with self._lock:
+                old_heaters = list(self._temp_history.keys())
 
-        if self._active_profile_id is not None:
-            self._persist_current_profile_history()
+            if self._active_profile_id is not None:
+                self._persist_current_profile_history()
 
-        self._active_profile_id = profile_id
-
-        # Reset persistence scheduling on profile switch so a new profile does not
-        # inherit a long next-persist delay from the previous profile.
-        self._persist_phase_active = False
-        self._persist_backoff_current_s = float(self._persist_backoff_initial_s)
-        self._next_persist_time = 0.0
-        # On startup we restore persisted history for the active profile.
-        # On runtime profile switches we intentionally start with an empty history
-        # so the ETA uses only live samples from the new profile.
-        loaded = self._load_profile_history(profile_id) if force else {}
-        self._debug_log(
-            "Profile switch %s -> %s (force=%s, restore_persisted=%s)",
-            str(old_profile_id),
-            str(profile_id),
-            str(force),
-            str(force),
-        )
-
-        if self._debug_logging_enabled:
-            try:
-                profile = self._printer_profile_manager.get_current_or_default()
-                if isinstance(profile, dict):
-                    profile_name = profile.get("name", "unknown")
-                    heated_bed = bool(profile.get("heatedBed", False))
-                    heated_chamber = bool(profile.get("heatedChamber", False))
-                    extruder_data = (
-                        profile.get("extruder", {})
-                        if isinstance(profile.get("extruder", {}), dict)
-                        else {}
-                    )
-                    extruder_count = int(extruder_data.get("count", 0) or 0)
-                    self._debug_log(
-                        "Profile summary id=%s name=%s extruders=%d heatedBed=%s heatedChamber=%s",
-                        str(profile_id),
-                        str(profile_name),
-                        extruder_count,
-                        str(heated_bed),
-                        str(heated_chamber),
-                    )
-            except (
-                AttributeError,
-                KeyError,
-                OSError,
-                RuntimeError,
-                TypeError,
-                ValueError,
-            ):
-                self._debug_log("Profile summary unavailable id=%s", str(profile_id))
-
-        with self._lock:
-            # IMPORTANT: Do not carry over samples from the previous profile.
-            # Start strictly from what's persisted for this profile (or empty).
-            new_history: dict[str, deque] = {}
-            for heater, history in loaded.items():
-                new_history[heater] = deque(history, maxlen=self._history_maxlen)
-
-            self._temp_history = new_history
-
-        # Loaded state is considered clean until we append new samples.
-        self._history_dirty = False
-
-        if not force:
+            # Reset persistence scheduling on profile switch so a new profile
+            # does not inherit a long next-persist delay from the previous one.
+            with self._persist_state_lock:
+                self._persist_phase_active = False
+                self._persist_backoff_current_s = float(self._persist_backoff_initial_s)
+                self._next_persist_time = 0.0
+            # On startup we restore persisted history for the active profile.
+            # On runtime profile switches we intentionally start with an empty
+            # history so the ETA uses only live samples from the new profile.
+            loaded = self._load_profile_history(profile_id) if force else {}
             self._debug_log(
-                "Cleared live (RAM) history for new profile=%s", str(profile_id)
+                "Profile switch %s -> %s (force=%s, restore_persisted=%s)",
+                str(old_profile_id),
+                str(profile_id),
+                str(force),
+                str(force),
             )
 
-        # Reset cached heater support decisions for the new profile.
-        self._last_heater_support_decision = {}
-        self._heater_supported_cache = {}
+            if self._debug_logging_enabled:
+                try:
+                    profile = self._printer_profile_manager.get_current_or_default()
+                    if isinstance(profile, dict):
+                        profile_name = profile.get("name", "unknown")
+                        heated_bed = bool(profile.get("heatedBed", False))
+                        heated_chamber = bool(profile.get("heatedChamber", False))
+                        extruder_data = (
+                            profile.get("extruder", {})
+                            if isinstance(profile.get("extruder", {}), dict)
+                            else {}
+                        )
+                        extruder_count = int(extruder_data.get("count", 0) or 0)
+                        self._debug_log(
+                            "Profile summary id=%s name=%s extruders=%d heatedBed=%s heatedChamber=%s",
+                            str(profile_id),
+                            str(profile_name),
+                            extruder_count,
+                            str(heated_bed),
+                            str(heated_chamber),
+                        )
+                except (
+                    AttributeError,
+                    KeyError,
+                    OSError,
+                    RuntimeError,
+                    TypeError,
+                    ValueError,
+                ):
+                    self._debug_log(
+                        "Profile summary unavailable id=%s", str(profile_id)
+                    )
 
-        # Clear any stale UI values that might linger across profile switches.
-        self._send_clear_messages(old_heaters)
-        # Clear frontend-only state like the historical graph buffer.
-        self._send_history_reset_message(
-            reason="profile_switch",
-            old_profile_id=old_profile_id,
-            profile_id=profile_id,
-        )
+            with self._lock:
+                # Swap the active profile id and replace history atomically so a
+                # concurrent persist always sees a consistent (id, history) pair.
+                # IMPORTANT: Do not carry over samples from the previous profile.
+                # Start strictly from what's persisted for this profile (or empty).
+                self._active_profile_id = profile_id
+                new_history: dict[str, deque] = {}
+                for heater, history in loaded.items():
+                    new_history[heater] = deque(history, maxlen=self._history_maxlen)
+
+                self._temp_history = new_history
+                # Loaded state is considered clean until we append new samples.
+                self._history_dirty = False
+                self._history_dirty_epoch += 1
+
+            if not force:
+                self._debug_log(
+                    "Cleared live (RAM) history for new profile=%s", str(profile_id)
+                )
+
+            # Reset cached heater support decisions for the new profile.
+            self._last_heater_support_decision = {}
+            self._heater_supported_cache = {}
+
+            # Clear any stale UI values that might linger across profile switches.
+            self._send_clear_messages(old_heaters)
+            # Clear frontend-only state like the historical graph buffer.
+            self._send_history_reset_message(
+                reason="profile_switch",
+                old_profile_id=old_profile_id,
+                profile_id=profile_id,
+            )
 
     def _read_history_maxlen_setting(self) -> int:
         """Read and sanitize history size setting.
@@ -1029,6 +1084,7 @@ class TempETAPlugin(
 
             # Persist trimmed/expanded histories.
             self._history_dirty = True
+            self._history_dirty_epoch += 1
 
     def _is_heater_supported(self, heater_name):
         """Check if heater is part of the active printer profile.
@@ -1140,13 +1196,17 @@ class TempETAPlugin(
         # If enabled, suppress ETA completely while OctoPrint considers a print job active.
         if self._suppress_while_printing_enabled() and self._is_print_job_active():
             # Clear once when suppression starts to avoid stale countdowns.
-            if not self._suppressing_due_to_print:
+            # Check-and-set under the lock so the one-shot clear cannot be
+            # triggered twice by concurrent callbacks/events.
+            with self._suppress_lock:
+                just_started = not self._suppressing_due_to_print
                 self._suppressing_due_to_print = True
+            if just_started:
                 self._clear_all_heaters_frontend()
             return
 
         # If we were suppressing but the condition no longer applies (e.g. warm-up resumed or print ended), re-enable.
-        if self._suppressing_due_to_print:
+        with self._suppress_lock:
             self._suppressing_due_to_print = False
 
         current_time = time.time()
@@ -1300,6 +1360,7 @@ class TempETAPlugin(
 
                 self._temp_history[heater_key].append((current_time, actual, target))
                 self._history_dirty = True
+                self._history_dirty_epoch += 1
                 recorded_count += 1
 
         # Avoid flooding logs while idle/holding temperature: log far less often
@@ -1316,17 +1377,25 @@ class TempETAPlugin(
             float(threshold),
         )
 
-        if (current_time - self._last_update_time) >= update_interval:
-            self._last_update_time = current_time
+        # Atomic check-and-set of the broadcast/persist cadence gate so two
+        # concurrent callbacks cannot both pass and double-broadcast.
+        with self._persist_state_lock:
+            due = (current_time - self._last_update_time) >= update_interval
+            if due:
+                self._last_update_time = current_time
+            phase_active_prev = self._persist_phase_active
+
+        if due:
             self._calculate_and_broadcast_eta(data)
 
-            # Update persistence phase state based on transitions.
+            # Update persistence phase state based on transitions. Decide using
+            # the phase snapshot taken above so the branch is consistent.
             if target_changed_in_active_phase:
                 self._enter_persist_phase(current_time, "target_change")
-            elif self._persist_phase_active and (not phase_active_now):
+            elif phase_active_prev and (not phase_active_now):
                 # Active -> inactive transition: schedule a shorter persist.
                 self._reset_persist_backoff(current_time, "phase_end")
-            elif (not self._persist_phase_active) and phase_active_now:
+            elif (not phase_active_prev) and phase_active_now:
                 # Inactive -> active transition: start backoff sequence.
                 self._enter_persist_phase(current_time, "phase_start")
 
@@ -1372,9 +1441,11 @@ class TempETAPlugin(
 
             self._send_clear_messages(heaters)
 
-            # Disconnect MQTT on shutdown
-            if event == "Shutdown" and self._mqtt_client is not None:
-                self._mqtt_client.disconnect()
+            # Disconnect MQTT on shutdown. Snapshot the reference so the
+            # null-check and use cannot race a concurrent reassignment.
+            mqtt_client = self._mqtt_client
+            if event == "Shutdown" and mqtt_client is not None:
+                mqtt_client.disconnect()
 
         # Reset suppression flag on job lifecycle changes; actual suppression is decided in the temperature callback.
         if event in (
@@ -1384,7 +1455,8 @@ class TempETAPlugin(
             "PrintFailed",
             "PrintCancelled",
         ):
-            self._suppressing_due_to_print = False
+            with self._suppress_lock:
+                self._suppressing_due_to_print = False
 
     def _calculate_and_broadcast_eta(self, data):
         """Calculate ETA for each heater and send to frontend.
@@ -1547,14 +1619,18 @@ class TempETAPlugin(
                     }
                 )
 
+        # Snapshot the MQTT client reference once so the null-check and use
+        # cannot race a concurrent reassignment from on_settings_save.
+        mqtt_client = self._mqtt_client
+
         # Always send updates so the frontend can clear stale values.
         for payload in payloads:
             self._plugin_manager.send_plugin_message(self._identifier, payload)
 
             # Publish to MQTT if enabled
-            if self._mqtt_client is not None:
+            if mqtt_client is not None:
                 try:
-                    self._mqtt_client.publish_eta_update(
+                    mqtt_client.publish_eta_update(
                         heater=payload.get("heater"),
                         eta=payload.get("eta"),
                         eta_kind=payload.get("eta_kind"),

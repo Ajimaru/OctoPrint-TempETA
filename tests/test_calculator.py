@@ -1,9 +1,7 @@
-# coding=utf-8
 # flake8: noqa
 # pylint: disable=line-too-long
 """Unit tests for the calculator module."""
 
-from __future__ import absolute_import
 
 import time
 from collections import deque

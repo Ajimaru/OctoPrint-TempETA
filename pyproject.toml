@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "octoprint-temp-eta"
-version = "0.8.1"
+version = "0.8.2"
 description = "OctoPrint plugin to show estimated time remaining for printer heating"
 authors = [
     {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
@@ -29,7 +29,7 @@ classifiers = [
 
 # any additional requirements (besides OctoPrint) should be listed here
 dependencies = [
-    "paho-mqtt>=1.6.0,<3.0.0"
+    "paho-mqtt>=2.0.0,<3.0.0"
 ]
 
 [tool.setuptools]
@@ -64,5 +64,7 @@ develop = [
     "pre-commit>=3,<5",
     "black>=24.0.0",
     "isort>=5,<7",
-    "flake8>=7.0.0"
+    "flake8>=7.0.0",
+    "Babel>=2,<3",
+    "polib>=1.2,<2"
 ]

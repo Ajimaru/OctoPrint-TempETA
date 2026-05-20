@@ -6,7 +6,6 @@ Handles MQTT broker connection, reconnection, and message publishing with
 configurable settings for broker details, authentication, and QoS.
 """
 
-
 import json
 import ssl
 import threading
@@ -46,6 +45,9 @@ class MQTTClientWrapper:
         self._enabled = False
         self._connected = False
         self._connecting = False
+        # True once a paho-mqtt 2.x (callback API v2) client was created.
+        # Set in _create_new_client; informational/diagnostic only.
+        self._callback_api_v2 = False
 
         # Connection settings
         self._broker_host = ""
@@ -198,30 +200,43 @@ class MQTTClientWrapper:
                     self._client = None
 
     def _create_new_client(self, client_id: str) -> Any:
-        """Create a paho-mqtt Client, using the v2 callback API when available.
+        """Create a paho-mqtt Client.
+
+        Targets paho-mqtt 2.x (callback API v2). Falls back to the legacy
+        constructor when the v2 API is unavailable, matching the declared
+        ``paho-mqtt>=2.0.0,<3.0.0`` dependency range.
 
         Args:
             client_id: Client identifier string
 
         Returns:
-            Configured mqtt.Client instance
+            Configured mqtt.Client instance. ``self._callback_api_v2`` is set
+            to indicate which callback signatures paho will invoke.
         """
         if mqtt is None:
             raise RuntimeError("paho-mqtt is not available")
 
-        kwargs: dict[str, Any] = {"client_id": client_id}
         callback_api_version = getattr(mqtt, "CallbackAPIVersion", None)
-        if callback_api_version is not None:
-            version2 = getattr(callback_api_version, "VERSION2", None)
-            if version2 is not None:
-                kwargs["callback_api_version"] = version2
-        try:
-            return mqtt.Client(**kwargs)
-        except TypeError as e:
-            self._logger.debug(
-                "Using paho-mqtt 1.x API (version 2 not available): %s", str(e)
-            )
-            return mqtt.Client(client_id=client_id)
+        version2 = (
+            getattr(callback_api_version, "VERSION2", None)
+            if callback_api_version is not None
+            else None
+        )
+
+        if version2 is not None:
+            try:
+                client = mqtt.Client(callback_api_version=version2, client_id=client_id)
+                self._callback_api_v2 = True
+                return client
+            except (TypeError, ValueError) as e:
+                self._logger.debug(
+                    "paho-mqtt v2 client construction failed, "
+                    "falling back to 1.x API: %s",
+                    str(e),
+                )
+
+        self._callback_api_v2 = False
+        return mqtt.Client(client_id=client_id)
 
     def _configure_client_credentials(self, client: Any) -> None:
         """Configure authentication and TLS on a paho-mqtt Client.
@@ -240,41 +255,73 @@ class MQTTClientWrapper:
                 # Use default certificate verification
                 client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
 
+    @staticmethod
+    def _reason_is_failure(reason_code: Any) -> bool:
+        """Return True if a paho result/reason code indicates failure.
+
+        Handles both paho-mqtt 1.x (plain int, 0 == success) and 2.x
+        (``ReasonCode`` object exposing ``is_failure``).
+        """
+        is_failure = getattr(reason_code, "is_failure", None)
+        if is_failure is not None:
+            return bool(is_failure)
+        try:
+            return int(reason_code) != 0
+        except (TypeError, ValueError):
+            return reason_code is not None and reason_code != 0
+
     def _on_connect(
-        self, _client: Any, _userdata: Any, _flags: dict[str, Any], rc: int
+        self, _client: Any, _userdata: Any, _flags: Any, *args: Any
     ) -> None:
         """Callback when MQTT connection is established.
 
-        Args:
-            client: MQTT client instance
-            userdata: User data (unused)
-            flags: Connection flags
-            rc: Result code (0 = success)
+        Variadic tail handles both the paho-mqtt 1.x form
+        ``(client, userdata, flags, rc)`` and the 2.x v2 form
+        ``(client, userdata, flags, reason_code, properties)``. The first
+        trailing positional is the result/reason code in both versions.
         """
+        reason_code = args[0] if args else 0
+        failed = self._reason_is_failure(reason_code)
         with self._lock:
             self._connecting = False
-            if rc == 0:
+            if not failed:
                 self._connected = True
                 self._logger.info(
                     "MQTT connected to %s:%d", self._broker_host, self._broker_port
                 )
             else:
                 self._connected = False
-                self._logger.error("MQTT connection failed with code %d", rc)
+                self._logger.error(
+                    "MQTT connection failed with code %s", str(reason_code)
+                )
 
-    def _on_disconnect(self, _client: Any, _userdata: Any, rc: int) -> None:
+    def _on_disconnect(self, _client: Any, _userdata: Any, *args: Any) -> None:
         """Callback when MQTT connection is lost.
 
-        Args:
-            client: MQTT client instance
-            userdata: User data (unused)
-            rc: Result code
+        Variadic tail handles both the paho-mqtt 1.x form
+        ``(client, userdata, rc)`` and the 2.x v2 form
+        ``(client, userdata, disconnect_flags, reason_code, properties)``.
+
+        In 1.x the only trailing arg is ``rc`` (int). In 2.x the trailing
+        args are ``(disconnect_flags, reason_code, properties)``; the
+        reason code is the first ``ReasonCode``-like (non-flags) value, so
+        we pick the last positional that looks like a code.
         """
+        reason_code: Any = 0
+        if len(args) == 1:
+            # paho 1.x: (rc,)
+            reason_code = args[0]
+        elif len(args) >= 2:
+            # paho 2.x v2: (disconnect_flags, reason_code, [properties])
+            reason_code = args[1]
+        failed = self._reason_is_failure(reason_code)
         with self._lock:
             self._connected = False
             self._connecting = False
-            if rc != 0:
-                self._logger.info("MQTT disconnected (code %d), will retry", rc)
+            if failed:
+                self._logger.info(
+                    "MQTT disconnected (code %s), will retry", str(reason_code)
+                )
 
     def _disconnect_internal(self) -> None:
         """Disconnect MQTT client (internal, lock must be held)."""
@@ -394,13 +441,12 @@ class MQTTClientWrapper:
                 topic, json_payload, qos=self._qos, retain=self._retain
             )
 
-            mqtt_err_success = (
-                getattr(mqtt, "MQTT_ERR_SUCCESS", 0) if mqtt is not None else 0
-            )
-
-            if result.rc != mqtt_err_success:
+            # paho-mqtt 1.x: result.rc is an int (0 == success).
+            # paho-mqtt 2.x: result.rc is a ReasonCode; _reason_is_failure
+            # handles both, and %s avoids the %d crash on ReasonCode.
+            if self._reason_is_failure(getattr(result, "rc", 0)):
                 self._logger.debug(
-                    "MQTT publish failed: topic=%s rc=%d", topic, result.rc
+                    "MQTT publish failed: topic=%s rc=%s", topic, str(result.rc)
                 )
         except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
             self._logger.debug("MQTT publish error: %s", str(e))
