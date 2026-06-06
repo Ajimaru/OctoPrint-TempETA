@@ -6,3 +6,11 @@ exclude_paths:
   - "package.json"
   - "package-lock.json"
   - "docs/**"
+
+tools:
+  - name: opengrep
+    exclude_paths:
+      - "octoprint_temp_eta/static/js/**"
+  - name: eslint
+    exclude_paths:
+      - "octoprint_temp_eta/static/js/temp_eta.docs.js"
