@@ -7,16 +7,10 @@
 
 [![License](https://img.shields.io/github/license/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA#license)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
-![Top Language](https://img.shields.io/github/languages/top/Ajimaru/OctoPrint-TempETA)
 [![OctoPrint](https://img.shields.io/badge/OctoPrint-1.10.2%2B-blue.svg)](https://octoprint.org)
 [![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
 ![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/total.svg)
-![Maintenance](https://img.shields.io/maintenance/yes/2026)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls)
-
-![Stars](https://img.shields.io/github/stars/Ajimaru/OctoPrint-TempETA?style=social)
-![Forks](https://img.shields.io/github/forks/Ajimaru/OctoPrint-TempETA?style=social)
-![Watchers](https://img.shields.io/github/watchers/Ajimaru/OctoPrint-TempETA?style=social)
+[![Made with Love](https://img.shields.io/badge/made_with-❤️-ff69b4)](https://github.com/Ajimaru/OctoPrint-TempETA)
 
 ---
 
@@ -62,6 +56,7 @@
 - [License](#license)
 - [Support](#support)
 - [Credits](#credits)
+- [100% Badge Coverage](#100-badge-coverage)
 
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -388,25 +383,6 @@ Contributions welcome! Please:
 
 Note: `main` is protected on GitHub, so changes go through PRs.
 
-[![Open Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues?q=is%3Aissue%20state%3Aopen)
-[![Closed Issues](https://img.shields.io/github/issues-closed-raw/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues?q=is%3Aissue%20state%3Aclosed)
-[![Open PRs](https://img.shields.io/github/issues-pr/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls?q=is%3Aopen+is%3Apr)
-[![Closed PRs](https://img.shields.io/github/issues-pr-closed/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls?q=is%3Apr+is%3Aclosed)
-
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
-![Commit Activity (year)](https://img.shields.io/github/commit-activity/y/Ajimaru/OctoPrint-TempETA)
-![Last Commit](https://img.shields.io/github/last-commit/Ajimaru/OctoPrint-TempETA)
-
-![Build Status](https://img.shields.io/github/actions/workflow/status/Ajimaru/OctoPrint-TempETA/ci.yml)
-[![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
-[![CI](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml?query=branch%3Amain)
-[![i18n](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml?query=branch%3Amain)
-![Release Date](https://img.shields.io/github/release-date/Ajimaru/OctoPrint-TempETA)
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-![Languages Count](https://img.shields.io/github/languages/count/Ajimaru/OctoPrint-TempETA)
-
 ## License
 
 AGPLv3 - See [LICENSE](LICENSE) for details.
@@ -424,6 +400,73 @@ Note: For logs and troubleshooting, enable "debug logging" in the plugin setting
 - **Development**: Built following [OctoPrint Plugin Guidelines](https://docs.octoprint.org/en/main/plugins/index.html)
 - **Contributors**: See [AUTHORS.md](AUTHORS.md)
 
+## 100% Badge Coverage
+
+Summary: this project exposes many status and quality badges (CI, linting, coverage, releases, maintenance, etc.). The full badge set is available below; click to expand for details.
+
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary>Show all badges</summary>
+
+### 🏗️ 1. Build & Test Status
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/Ajimaru/OctoPrint-TempETA/ci.yml)
+[![CI](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/ci.yml?query=branch%3Amain)
+[![i18n](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/i18n.yml?query=branch%3Amain)
+[![Docs](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/Ajimaru/OctoPrint-TempETA/actions/workflows/docs.yml?query=branch%3Amain)
+
+### 🧪 2. Code Quality & Formatting
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e56b3886f23743409c046051b20b6d9a)](https://app.codacy.com/gh/Ajimaru/OctoPrint-TempETA/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Coverage](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA/graph/badge.svg?branch=main)](https://codecov.io/gh/Ajimaru/OctoPrint-TempETA)
+[![Pylint Score](https://img.shields.io/badge/pylint-10.0-green.svg)](https://www.pylint.org/)
+[![Bandit Security](https://img.shields.io/badge/bandit-security-green.svg)](https://bandit.readthedocs.io/en/latest/)
+[![Depfu](https://badges.depfu.com/badges/fabdcaaffaf7e338fb2c356be20c6ead/status.svg)](https://depfu.com)
+[![Depfu](https://badges.depfu.com/badges/fabdcaaffaf7e338fb2c356be20c6ead/count.svg)](https://depfu.com/github/Ajimaru/OctoPrint-TempETA?project_id=70413)
+[![Known Vulnerabilities](https://snyk.io/test/github/Ajimaru/OctoPrint-TempETA/badge.svg)](https://snyk.io/test/github/Ajimaru/OctoPrint-TempETA)
+
+### 🔄 3. CI/CD & Release
+
+[![SemVer](https://img.shields.io/badge/semver-2.0.0-blue)](https://semver.org/)
+[![Release Date](https://img.shields.io/github/release-date/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/releases)
+[![Latest Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?sort=semver)](https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest)
+![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/total.svg)
+[![Pre‑Release](https://img.shields.io/github/v/release/Ajimaru/OctoPrint-TempETA?include_prereleases&label=pre-release)](https://github.com/Ajimaru/OctoPrint-TempETA/releases)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
+[![OctoPrint](https://img.shields.io/badge/OctoPrint-1.10.2%2B-blue.svg)](https://octoprint.org)
+[![Maintenance](https://img.shields.io/maintenance/yes/2026)](https://github.com/Ajimaru/OctoPrint-TempETA/graphs/commit-activity)
+
+### 📊 4. Repository Activity
+
+[![Open Issues](https://img.shields.io/github/issues/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues?q=is%3Aissue%20state%3Aopen)
+[![Closed Issues](https://img.shields.io/github/issues-closed-raw/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/issues?q=is%3Aissue%20state%3Aclosed)
+[![Open PRs](https://img.shields.io/github/issues-pr/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls?q=is%3Apr+is%3Aopen)
+[![Closed PRs](https://img.shields.io/github/issues-pr-closed/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls?q=is%3Apr+is%3Aclosed)
+[![Last Commit](https://img.shields.io/github/last-commit/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/commits/main)
+[![Commit Activity (year)](https://img.shields.io/github/commit-activity/y/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/graphs/commit-activity)
+[![Contributors](https://img.shields.io/github/contributors/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA/graphs/contributors)
+
+### 🧾 5. Metadata
+
+![Code Size](https://img.shields.io/github/languages/code-size/Ajimaru/OctoPrint-TempETA)
+[![Security](https://img.shields.io/badge/security-policy-blue)](https://github.com/Ajimaru/OctoPrint-TempETA/blob/main/SECURITY.md)
+[![Snyk](https://img.shields.io/badge/security-snyk-blueviolet)](https://app.snyk.io)
+![Languages Count](https://img.shields.io/github/languages/count/Ajimaru/OctoPrint-TempETA)
+![Top Language](https://img.shields.io/github/languages/top/Ajimaru/OctoPrint-TempETA)
+[![License](https://img.shields.io/github/license/Ajimaru/OctoPrint-TempETA)](https://github.com/Ajimaru/OctoPrint-TempETA#license)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Ajimaru/OctoPrint-TempETA/pulls)
+
+</details>
+<!-- markdownlint-enable MD033 -->
+
 ---
+
+![Stars](https://img.shields.io/github/stars/Ajimaru/OctoPrint-TempETA?style=social)
+![Forks](https://img.shields.io/github/forks/Ajimaru/OctoPrint-TempETA?style=social)
+![Watchers](https://img.shields.io/github/watchers/Ajimaru/OctoPrint-TempETA?style=social)
 
 **Like this plugin?** ⭐ Star the repo and share it with the OctoPrint community!
