@@ -129,11 +129,22 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.run-coverage && github.repository == 'Ajimaru/OctoPrint-TempETA' }}
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           files: coverage.xml
           flags: unittests
           fail_ci_if_error: false
+
+      - name: Upload coverage to Codacy
+        if: ${{ matrix.run-coverage && github.repository == 'Ajimaru/OctoPrint-TempETA' }}
+        uses: codacy/codacy-coverage-reporter-action@v1.3.0
+        env:
+          CODACY_ORGANIZATION_PROVIDER: ${{ vars.CODACY_ORGANIZATION_PROVIDER }}
+          CODACY_USERNAME: ${{ vars.CODACY_USERNAME }}
+          CODACY_PROJECT_NAME: ${{ vars.CODACY_PROJECT_NAME }}
+        with:
+          api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-reports: coverage.xml
 
       - name: Build package
         if: ${{ matrix.run-build }}
