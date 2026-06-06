@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "selector-id-pattern": null,
+    "scss/declaration-property-value-no-unknown": null,
+    "scss/property-no-unknown": null,
+    "scss/dollar-variable-no-missing-interpolation": null,
+    "scss/function-disallowed-list": null,
+    "scss/function-no-unknown": null,
+    "scss/no-global-function-names": null,
+    "scss/at-rule-no-unknown": null,
+    "scss/dimension-no-non-numeric-values": null,
+    "no-obsolete-attribute": null
+  }
+}

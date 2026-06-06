@@ -53,7 +53,7 @@ class MQTTClientWrapper:
         self._broker_host = ""
         self._broker_port = 1883
         self._username = ""
-        self._password = ""
+        self._password = ""  # nosec B105 - empty default, overwritten from settings
         self._use_tls = False
         self._tls_insecure = False
 
