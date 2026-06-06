@@ -13,6 +13,76 @@ import math
 from collections import deque
 from typing import Optional
 
+_LOG = logging.getLogger("octoprint_temp_eta")
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+
+def _find_last_ts(pairs) -> Optional[float]:
+    """Return the largest finite timestamp from an iterable of (ts, temp, ...) rows."""
+    last = None
+    for row in pairs:
+        ts = row[0]
+        temp = row[1]
+        if math.isfinite(ts) and math.isfinite(temp):
+            last = ts if (last is None or ts > last) else last
+    return last
+
+
+def _filter_recent(pairs, cutoff: float):
+    """Return rows from *pairs* with ts > cutoff and finite ts/temp, sorted by ts."""
+    return sorted(
+        (
+            row
+            for row in pairs
+            if row[0] > cutoff and math.isfinite(row[0]) and math.isfinite(row[1])
+        ),
+        key=lambda x: x[0],
+    )
+
+
+def _dedupe_by_ts(rows):
+    """Remove consecutive duplicate timestamps."""
+    out = []
+    prev = None
+    for row in rows:
+        if prev is not None and row[0] == prev:
+            continue
+        out.append(row)
+        prev = row[0]
+    return out
+
+
+def _linear_regression(xs, ys):
+    """Return (slope, intercept) from lists xs/ys, or None if degenerate."""
+    n = len(xs)
+    if n < 2:
+        return None
+    x_mean = sum(xs) / n
+    y_mean = sum(ys) / n
+    sxx = sum((x - x_mean) ** 2 for x in xs)
+    sxy = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys))
+    if sxx <= 0:
+        return None
+    slope = sxy / sxx
+    return slope, y_mean - slope * x_mean
+
+
+def _validate_scalar(value: float) -> bool:
+    return math.isfinite(value)
+
+
+def _validate_window(window_seconds: float) -> bool:
+    return math.isfinite(window_seconds) and window_seconds > 0
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
 
 def calculate_linear_eta(
     history: deque, target: float, window_seconds: float = 10.0
@@ -31,61 +101,71 @@ def calculate_linear_eta(
     Returns:
         Estimated seconds to target, or None if insufficient data
     """
-    # Validate inputs
-    if not math.isfinite(target):
+    if not _validate_scalar(target) or not _validate_window(window_seconds):
         return None
-    if not math.isfinite(window_seconds) or window_seconds <= 0:
-        return None
-
     if not history or len(history) < 2:
         return None
 
-    # Use last N seconds of data for rate calculation (anchored to history)
-    last_ts = max(
-        (
-            ts
-            for ts, actual, _target in history
-            if math.isfinite(ts) and math.isfinite(actual)
-        ),
-        default=None,
-    )
+    last_ts = _find_last_ts(history)
     if last_ts is None:
         return None
 
-    cutoff = last_ts - window_seconds
-    t0 = None
-    temp0 = None
-    t1 = None
-    temp1 = None
-
-    for ts, actual, _target in history:
-        # Validate data from history
-        if not (math.isfinite(ts) and math.isfinite(actual)):
-            continue
-        if ts <= cutoff:
-            continue
-        if t0 is None:
-            t0 = ts
-            temp0 = actual
-        t1 = ts
-        temp1 = actual
-
-    if t0 is None or t1 is None or temp0 is None or temp1 is None:
+    recent = _filter_recent(history, last_ts - window_seconds)
+    if len(recent) < 2:
         return None
 
+    t0, temp0 = recent[0][0], recent[0][1]
+    t1, temp1 = recent[-1][0], recent[-1][1]
     time_diff = t1 - t0
     temp_diff = temp1 - temp0
     if time_diff <= 0 or temp_diff <= 0:
         return None
 
-    # rate = ΔT / Δt (°C per second)
-    rate = temp_diff / time_diff
     remaining = target - temp1
-
     if remaining <= 0:
         return None
 
-    eta = remaining / rate
+    return max(0.0, remaining / (temp_diff / time_diff))
+
+
+def _exponential_fit(recent, target: float, epsilon_c: float):
+    """
+    Fit an exponential heating model to *recent* samples.
+
+    Returns estimated eta in seconds, or None to signal fallback to linear.
+    May propagate exceptions from math.log (e.g. ValueError) to the caller.
+    """
+    t0 = recent[0][0]
+    xs = []
+    ys = []
+    for ts, temp, *_ in recent:
+        delta = target - temp
+        if delta <= epsilon_c:
+            continue
+        x = ts - t0
+        if x < 0:
+            continue
+        xs.append(x)
+        ys.append(math.log(delta))
+
+    if len(xs) < 6 or (xs[-1] - xs[0]) < 5:
+        return None  # not enough span → fallback
+
+    if (recent[-1][1] - recent[0][1]) <= 0.2:
+        return None  # not heating → fallback
+
+    result = _linear_regression(xs, ys)
+    if result is None:
+        return None
+
+    slope, _ = result
+    if slope >= -1e-4 or not (-1.0 / slope) > 0 or (-1.0 / slope) > 2000:
+        return None
+
+    tau = -1.0 / slope
+    remaining_now = target - recent[-1][1]
+    # ValueError propagates to calculate_exponential_eta for fallback handling
+    eta = tau * math.log(remaining_now / epsilon_c)
     return max(0.0, eta)
 
 
@@ -106,123 +186,43 @@ def calculate_exponential_eta(
     Returns:
         Estimated seconds to target, or None if insufficient data
     """
-    # Validate inputs
-    if not math.isfinite(target):
+    if not _validate_scalar(target) or not _validate_window(window_seconds):
         return None
-    if not math.isfinite(window_seconds) or window_seconds <= 0:
-        return None
-
     if not history or len(history) < 3:
         return None
 
-    # Use a recent window for the fit
-    last_ts = None
-    for ts, temp, tgt in history:
-        if math.isfinite(ts) and math.isfinite(temp):
-            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+    last_ts = _find_last_ts(history)
     if last_ts is None:
         return None
-    cutoff = last_ts - window_seconds
 
-    recent = sorted(
-        (
-            (ts, temp, tgt)
-            for (ts, temp, tgt) in history
-            if math.isfinite(ts) and math.isfinite(temp) and ts > cutoff
-        ),
-        key=lambda x: x[0],
-    )
-    # Drop duplicate timestamps to avoid zero-span/unstable fits
-    deduped = []
-    last_ts = None
-    for ts, temp, tgt in recent:
-        if last_ts is not None and ts == last_ts:
-            continue
-        deduped.append((ts, temp, tgt))
-        last_ts = ts
-    recent = deduped
-
+    recent = _dedupe_by_ts(_filter_recent(history, last_ts - window_seconds))
     if len(recent) < 6:
         return calculate_linear_eta(history, target)
 
-    # Current sample
-    _, temp_now, _ = recent[-1]
+    temp_now = recent[-1][1]
     remaining_now = target - temp_now
     if remaining_now <= 0:
         return None
 
-    # We model the approach to target as asymptotic.
-    # Reaching the target exactly takes infinite time; use an epsilon band.
+    # Guard: window must show meaningful heating; otherwise no ETA is possible.
+    if (recent[-1][1] - recent[0][1]) <= 0.2:
+        return None
+
     epsilon_c = 0.5
     if remaining_now <= epsilon_c:
         return 0.0
 
-    # Build regression data for ln(target - T).
-    # Exclude points too close to target (noise dominates) and invalid samples.
-    t0 = recent[0][0]
-    xs = []
-    ys = []
-    for ts, temp, _ in recent:
-        delta = target - temp
-        if delta <= epsilon_c:
-            continue
-        x = ts - t0
-        if x < 0:
-            continue
-        xs.append(x)
-        ys.append(math.log(delta))
-
-    if len(xs) < 6:
-        return calculate_linear_eta(history, target)
-
-    span = xs[-1] - xs[0]
-    if span < 5:
-        return calculate_linear_eta(history, target)
-
-    # Require we are actually heating in this window.
-    if (recent[-1][1] - recent[0][1]) <= 0.2:
-        return None
-
-    # Linear regression: y = a + b*x, where b should be negative.
-    x_mean = sum(xs) / len(xs)
-    y_mean = sum(ys) / len(ys)
-    sxx = 0.0
-    sxy = 0.0
-    for x, y in zip(xs, ys):
-        dx = x - x_mean
-        dy = y - y_mean
-        sxx += dx * dx
-        sxy += dx * dy
-
-    if sxx <= 0:
-        return calculate_linear_eta(history, target)
-
-    slope = sxy / sxx
-    if slope >= -1e-4:
-        # Not decaying fast enough or unstable -> fallback.
-        return calculate_linear_eta(history, target)
-
-    tau = -1.0 / slope
-    if tau <= 0 or tau > 2000:
-        return calculate_linear_eta(history, target)
-
-    # ETA to reach epsilon band.
     try:
-        eta = tau * math.log(remaining_now / epsilon_c)
-    except ValueError as e:
-        # Log mathematische Fehler für bessere Nachvollziehbarkeit
-        logging.getLogger("octoprint_temp_eta").debug(
-            "Exponential ETA math error: %s", e
-        )
+        eta = _exponential_fit(recent, target, epsilon_c)
+    except Exception as exc:
+        _LOG.debug("Exponential ETA math error: %s", exc)
         return calculate_linear_eta(history, target)
 
-    if eta < 0:
-        eta = 0.0
+    if eta is None:
+        return calculate_linear_eta(history, target)
 
-    # Protect against spikes: if exponential estimate is wildly larger than
-    # the linear estimate on the same data, trust the linear estimate.
     linear_eta = calculate_linear_eta(history, target)
-    if linear_eta is not None and eta > (linear_eta * 5):
+    if linear_eta is not None and eta > linear_eta * 5:
         return linear_eta
 
     return eta
@@ -245,44 +245,27 @@ def calculate_cooldown_linear_eta(
     Returns:
         Estimated seconds to goal, or None if insufficient data
     """
-    # Validate inputs
-    if not math.isfinite(goal_c):
+    if not _validate_scalar(goal_c) or not _validate_window(window_seconds):
         return None
-    if not math.isfinite(window_seconds) or window_seconds <= 0:
-        return None
-
     if not cooldown_history:
         return None
 
-    last_ts = None
-    for ts, temp in cooldown_history:
-        if math.isfinite(ts) and math.isfinite(temp):
-            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
+    last_ts = _find_last_ts(cooldown_history)
     if last_ts is None:
         return None
 
-    cutoff = last_ts - window_seconds
-    recent = sorted(
-        (
-            (ts, temp)
-            for ts, temp in cooldown_history
-            if ts > cutoff and math.isfinite(ts) and math.isfinite(temp)
-        ),
-        key=lambda x: x[0],
-    )
+    recent = _filter_recent(cooldown_history, last_ts - window_seconds)
     if len(recent) < 2:
         return None
 
     t0, temp0 = recent[0]
     t1, temp1 = recent[-1]
     dt = t1 - t0
-    dtemp = temp1 - temp0
     if dt <= 0:
         return None
 
-    slope = dtemp / dt
+    slope = (temp1 - temp0) / dt
     if slope >= -1e-3:
-        # Not cooling fast enough
         return None
 
     remaining = temp1 - goal_c
@@ -293,51 +276,15 @@ def calculate_cooldown_linear_eta(
     if not math.isfinite(eta) or eta < 0:
         return None
 
-    # Cap at 24 hours
     return float(min(eta, 24 * 3600))
 
 
-def calculate_cooldown_exponential_eta(
-    cooldown_history: deque,
-    ambient_c: float,
-    goal_c: float,
-    window_seconds: float = 60.0,
-) -> Optional[float]:
+def _cooldown_exponential_fit(recent, ambient_c: float, goal_c: float, epsilon: float):
     """
-    Exponential cooldown ETA (Newton's law of cooling).
+    Fit Newton's law of cooling to *recent* (ts, temp) samples.
 
-    Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
+    Returns eta in seconds, or None if the fit is degenerate.
     """
-    if not (math.isfinite(ambient_c) and math.isfinite(goal_c)):
-        return None
-    if not math.isfinite(window_seconds) or window_seconds <= 0:
-        return None
-    if goal_c <= ambient_c:
-        return None
-    if not cooldown_history or len(cooldown_history) < 4:
-        return None
-
-    last_ts = None
-    for ts, temp in cooldown_history:
-        if math.isfinite(ts) and math.isfinite(temp):
-            last_ts = ts if (last_ts is None or ts > last_ts) else last_ts
-    if last_ts is None:
-        return None
-    cutoff = last_ts - window_seconds
-
-    recent = [
-        (ts, temp)
-        for ts, temp in cooldown_history
-        if ts > cutoff and math.isfinite(ts) and math.isfinite(temp)
-    ]
-    if len(recent) < 6:
-        return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
-
-    _t_now, temp_now = recent[-1]
-    if temp_now <= goal_c:
-        return None
-
-    epsilon = 0.5
     t0 = recent[0][0]
     xs = []
     ys = []
@@ -354,20 +301,11 @@ def calculate_cooldown_exponential_eta(
     if len(xs) < 4:
         return None
 
-    x_mean = sum(xs) / float(len(xs))
-    y_mean = sum(ys) / float(len(ys))
-    sxx = 0.0
-    sxy = 0.0
-    for x, y in zip(xs, ys):
-        dx = x - x_mean
-        dy = y - y_mean
-        sxx += dx * dx
-        sxy += dx * dy
-
-    if sxx <= 0:
+    result = _linear_regression(xs, ys)
+    if result is None:
         return None
 
-    slope = sxy / sxx
+    slope, _ = result
     if slope >= -1e-4:
         return None
 
@@ -375,20 +313,52 @@ def calculate_cooldown_exponential_eta(
     if tau <= 0 or tau > 20000:
         return None
 
+    temp_now = recent[-1][1]
     numerator = temp_now - ambient_c
     denominator = goal_c - ambient_c
     if numerator <= 0 or denominator <= 0:
         return None
 
-    try:
-        eta = tau * math.log(numerator / denominator)
-    except (ValueError, ZeroDivisionError) as e:
-        logging.getLogger("octoprint_temp_eta").debug(
-            "Exponential ETA math error: %s", e
-        )
-        return None
-
+    eta = tau * math.log(numerator / denominator)
     if not math.isfinite(eta) or eta < 0:
         return None
 
     return float(min(eta, 24 * 3600))
+
+
+def calculate_cooldown_exponential_eta(
+    cooldown_history: deque,
+    ambient_c: float,
+    goal_c: float,
+    window_seconds: float = 60.0,
+) -> Optional[float]:
+    """
+    Exponential cooldown ETA (Newton's law of cooling).
+
+    Models cooldown as: T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
+    """
+    if not (_validate_scalar(ambient_c) and _validate_scalar(goal_c)):
+        return None
+    if not _validate_window(window_seconds):
+        return None
+    if goal_c <= ambient_c:
+        return None
+    if not cooldown_history or len(cooldown_history) < 4:
+        return None
+
+    last_ts = _find_last_ts(cooldown_history)
+    if last_ts is None:
+        return None
+
+    recent = _filter_recent(cooldown_history, last_ts - window_seconds)
+    if len(recent) < 6:
+        return calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds)
+
+    if recent[-1][1] <= goal_c:
+        return None
+
+    try:
+        return _cooldown_exponential_fit(recent, ambient_c, goal_c, epsilon=0.5)
+    except Exception as exc:
+        _LOG.debug("Exponential ETA math error: %s", exc)
+        return None
