@@ -199,9 +199,12 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 - **Username/Password**: Optional authentication credentials for the MQTT broker
 - **Use TLS/SSL**: Enable encrypted connection to the broker
 - **Skip TLS certificate verification**: For self-signed certificates (not recommended for production)
-- **Base Topic**: Root MQTT topic for publishing messages (default: `octoprint/temp_eta`)
-  - ETA updates are published to: `{base_topic}/{heater}/eta`
-  - State changes are published to: `{base_topic}/{heater}/state_change`
+- **Base topic**: Root MQTT topic (default: `octoprint/temp_eta`)
+  - **Append OctoPrint instance name (Appearance → Title)**: Checkbox to append the printer's appearance name to the topic, avoiding conflicts when running multiple OctoPrint instances (default: enabled). When active, the topic is built automatically and the base topic / identifier fields are disabled.
+  - **Instance identifier** (optional): Only shown when the checkbox is off or no appearance name is configured — a free-text suffix appended to the base topic as a manual fallback.
+  - The active topic is shown live below the field, e.g. `octoprint/temp_eta/MyPrinter`
+  - ETA updates are published to: `{active_topic}/{heater}/eta`
+  - State changes are published to: `{active_topic}/{heater}/state_change`
 - **QoS**: MQTT Quality of Service level (0=At most once, 1=At least once, 2=Exactly once)
 - **Retain Messages**: Enable MQTT retain flag (new subscribers receive the last message)
 - **Publish Interval**: Minimum seconds between MQTT publishes (default: `1.0`)
@@ -306,6 +309,8 @@ The following defaults apply to the user-editable plugin settings:
 <tr><td>MQTT use TLS</td><td><code>mqtt_use_tls</code></td><td><code>false</code></td></tr>
 <tr><td>MQTT TLS insecure</td><td><code>mqtt_tls_insecure</code></td><td><code>false</code></td></tr>
 <tr><td>MQTT base topic</td><td><code>mqtt_base_topic</code></td><td><code>octoprint/temp_eta</code></td></tr>
+<tr><td>MQTT use appearance name</td><td><code>mqtt_use_appearance_name</code></td><td><code>true</code></td></tr>
+<tr><td>MQTT custom identifier</td><td><code>mqtt_custom_identifier</code></td><td><code>""</code></td></tr>
 <tr><td>MQTT QoS</td><td><code>mqtt_qos</code></td><td><code>0</code></td></tr>
 <tr><td>MQTT retain</td><td><code>mqtt_retain</code></td><td><code>false</code></td></tr>
 <tr><td>MQTT publish interval</td><td><code>mqtt_publish_interval</code></td><td><code>1.0 s</code></td></tr>
@@ -321,7 +326,7 @@ The following defaults apply to the user-editable plugin settings:
 <details>
 <summary><strong>MQTT Message Format Details</strong> (click to expand)</summary>
 
-**ETA Updates** (`{base_topic}/{heater}/eta`):
+**ETA Updates** (`{active_topic}/{heater}/eta`):
 
 ```json
 {
@@ -336,7 +341,9 @@ The following defaults apply to the user-editable plugin settings:
 }
 ```
 
-**State Changes** (`{base_topic}/{heater}/state_change`):
+**State Changes** (`{active_topic}/{heater}/state_change`):
+
+Where `active_topic` is `{base_topic}`, `{base_topic}/{appearance_name}`, or `{base_topic}/{custom_identifier}`.
 
 ```json
 {
