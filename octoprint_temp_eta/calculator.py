@@ -133,7 +133,7 @@ def _exponential_fit(recent, target: float, epsilon_c: float):
     Fit an exponential heating model to *recent* samples.
 
     Returns estimated eta in seconds, or None to signal fallback to linear.
-    Raises ValueError to signal hard failure (no ETA possible).
+    May propagate exceptions from math.log (e.g. ValueError) to the caller.
     """
     t0 = recent[0][0]
     xs = []
@@ -202,6 +202,10 @@ def calculate_exponential_eta(
     temp_now = recent[-1][1]
     remaining_now = target - temp_now
     if remaining_now <= 0:
+        return None
+
+    # Guard: window must show meaningful heating; otherwise no ETA is possible.
+    if (recent[-1][1] - recent[0][1]) <= 0.2:
         return None
 
     epsilon_c = 0.5
