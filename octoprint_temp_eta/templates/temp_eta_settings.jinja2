@@ -672,6 +672,18 @@
                         <p class="help-block">{{ _("Minimum interval between MQTT publishes (default: 1.0 seconds)") }}</p>
                     </div>
                 </div>
+                <!-- Connection status -->
+                <div class="temp-eta-settings-divider">
+                    <hr>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">{{ _("Connection status") }}</label>
+                    <div class="controls">
+                        <span class="label"
+                              data-bind="css: mqttStatusLabelClass, text: mqttStatusText">{{ _("Unknown") }}</span>
+                        <p class="help-block">{{ _("Whether the plugin is currently connected to the MQTT broker.") }}</p>
+                    </div>
+                </div>
             </div>
             <div class="tab-pane" id="temp_eta_settings_tab_maintenance">
                 <!-- Reset Profile History -->

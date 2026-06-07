@@ -7,7 +7,7 @@
     --temp-eta-color-cooling: #337ab7;
     --temp-eta-color-idle: #777777;
 
-    /* Graph colors (overrideable by themes) */
+    /* Graph colors (overridable by themes) */
     --temp-eta-graph-bg: rgba(0, 0, 0, 0.03);
     --temp-eta-graph-fg: currentColor;
 }
@@ -163,55 +163,22 @@
     padding-top: 10px;
 }
 
-#temp_eta_content .temp-eta-graph {
-    margin-top: 10px;
-}
-
-#temp_eta_content .temp-eta-graph-svg {
+/* Flot temperature-history chart (replaces the legacy hand-rolled SVG). */
+#temp_eta_content .temp-eta-chart {
     width: 100%;
-    height: 60px;
-    display: block;
-    /* Use a subtle overlay that can be overridden by themes */
+    height: 220px;
+    margin-top: 10px;
     background: var(--temp-eta-graph-bg);
     border-radius: 3px;
-    /* Enable currentColor-based SVG styling */
+}
+
+#temp_eta_content .temp-eta-chart .legend > div {
+    /* Flot draws an opaque legend background box; let the theme show through. */
+    background-color: transparent !important;
+}
+
+#temp_eta_content .temp-eta-chart .legend table {
     color: var(--temp-eta-graph-fg);
-}
-
-#temp_eta_content .temp-eta-subtab-history .temp-eta-graph-svg {
-    height: 140px;
-}
-
-#temp_eta_content .temp-eta-graph-axis,
-#temp_eta_content .temp-eta-graph-axis-tick {
-    stroke: currentColor;
-    stroke-opacity: 0.28;
-    stroke-width: 0.7;
-    vector-effect: non-scaling-stroke;
-}
-
-#temp_eta_content .temp-eta-graph-label {
-    fill: currentColor;
-    fill-opacity: 0.55;
-    font-size: 4px;
-    vector-effect: non-scaling-stroke;
-}
-
-#temp_eta_content .temp-eta-graph-line {
-    fill: none;
-    stroke: #5bc0de;
-    stroke-width: 1.2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
-}
-
-#temp_eta_content .temp-eta-graph-target {
-    stroke: currentColor;
-    stroke-opacity: 0.25;
-    stroke-width: 1;
-    stroke-dasharray: 2 2;
-    vector-effect: non-scaling-stroke;
 }
 
 @media (prefers-color-scheme: dark) {

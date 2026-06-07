@@ -726,6 +726,66 @@ $(() => {
 		self._audioContext = null;
 		self._soundLastPlayedByKey = {};
 
+		// MQTT connection status (polled while the settings dialog is open)
+		self.mqttStatus = ko.observable(null);
+		self._mqttStatusTimer = null;
+
+		self.mqttStatusText = ko.pureComputed(() => {
+			var status = self.mqttStatus();
+			if (!status) {
+				return _gettext("Unknown");
+			}
+			if (!status.mqtt_available) {
+				return _gettext("Unavailable (paho-mqtt not installed)");
+			}
+			if (!status.mqtt_enabled) {
+				return _gettext("Disabled");
+			}
+			return status.mqtt_connected
+				? _gettext("Connected")
+				: _gettext("Not connected");
+		});
+
+		self.mqttStatusLabelClass = ko.pureComputed(() => {
+			var status = self.mqttStatus();
+			if (!status || !status.mqtt_available) {
+				return "";
+			}
+			if (!status.mqtt_enabled) {
+				return "";
+			}
+			return status.mqtt_connected ? "label-success" : "label-important";
+		});
+
+		self._refreshMqttStatus = () => {
+			if (!window.OctoPrint || !OctoPrint.simpleApiGet) {
+				return;
+			}
+			OctoPrint.simpleApiGet("temp_eta")
+				.done((response) => {
+					self.mqttStatus(response || null);
+				})
+				.fail(() => {
+					self.mqttStatus(null);
+				});
+		};
+
+		self._startMqttStatusPolling = () => {
+			self._stopMqttStatusPolling();
+			self._refreshMqttStatus();
+			self._mqttStatusTimer = window.setInterval(
+				self._refreshMqttStatus,
+				5000,
+			);
+		};
+
+		self._stopMqttStatusPolling = () => {
+			if (self._mqttStatusTimer !== null) {
+				window.clearInterval(self._mqttStatusTimer);
+				self._mqttStatusTimer = null;
+			}
+		};
+
 		self._getColorMode = () => {
 			var ps = self._pluginSettings();
 			if (!ps?.color_mode) {
@@ -752,6 +812,17 @@ $(() => {
 				return value;
 			}
 			return defaultValue;
+		};
+
+		// Resolve the configured status colors (with sensible fallbacks). Used
+		// for the historical chart line color so it follows the user's theme.
+		self._getStatusColors = () => {
+			var ps = self._pluginSettings();
+			return {
+				heating: self._readKoString(ps?.color_heating, "#5cb85c"),
+				cooling: self._readKoString(ps?.color_cooling, "#337ab7"),
+				idle: self._readKoString(ps?.color_idle, "#777777"),
+			};
 		};
 
 		self._applyStatusColorVariables = () => {
@@ -1370,12 +1441,6 @@ $(() => {
 		};
 
 		self._resetHistoricalGraphState = (info) => {
-			try {
-				self._graphElementCache = {};
-			} catch (_e) {
-				// ignore
-			}
-
 			var heaterKeys = [];
 			try {
 				heaterKeys = Object.keys(self.heaterData || {});
@@ -1390,21 +1455,11 @@ $(() => {
 					h._history = [];
 					h._historyStart = 0;
 					h._lastGraphRenderMs = 0;
-					h._lastGraphViewBoxW = null;
 				}
 
-				// Best-effort clear of currently visible SVG graph elements.
+				// Best-effort clear of the currently visible Flot chart.
 				try {
-					var els = self._getGraphElements(heaterName);
-					if (els?.poly && typeof els.poly.setAttribute === "function") {
-						els.poly.setAttribute("points", "");
-					}
-					if (
-						els?.targetLine &&
-						typeof els.targetLine.setAttribute === "function"
-					) {
-						els.targetLine.setAttribute("points", "");
-					}
+					self._renderHistoricalGraph(h);
 				} catch (_e) {
 					// ignore
 				}
@@ -1418,106 +1473,9 @@ $(() => {
 			);
 		};
 
-		self._getGraphElements = (heaterName) => {
-			if (!heaterName) {
-				return null;
-			}
-
-			if (!self._graphElementCache) {
-				self._graphElementCache = {};
-			}
-
-			function isConnected(el) {
-				if (!el) return false;
-				if (typeof el.isConnected === "boolean") return el.isConnected;
-				return document.documentElement.contains(el);
-			}
-
-			var cached = self._graphElementCache[heaterName] || null;
-			if (cached && isConnected(cached.svg) && isConnected(cached.poly)) {
-				return cached;
-			}
-
-			var svg = document.getElementById(`temp_eta_graph_${heaterName}`);
-			if (!svg) {
-				self._graphElementCache[heaterName] = null;
-				return null;
-			}
-
-			var poly = document.getElementById(`temp_eta_graph_actual_${heaterName}`);
-			var targetLine = document.getElementById(
-				`temp_eta_graph_target_${heaterName}`,
-			);
-			if (!poly || !targetLine) {
-				self._graphElementCache[heaterName] = null;
-				return null;
-			}
-
-			cached = {
-				svg: svg,
-				poly: poly,
-				targetLine: targetLine,
-				axisY: svg.querySelector(".temp-eta-graph-axis-y"),
-				axisX: svg.querySelector(".temp-eta-graph-axis-x"),
-				unitX: document.getElementById(`temp_eta_graph_unit_x_${heaterName}`),
-				tickYMax: document.getElementById(
-					`temp_eta_graph_tick_ymax_${heaterName}`,
-				),
-				tickYMid: document.getElementById(
-					`temp_eta_graph_tick_ymid_${heaterName}`,
-				),
-				tickYMin: document.getElementById(
-					`temp_eta_graph_tick_ymin_${heaterName}`,
-				),
-				labelYMax: document.getElementById(
-					`temp_eta_graph_label_ymax_${heaterName}`,
-				),
-				labelYMid: document.getElementById(
-					`temp_eta_graph_label_ymid_${heaterName}`,
-				),
-				labelYMin: document.getElementById(
-					`temp_eta_graph_label_ymin_${heaterName}`,
-				),
-				labelXLeft: document.getElementById(
-					`temp_eta_graph_label_xleft_${heaterName}`,
-				),
-				labelXMid: document.getElementById(
-					`temp_eta_graph_label_xmid_${heaterName}`,
-				),
-				labelXRight: document.getElementById(
-					`temp_eta_graph_label_xright_${heaterName}`,
-				),
-			};
-
-			self._graphElementCache[heaterName] = cached;
-			return cached;
-		};
-
-		self._formatAxisTime = (seconds) => {
-			// Format seconds as M:SS (no i18n needed for numeric axis labels).
-			if (!Number.isFinite(seconds) || seconds < 0) {
-				seconds = 0;
-			}
-			var s = Math.round(seconds);
-			var m = Math.floor(s / 60);
-			var r = s % 60;
-			return `${m}:${r < 10 ? "0" : ""}${r}`;
-		};
-
-		self._formatAxisTemp = (tempC) => {
-			// Keep labels compact; whole degrees read better at small font sizes.
-			if (!Number.isFinite(tempC)) {
-				return "";
-			}
-
-			var unit = self._effectiveThresholdUnit() === "f" ? "°F" : "°C";
-			var value = tempC;
-			if (unit === "°F") {
-				value = self._cToF(tempC);
-			}
-
-			return String(Math.round(value)) + unit;
-		};
+		// Cache of live Flot plot objects, keyed by heater name, so repeated
+		// renders reuse setData()/draw() instead of re-instantiating the plot.
+		self._flotPlots = {};
 
 		self._isHeaterHeatingNow = (etaValue, actualC, targetC) => {
 			// "Idle" in the UI should cover: no active target or already at/above target.
@@ -1536,8 +1494,23 @@ $(() => {
 			return targetC - actualC > eps;
 		};
 
+		// Convert a stored °C value into the user's active display unit so the
+		// Flot axis matches the rest of the plugin (°C or °F).
+		self._displayTemp = (tempC) => {
+			if (!Number.isFinite(tempC)) {
+				return null;
+			}
+			if (self._effectiveThresholdUnit() === "f") {
+				return self._cToF(tempC);
+			}
+			return tempC;
+		};
+
+		// Render (or update) the per-heater Flot temperature-history chart.
+		// Replaces the previous hand-rolled SVG graph with OctoPrint's bundled
+		// Flot library, matching the look of the OctoPrint-PandaBreath chart.
 		self._renderHistoricalGraph = (heaterObj) => {
-			if (!heaterObj) {
+			if (!heaterObj || !window.jQuery || typeof $.plot !== "function") {
 				return;
 			}
 
@@ -1551,237 +1524,110 @@ $(() => {
 			}
 			heaterObj._lastGraphRenderMs = nowMs;
 
+			var el = document.getElementById(`temp_eta_chart_${heaterObj.name}`);
+			// Bail out if the chart is not in the DOM yet or has no size (e.g. the
+			// history sub-tab has never been shown). A later call will succeed.
+			if (!el || !el.offsetWidth || !el.offsetHeight) {
+				return;
+			}
+
 			if (!self.isHistoricalGraphVisible(heaterObj)) {
-				return;
-			}
-
-			var els = self._getGraphElements(heaterObj.name);
-			if (!els) {
-				return;
-			}
-
-			var svg = els.svg;
-
-			// Keep text legible under wide layouts by avoiding non-uniform scaling.
-			// We dynamically adjust the viewBox width to match the viewport aspect ratio.
-			var vbH = 40;
-			var vbW = 100;
-			try {
-				var rect = svg.getBoundingClientRect();
-				var wPx = svg.clientWidth || (rect?.width ? rect.width : 0);
-				var hPx = svg.clientHeight || (rect?.height ? rect.height : 0);
-				if (wPx > 0 && hPx > 0) {
-					vbW = vbH * (wPx / hPx);
+				// Drop any stale plot so it doesn't linger when the heater goes idle.
+				if (self._flotPlots[heaterObj.name]) {
+					try {
+						$(el).empty();
+					} catch (_e) {
+						// ignore
+					}
+					self._flotPlots[heaterObj.name] = null;
 				}
-			} catch (_e) {
-				// ignore
+				return;
 			}
-
-			// Clamp for sanity: below 100 the labels start to collide.
-			vbW = Math.max(100, Math.min(400, vbW));
-
-			if (heaterObj._lastGraphViewBoxW !== vbW) {
-				heaterObj._lastGraphViewBoxW = vbW;
-				svg.setAttribute(
-					"viewBox",
-					`0 0 ${vbW.toFixed(2).replace(/\.00$/, "")} ${vbH}`,
-				);
-				svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
-			}
-
-			var poly = els.poly;
-			var targetLine = els.targetLine;
 
 			var hist = heaterObj._history || [];
 			var histStart = heaterObj._historyStart || 0;
-			if (hist.length - histStart < 2) {
-				poly.setAttribute("points", "");
-				return;
-			}
 
-			// ViewBox: 0..vbW (x), 0..40 (y)
-			var plotLeft = 12;
-			var plotRight = vbW - 1;
-			var plotTop = 2;
-			var plotBottom = 30;
-			var plotW = plotRight - plotLeft;
-			var plotH = plotBottom - plotTop;
-
-			// Update static axes geometry to match the dynamic viewBox width.
-			var axisY = els.axisY;
-			if (axisY) {
-				axisY.setAttribute("x1", String(plotLeft));
-				axisY.setAttribute("x2", String(plotLeft));
-				axisY.setAttribute("y1", String(plotTop));
-				axisY.setAttribute("y2", String(plotBottom));
-			}
-			var axisX = els.axisX;
-			if (axisX) {
-				axisX.setAttribute("x1", String(plotLeft));
-				axisX.setAttribute("x2", String(plotRight));
-				axisX.setAttribute("y1", String(plotBottom));
-				axisX.setAttribute("y2", String(plotBottom));
-			}
-
+			// Only plot points inside the configured time window.
 			var windowSec = self.getHistoricalGraphWindowSeconds();
 			var nowSec = hist[hist.length - 1].t;
 			var minT = nowSec - windowSec;
 
-			// Only consider points in the current window.
-			var idxStart = histStart;
-			while (idxStart < hist.length && hist[idxStart].t < minT) {
-				idxStart++;
-			}
-
-			// Determine min/max for scaling.
-			var minTemp = Infinity;
-			var maxTemp = -Infinity;
-			for (var i = idxStart; i < hist.length; i++) {
+			var actualSeries = [];
+			var targetSeries = [];
+			for (var i = histStart; i < hist.length; i++) {
 				var p = hist[i];
-				if (p.a < minTemp) minTemp = p.a;
-				if (p.a > maxTemp) maxTemp = p.a;
+				if (p.t < minT) {
+					continue;
+				}
+				var tsMs = p.t * 1000;
+				var aDisp = self._displayTemp(p.a);
+				if (aDisp !== null) {
+					actualSeries.push([tsMs, aDisp]);
+				}
 				if (Number.isFinite(p.tg) && p.tg > 0) {
-					if (p.tg < minTemp) minTemp = p.tg;
-					if (p.tg > maxTemp) maxTemp = p.tg;
+					var tgDisp = self._displayTemp(p.tg);
+					if (tgDisp !== null) {
+						targetSeries.push([tsMs, tgDisp]);
+					}
 				}
 			}
 
-			if (!Number.isFinite(minTemp) || !Number.isFinite(maxTemp)) {
-				poly.setAttribute("points", "");
+			if (actualSeries.length < 2) {
 				return;
 			}
 
-			if (Math.abs(maxTemp - minTemp) < 0.5) {
-				maxTemp = minTemp + 0.5;
+			var statusColors = self._getStatusColors
+				? self._getStatusColors()
+				: null;
+			var actualColor = (statusColors && statusColors.heating) || "#d9534f";
+
+			var series = [
+				{
+					// Distinct multi-word labels avoid colliding with OctoPrint's
+					// own "Actual"/"Target" catalog entries.
+					label: gettext("Measured temperature"),
+					data: actualSeries,
+					color: actualColor,
+					lines: { show: true, lineWidth: 2, fill: 0.08 },
+				},
+			];
+			if (targetSeries.length > 0) {
+				// No dashes: the flot.dashes plugin is not guaranteed to be
+				// loaded by OctoPrint, so a thin solid line keeps it portable.
+				series.push({
+					label: gettext("Target temperature"),
+					data: targetSeries,
+					color: "#5bc0de",
+					lines: { show: true, lineWidth: 1 },
+				});
 			}
 
-			// Add small padding.
-			var pad = Math.max(1.0, (maxTemp - minTemp) * 0.05);
-			minTemp -= pad;
-			maxTemp += pad;
+			var options = {
+				xaxis: { mode: "time", timezone: "browser" },
+				yaxis: {
+					tickFormatter: (v) =>
+						`${Math.round(v)}${
+							self._effectiveThresholdUnit() === "f" ? "°F" : "°C"
+						}`,
+				},
+				grid: { borderWidth: 1, hoverable: true, color: "#999" },
+				legend: { position: "nw", backgroundOpacity: 0.4 },
+			};
 
-			function yForTemp(tempC) {
-				var yNorm = (tempC - minTemp) / (maxTemp - minTemp);
-				var y = plotBottom - yNorm * plotH;
-				if (!Number.isFinite(y)) {
-					return plotBottom;
+			try {
+				var plot = self._flotPlots[heaterObj.name];
+				if (plot && plot.getPlaceholder && plot.getPlaceholder()[0] === el) {
+					// Reuse the existing plot: cheaper than a full re-instantiation.
+					plot.setData(series);
+					plot.setupGrid();
+					plot.draw();
+				} else {
+					self._flotPlots[heaterObj.name] = $.plot(el, series, options);
 				}
-				return Math.max(plotTop, Math.min(plotBottom, y));
-			}
-
-			function xForTime(ts) {
-				var x = plotLeft + ((ts - minT) / windowSec) * plotW;
-				if (!Number.isFinite(x)) {
-					return plotLeft;
-				}
-				return Math.max(plotLeft, Math.min(plotRight, x));
-			}
-
-			var points = [];
-			var count = hist.length - idxStart;
-			var maxPoints = 250;
-			var step = count > maxPoints ? Math.ceil(count / maxPoints) : 1;
-			var lastIncludedIndex = -1;
-
-			for (var j = idxStart; j < hist.length; j += step) {
-				var h = hist[j];
-
-				var x = xForTime(h.t);
-				var y = yForTemp(h.a);
-				points.push(`${x.toFixed(2)},${y.toFixed(2)}`);
-				lastIncludedIndex = j;
-			}
-
-			// Always include the most recent point to keep the graph "alive".
-			if (hist.length > idxStart && lastIncludedIndex !== hist.length - 1) {
-				var last = hist[hist.length - 1];
-				points.push(
-					`${xForTime(last.t).toFixed(2)},${yForTemp(last.a).toFixed(2)}`,
-				);
-			}
-
-			poly.setAttribute("points", points.join(" "));
-
-			// Target line uses current target.
-			var currentTarget = parseFloat(heaterObj.target());
-			if (Number.isFinite(currentTarget) && currentTarget > 0) {
-				var yT = yForTemp(currentTarget);
-				targetLine.setAttribute("x1", plotLeft);
-				targetLine.setAttribute("x2", plotRight);
-				targetLine.setAttribute("y1", yT.toFixed(2));
-				targetLine.setAttribute("y2", yT.toFixed(2));
-				targetLine.style.display = "";
-			} else {
-				targetLine.style.display = "none";
-			}
-
-			// Axes labels + Y ticks.
-			var yMin = minTemp;
-			var yMax = maxTemp;
-			var yMid = (yMin + yMax) / 2.0;
-
-			var unitX = els.unitX;
-			if (unitX) {
-				unitX.textContent = "mm:ss";
-				unitX.setAttribute("x", String(plotRight));
-				unitX.setAttribute("y", String(plotBottom + 4));
-			}
-
-			var tickYMax = els.tickYMax;
-			var tickYMid = els.tickYMid;
-			var tickYMin = els.tickYMin;
-
-			var labelYMax = els.labelYMax;
-			var labelYMid = els.labelYMid;
-			var labelYMin = els.labelYMin;
-
-			if (
-				tickYMax &&
-				tickYMid &&
-				tickYMin &&
-				labelYMax &&
-				labelYMid &&
-				labelYMin
-			) {
-				var tickX1 = plotLeft - 1.5;
-				tickYMax.setAttribute("x1", tickX1.toFixed(2));
-				tickYMax.setAttribute("x2", String(plotLeft));
-				tickYMid.setAttribute("x1", tickX1.toFixed(2));
-				tickYMid.setAttribute("x2", String(plotLeft));
-				tickYMin.setAttribute("x1", tickX1.toFixed(2));
-				tickYMin.setAttribute("x2", String(plotLeft));
-
-				var yTickMaxPos = yForTemp(yMax);
-				var yTickMidPos = yForTemp(yMid);
-				var yTickMinPos = yForTemp(yMin);
-
-				tickYMax.setAttribute("y1", yTickMaxPos.toFixed(2));
-				tickYMax.setAttribute("y2", yTickMaxPos.toFixed(2));
-				tickYMid.setAttribute("y1", yTickMidPos.toFixed(2));
-				tickYMid.setAttribute("y2", yTickMidPos.toFixed(2));
-				tickYMin.setAttribute("y1", yTickMinPos.toFixed(2));
-				tickYMin.setAttribute("y2", yTickMinPos.toFixed(2));
-
-				labelYMax.textContent = self._formatAxisTemp(yMax);
-				labelYMid.textContent = self._formatAxisTemp(yMid);
-				labelYMin.textContent = self._formatAxisTemp(yMin);
-
-				labelYMax.setAttribute("y", yTickMaxPos.toFixed(2));
-				labelYMid.setAttribute("y", yTickMidPos.toFixed(2));
-				labelYMin.setAttribute("y", yTickMinPos.toFixed(2));
-			}
-
-			var labelXLeft = els.labelXLeft;
-			var labelXMid = els.labelXMid;
-			var labelXRight = els.labelXRight;
-			if (labelXLeft && labelXMid && labelXRight) {
-				labelXLeft.textContent = `-${self._formatAxisTime(windowSec)}`;
-				labelXMid.textContent = `-${self._formatAxisTime(windowSec / 2.0)}`;
-				labelXRight.textContent = "0:00";
-
-				labelXLeft.setAttribute("x", String(plotLeft));
-				labelXMid.setAttribute("x", (plotLeft + plotW / 2.0).toFixed(2));
-				labelXRight.setAttribute("x", String(plotRight));
+			} catch (_e) {
+				// Flot can throw if the element is hidden or sized 0 between the
+				// guard above and the draw; the next render call recovers.
+				self._flotPlots[heaterObj.name] = null;
 			}
 		};
 
@@ -2528,20 +2374,58 @@ $(() => {
 
 		self.onBeforeBinding = () => {};
 
+		// Force a re-render of every heater chart, bypassing the per-heater
+		// throttle. Used when the history sub-tab becomes visible so Flot can
+		// measure the now-laid-out container even without a temperature update.
+		self._forceRenderAllGraphs = () => {
+			var keys = [];
+			try {
+				keys = Object.keys(self.heaterData || {});
+			} catch (_e) {
+				keys = [];
+			}
+			for (var i = 0; i < keys.length; i++) {
+				var h = self.heaterData[keys[i]];
+				if (h) {
+					h._lastGraphRenderMs = 0;
+					self._renderHistoricalGraph(h);
+				}
+			}
+		};
+
 		self.onAfterBinding = () => {
 			self._setupVisibilitySubscriptions();
 			self._installSettingsDialogHooks();
 
 			self._setupExtendedSettingsSubscriptions();
 			self._ensureSidebarBound();
+
+			// Re-render the charts when the history sub-tab is shown: Flot needs
+			// the container laid out (non-zero size) before it can draw.
+			try {
+				$(document).on(
+					"shown.bs.tab",
+					'#temp_eta_subtabs a[href="#temp_eta_subtab_history"]',
+					() => {
+						self._forceRenderAllGraphs();
+					},
+				);
+				$(window).on("resize", () => {
+					self._forceRenderAllGraphs();
+				});
+			} catch (_e) {
+				// ignore
+			}
 		};
 
 		self.onSettingsShown = () => {
 			self._bindSettingsWithRetry();
+			self._startMqttStatusPolling();
 		};
 
 		self.onSettingsHidden = () => {
 			self._unbindSettingsIfBound();
+			self._stopMqttStatusPolling();
 		};
 	}
 
