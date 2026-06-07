@@ -367,6 +367,128 @@ def test_mqtt_base_topic_configuration(wrapper: MQTTClientWrapperHarness) -> Non
     assert wrapper.get_internal_state("base_topic") == "custom/topic/path"
 
 
+def test_mqtt_topic_appends_appearance_name(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """Appearance name is appended when enabled and present."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": True,
+            "mqtt_appearance_name": "Ender3",
+            "mqtt_custom_identifier": "ignored",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta/Ender3"
+
+
+def test_mqtt_topic_falls_back_to_custom_identifier(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """Custom identifier is used when appearance suffix is disabled."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": False,
+            "mqtt_appearance_name": "Ender3",
+            "mqtt_custom_identifier": "printer-a",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta/printer-a"
+
+
+def test_mqtt_topic_falls_back_when_appearance_name_missing(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """Custom identifier is used when appearance name is enabled but empty."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": True,
+            "mqtt_appearance_name": "",
+            "mqtt_custom_identifier": "printer-a",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta/printer-a"
+
+
+def test_mqtt_topic_no_suffix(wrapper: MQTTClientWrapperHarness) -> None:
+    """Base topic is used unchanged when no suffix is available."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": True,
+            "mqtt_appearance_name": "",
+            "mqtt_custom_identifier": "",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta"
+
+
+def test_mqtt_topic_strips_trailing_slash_on_base(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """A trailing slash on the base topic does not produce a double slash."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta/",
+            "mqtt_use_appearance_name": True,
+            "mqtt_appearance_name": "Ender3",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta/Ender3"
+
+
+def test_mqtt_topic_sanitizes_wildcards_and_slashes(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """Wildcard chars are stripped and edge slashes removed from the suffix."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": True,
+            "mqtt_appearance_name": "/My+Printer#1/",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta/MyPrinter1"
+
+
+def test_mqtt_topic_suffix_only_wildcards_yields_no_suffix(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """A suffix consisting only of forbidden chars falls back to no suffix."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": True,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": True,
+            "mqtt_appearance_name": "+#",
+            "mqtt_custom_identifier": "",
+        }
+    )
+
+    assert wrapper.get_internal_state("base_topic") == "octoprint/temp_eta"
+
+
 def test_mqtt_schedule_connect_logs_when_mqtt_unavailable(
     wrapper: MQTTClientWrapperHarness, test_logger: DummyLogger
 ) -> None:

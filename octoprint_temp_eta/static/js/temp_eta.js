@@ -264,18 +264,31 @@ $(() => {
 			}
 			return "";
 		};
+		// Sanitize a user-supplied topic segment the same way as the backend
+		// (mqtt_client.py:_sanitize_topic_segment) so the preview matches what
+		// will actually be published: MQTT PUBLISH topics must not contain the
+		// wildcard characters '+'/'#', and leading/trailing slashes are stripped.
+		self.sanitizeTopicSegment = (segment) => {
+			return (segment || "")
+				.trim()
+				.replace(/[+#\x00]/g, "")
+				.replace(/^\/+|\/+$/g, "");
+		};
 		self.activeMqttTopic = ko.pureComputed(() => {
 			try {
 				var s = self._resolveSettingsRoot();
 				var p = s?.plugins?.temp_eta;
 				if (!p) return "";
-				var base = (ko.unwrap(p.mqtt_base_topic) || "octoprint/temp_eta").trim();
+				var base = (ko.unwrap(p.mqtt_base_topic) || "octoprint/temp_eta")
+					.trim()
+					.replace(/\/+$/, "");
+				var suffix = "";
 				if (ko.unwrap(p.mqtt_use_appearance_name) && self.appearanceNameAvailable()) {
-					return base + "/" + self.getAppearanceName();
+					suffix = self.sanitizeTopicSegment(self.getAppearanceName());
+				} else {
+					suffix = self.sanitizeTopicSegment(ko.unwrap(p.mqtt_custom_identifier));
 				}
-				var custom = (ko.unwrap(p.mqtt_custom_identifier) || "").trim();
-				if (custom) return base + "/" + custom;
-				return base;
+				return suffix ? base + "/" + suffix : base;
 			} catch (_e) {
 				return "";
 			}

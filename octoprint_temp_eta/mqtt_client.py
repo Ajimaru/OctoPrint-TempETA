@@ -143,15 +143,39 @@ class MQTTClientWrapper:
         Returns:
             str: Final MQTT base topic
         """
-        topic = base_topic or "octoprint/temp_eta"
+        topic = (base_topic or "octoprint/temp_eta").rstrip("/")
 
+        suffix = ""
         if use_appearance_name and appearance_name:
-            return f"{topic}/{appearance_name}"
+            suffix = self._sanitize_topic_segment(appearance_name)
+        elif custom_identifier:
+            suffix = self._sanitize_topic_segment(custom_identifier)
 
-        if custom_identifier:
-            return f"{topic}/{custom_identifier}"
+        if suffix:
+            return f"{topic}/{suffix}"
 
         return topic
+
+    @staticmethod
+    def _sanitize_topic_segment(segment: str) -> str:
+        """Sanitize a user-supplied MQTT topic segment.
+
+        MQTT PUBLISH topic names must not contain the wildcard characters
+        ``+`` or ``#`` (these are only valid in subscriptions) nor the null
+        character. Leading/trailing slashes are also stripped so the segment
+        joins cleanly with the base topic without producing empty levels.
+
+        Args:
+            segment: Raw user-supplied segment (appearance name or identifier)
+
+        Returns:
+            str: Sanitized segment safe to append to a base topic, possibly
+            empty if nothing usable remains.
+        """
+        sanitized = segment.strip()
+        for char in ("+", "#", "\x00"):
+            sanitized = sanitized.replace(char, "")
+        return sanitized.strip("/")
 
     def _schedule_connect(self) -> None:
         """Schedule a connection attempt (internal, lock must be held)."""
