@@ -20,7 +20,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:633
 msgid "Active topic:"
-msgstr ""
+msgstr "Active topic:"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:747
 msgid ""
@@ -64,7 +64,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:612
 msgid "Base topic"
-msgstr ""
+msgstr "Base topic"
 
 #: octoprint_temp_eta/static/js/temp_eta.js:2214
 msgid "Bed"
@@ -72,11 +72,11 @@ msgstr "Bed"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:543
 msgid "Broker Host"
-msgstr ""
+msgstr "Broker Host"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:555
 msgid "Broker Port"
-msgstr ""
+msgstr "Broker Port"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:367
 msgid "Browser notifications"
@@ -113,7 +113,7 @@ msgstr "Choose which events should show a browser notification."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:192
 msgid "Color mode"
-msgstr ""
+msgstr "Color mode"
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:66
 msgid "Configure algorithm and threshold in Settings → Temperature ETA"
@@ -172,9 +172,9 @@ msgstr "Cooling"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:219
 msgid "Cooling color"
-msgstr ""
+msgstr "Cooling color"
 
-#: octoprint_temp_eta/__init__.py:2359
+#: octoprint_temp_eta/__init__.py:2357
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:724
 msgid "Defaults restored."
 msgstr "Defaults restored."
@@ -216,14 +216,15 @@ msgstr "Enable MQTT"
 msgid ""
 "Enable MQTT integration to publish temperature ETA data and state changes."
 msgstr ""
+"Enable MQTT integration to publish temperature ETA data and state changes."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:658
 msgid "Enable MQTT retain flag (new subscribers receive last message)"
-msgstr ""
+msgstr "Enable MQTT retain flag (new subscribers receive last message)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:597
 msgid "Enable TLS/SSL encryption for MQTT connection"
-msgstr ""
+msgstr "Enable TLS/SSL encryption for MQTT connection"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:94
 msgid "Enable Temperature ETA"
@@ -251,7 +252,7 @@ msgstr "Enable or disable the Temperature ETA plugin and all of its features."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:295
 msgid "Enable sound alerts"
-msgstr ""
+msgstr "Enable sound alerts"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:743
 msgid "Estimates time to reach target temperature"
@@ -293,7 +294,7 @@ msgstr "Heating ETA"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:206
 msgid "Heating color"
-msgstr ""
+msgstr "Heating color"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:47
 msgid "Heating threshold"
@@ -354,7 +355,7 @@ msgstr "Idle"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:232
 msgid "Idle color"
-msgstr ""
+msgstr "Idle color"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:109
 msgid ""
@@ -412,27 +413,27 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:24
 msgid "MQTT"
-msgstr ""
+msgstr "MQTT"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:648
 msgid "MQTT Quality of Service level"
-msgstr ""
+msgstr "MQTT Quality of Service level"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:550
 msgid "MQTT broker hostname or IP address"
-msgstr ""
+msgstr "MQTT broker hostname or IP address"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:563
 msgid "MQTT broker port (default: 1883)"
-msgstr ""
+msgstr "MQTT broker port (default: 1883)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:587
 msgid "MQTT password"
-msgstr ""
+msgstr "MQTT password"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:575
 msgid "MQTT username (leave empty for no authentication)"
-msgstr ""
+msgstr "MQTT username (leave empty for no authentication)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:27
 msgid "Maintenance"
@@ -449,7 +450,7 @@ msgstr "Minimum interval (seconds)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:672
 msgid "Minimum interval between MQTT publishes (default: 1.0 seconds)"
-msgstr ""
+msgstr "Minimum interval between MQTT publishes (default: 1.0 seconds)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:768
 msgid ""
@@ -489,7 +490,7 @@ msgstr "OctoPrint API not available."
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:574
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:586
 msgid "Optional"
-msgstr ""
+msgstr "Optional"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:760
 msgid ""
@@ -501,11 +502,11 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:580
 msgid "Password"
-msgstr ""
+msgstr "Password"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:354
 msgid "Play test sound"
-msgstr ""
+msgstr "Play test sound"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:356
 msgid "Plays a short test sound using the current volume setting."
@@ -513,26 +514,26 @@ msgstr "Plays a short test sound using the current volume setting."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:6
 msgid "Please enter a valid number."
-msgstr ""
+msgstr "Please enter a valid number."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:9
 #, python-brace-format
 msgid "Please enter a value between {min} and {max}."
-msgstr ""
+msgstr "Please enter a value between {min} and {max}."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:7
 #, python-brace-format
 msgid "Please enter a value of at least {min}."
-msgstr ""
+msgstr "Please enter a value of at least {min}."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:8
 #, python-brace-format
 msgid "Please enter a value of at most {max}."
-msgstr ""
+msgstr "Please enter a value of at most {max}."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:10
 msgid "Please fix the highlighted settings values before saving."
-msgstr ""
+msgstr "Please fix the highlighted settings values before saving."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:663
 msgid "Publish Interval (seconds)"
@@ -540,12 +541,13 @@ msgstr "Publish Interval (seconds)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:639
 msgid "Quality of Service (QoS)"
-msgstr ""
+msgstr "Quality of Service (QoS)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:345
 msgid ""
 "Rate limit to avoid repeated beeps due to small target/temperature jitter."
 msgstr ""
+"Rate limit to avoid repeated beeps due to small target/temperature jitter."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:416
 msgid ""
@@ -600,7 +602,7 @@ msgstr "Restores Temperature ETA settings to their default values."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:653
 msgid "Retain Messages"
-msgstr ""
+msgstr "Retain Messages"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:119
 msgid "Show ETA in OctoPrint's sidebar temperature widget."
@@ -663,27 +665,31 @@ msgstr "Shows recent temperature history for each heater."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:602
 msgid "Skip TLS certificate verification"
-msgstr ""
+msgstr "Skip TLS certificate verification"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:607
 msgid "Skip certificate verification (not recommended for production)"
-msgstr ""
+msgstr "Skip certificate verification (not recommended for production)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:301
 msgid ""
 "Some browsers require a user interaction before sound can play. Use the Test"
 " button to grant permission."
 msgstr ""
+"Some browsers require a user interaction before sound can play. Use the Test"
+" button to grant permission."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:293
 msgid "Sound alerts"
-msgstr ""
+msgstr "Sound alerts"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:358
 msgid ""
 "Sound is currently blocked by the browser. Click the Test button (or "
 "interact with the page) to enable audio playback."
 msgstr ""
+"Sound is currently blocked by the browser. Click the Test button (or "
+"interact with the page) to enable audio playback."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:57
 msgid "Start ETA when target is this many degrees away"
@@ -691,11 +697,11 @@ msgstr "Start ETA when target is this many degrees away"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:190
 msgid "Status colors"
-msgstr ""
+msgstr "Status colors"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:198
 msgid "Status colors (heating/cooling/idle)"
-msgstr ""
+msgstr "Status colors (heating/cooling/idle)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:509
 msgid ""
@@ -767,7 +773,7 @@ msgstr "Temperature display"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:349
 msgid "Test"
-msgstr ""
+msgstr "Test"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:773
 msgid ""
@@ -799,13 +805,15 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:197
 msgid "Time-based bands (default)"
-msgstr ""
+msgstr "Time-based bands (default)"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:201
 msgid ""
 "Time-based bands use warning/info/normal colors based on remaining time. "
 "Status mode uses fixed colors for heating, cooling, and idle."
 msgstr ""
+"Time-based bands use warning/info/normal colors based on remaining time. "
+"Status mode uses fixed colors for heating, cooling, and idle."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:394
 msgid "Timeout (seconds)"
@@ -823,7 +831,7 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:241
 msgid "Tip: These colors also apply to progress bars in status mode."
-msgstr ""
+msgstr "Tip: These colors also apply to progress bars in status mode."
 
 #: octoprint_temp_eta/static/js/temp_eta.js:739
 msgid "Unavailable (paho-mqtt not installed)"
@@ -848,7 +856,7 @@ msgstr "Use OctoPrint appearance setting"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:592
 msgid "Use TLS/SSL"
-msgstr ""
+msgstr "Use TLS/SSL"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:215
 msgid "Used when a heater is actively heating (status color mode)."
@@ -860,11 +868,11 @@ msgstr "Used when a heater is cooling down (status color mode)."
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:568
 msgid "Username"
-msgstr ""
+msgstr "Username"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:322
 msgid "Volume"
-msgstr ""
+msgstr "Volume"
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:65
 msgid ""

@@ -169,7 +169,7 @@ msgstr ""
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2359
+#: octoprint_temp_eta/__init__.py:2357
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:724
 msgid "Defaults restored."
 msgstr ""
