@@ -103,9 +103,18 @@ class MQTTClientWrapper:
             self._use_tls = bool(settings.get("mqtt_use_tls", False))
             self._tls_insecure = bool(settings.get("mqtt_tls_insecure", False))
 
-            self._base_topic = str(
+            base_topic = str(
                 settings.get("mqtt_base_topic", "octoprint/temp_eta")
             ).strip()
+            use_appearance_name = bool(settings.get("mqtt_use_appearance_name", True))
+            appearance_name = str(settings.get("mqtt_appearance_name") or "").strip()
+            custom_identifier = str(settings.get("mqtt_custom_identifier", "")).strip()
+
+            # Build final topic with optional identifier suffix
+            self._base_topic = self._build_final_topic(
+                base_topic, use_appearance_name, appearance_name, custom_identifier
+            )
+
             self._qos = int(settings.get("mqtt_qos", 0))
             self._retain = bool(settings.get("mqtt_retain", False))
             self._publish_interval = float(settings.get("mqtt_publish_interval", 1.0))
@@ -115,6 +124,58 @@ class MQTTClientWrapper:
                 self._schedule_connect()
             elif not self._enabled and old_enabled:
                 self._disconnect_internal()
+
+    def _build_final_topic(
+        self,
+        base_topic: str,
+        use_appearance_name: bool,
+        appearance_name: str,
+        custom_identifier: str,
+    ) -> str:
+        """Build the final MQTT base topic with optional identifier suffix.
+
+        Args:
+            base_topic: Base MQTT topic
+            use_appearance_name: Whether to append appearance name
+            appearance_name: Printer appearance name from OctoPrint settings
+            custom_identifier: Custom identifier to append (fallback)
+
+        Returns:
+            str: Final MQTT base topic
+        """
+        topic = (base_topic or "octoprint/temp_eta").rstrip("/")
+
+        suffix = ""
+        if use_appearance_name and appearance_name:
+            suffix = self._sanitize_topic_segment(appearance_name)
+        elif custom_identifier:
+            suffix = self._sanitize_topic_segment(custom_identifier)
+
+        if suffix:
+            return f"{topic}/{suffix}"
+
+        return topic
+
+    @staticmethod
+    def _sanitize_topic_segment(segment: str) -> str:
+        """Sanitize a user-supplied MQTT topic segment.
+
+        MQTT PUBLISH topic names must not contain the wildcard characters
+        ``+`` or ``#`` (these are only valid in subscriptions) nor the null
+        character. Leading/trailing slashes are also stripped so the segment
+        joins cleanly with the base topic without producing empty levels.
+
+        Args:
+            segment: Raw user-supplied segment (appearance name or identifier)
+
+        Returns:
+            str: Sanitized segment safe to append to a base topic, possibly
+            empty if nothing usable remains.
+        """
+        sanitized = segment.strip()
+        for char in ("+", "#", "\x00"):
+            sanitized = sanitized.replace(char, "")
+        return sanitized.strip("/")
 
     def _schedule_connect(self) -> None:
         """Schedule a connection attempt (internal, lock must be held)."""

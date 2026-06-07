@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
@@ -103,7 +103,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
@@ -163,10 +163,11 @@ jobs:
             octoprint-spec: "OctoPrint==1.10.2"
           - octoprint-label: "devel (git dev branch)"
             octoprint-source: git
+            experimental: true
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
@@ -187,6 +188,9 @@ jobs:
 
       - name: Install OctoPrint (git dev branch)
         if: matrix.octoprint-source == 'git'
+        # OctoPrint's unreleased dev branch may itself be broken; don't fail
+        # the run on its install issues.
+        continue-on-error: ${{ matrix.experimental || false }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install "git+https://github.com/OctoPrint/OctoPrint@dev#egg=OctoPrint"
@@ -196,6 +200,10 @@ jobs:
           python -m pip install .
 
       - name: Smoke test plugin import
+        # The "devel" entry runs against OctoPrint's unreleased git dev branch,
+        # which is allowed to be broken (e.g. upstream circular imports). Keep
+        # that matrix entry non-blocking while the pinned minimum stays required.
+        continue-on-error: ${{ matrix.experimental || false }}
         run: |
           mkdir ../smoketest
           cd ../smoketest

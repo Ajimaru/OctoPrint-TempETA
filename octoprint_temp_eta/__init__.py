@@ -18,6 +18,11 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Protocol, Type, runtime_checkable
 
 try:
+    from ._version import VERSION
+except ImportError:  # pragma: no cover - fallback if _version.py is missing
+    VERSION = "0.0.0+unknown"
+
+try:
     import octoprint.plugin  # type: ignore
 except ModuleNotFoundError:  # pragma: no cover
     # Allow importing this module in environments where OctoPrint isn't installed
@@ -468,6 +473,11 @@ class TempETAPlugin(
             "mqtt_use_tls": self._settings.get_boolean(["mqtt_use_tls"]),
             "mqtt_tls_insecure": self._settings.get_boolean(["mqtt_tls_insecure"]),
             "mqtt_base_topic": self._settings.get(["mqtt_base_topic"]),
+            "mqtt_use_appearance_name": self._settings.get_boolean(
+                ["mqtt_use_appearance_name"]
+            ),
+            "mqtt_appearance_name": self._get_appearance_name(),
+            "mqtt_custom_identifier": self._settings.get(["mqtt_custom_identifier"]),
             "mqtt_qos": self._settings.get_int(["mqtt_qos"]),
             "mqtt_retain": self._settings.get_boolean(["mqtt_retain"]),
             "mqtt_publish_interval": self._settings.get_float(
@@ -2004,10 +2014,27 @@ class TempETAPlugin(
             "mqtt_use_tls": False,
             "mqtt_tls_insecure": False,
             "mqtt_base_topic": "octoprint/temp_eta",
+            "mqtt_use_appearance_name": True,
+            "mqtt_custom_identifier": "",
             "mqtt_qos": 0,
             "mqtt_retain": False,
             "mqtt_publish_interval": 1.0,
         }
+
+    def _get_appearance_name(self) -> Optional[str]:
+        """Get the printer's appearance name from OctoPrint settings.
+
+        Returns:
+            Optional[str]: The appearance name if available, None otherwise.
+        """
+        try:
+            # Access OctoPrint's settings through the plugin's settings manager
+            appearance_name = self._settings.global_get(["appearance", "name"])
+            if appearance_name and isinstance(appearance_name, str):
+                return appearance_name.strip()
+        except Exception as e:
+            self._logger.debug("Failed to read appearance name: %s", str(e))
+        return None
 
     # TemplatePlugin mixin
     def is_template_autoescaped(self) -> bool:  # pyright: ignore
@@ -2332,6 +2359,13 @@ class TempETAPlugin(
 
 
 __plugin_name__ = "Temperature ETA"
+__plugin_author__ = "Ajimaru"
+__plugin_url__ = "https://github.com/Ajimaru/OctoPrint-TempETA"
+__plugin_description__ = (
+    "OctoPrint plugin to show estimated time remaining for printer heating"
+)
+__plugin_license__ = "AGPL-3.0-or-later"
+__plugin_version__ = VERSION
 __plugin_pythoncompat__ = ">=3.9,<4"
 __plugin_implementation__ = TempETAPlugin()
 

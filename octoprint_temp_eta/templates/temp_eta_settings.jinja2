@@ -609,15 +609,28 @@
                 </div>
                 <!-- Base Topic -->
                 <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_base_topic">{{ _("Base Topic") }}</label>
+                    <label class="control-label" for="temp_eta_mqtt_base_topic">{{ _("Base topic") }}</label>
                     <div class="controls">
+                        <label class="checkbox">
+                            <input type="checkbox"
+                                   id="temp_eta_mqtt_use_appearance_name"
+                                   data-bind="checked: settings.plugins.temp_eta.mqtt_use_appearance_name, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled && appearanceNameAvailable()">
+                            {{ _("Append OctoPrint instance name (Appearance → Title)") }}
+                        </label>
                         <input type="text"
                                class="input-xlarge"
                                id="temp_eta_mqtt_base_topic"
-                               data-bind="value: settings.plugins.temp_eta.mqtt_base_topic, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
+                               data-bind="value: settings.plugins.temp_eta.mqtt_base_topic, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled && !(ko.unwrap(settings.plugins.temp_eta.mqtt_use_appearance_name) && appearanceNameAvailable())"
                                placeholder="octoprint/temp_eta">
+                        <!-- Custom identifier: only shown when appearance name is off or unavailable -->
+                        <input type="text"
+                               class="input-xlarge"
+                               id="temp_eta_mqtt_custom_identifier"
+                               data-bind="value: settings.plugins.temp_eta.mqtt_custom_identifier, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled, visible: !ko.unwrap(settings.plugins.temp_eta.mqtt_use_appearance_name) || !appearanceNameAvailable()"
+                               placeholder="{{ _('Instance identifier (optional)') }}"
+                               style="margin-top: 4px">
                         <p class="help-block">
-                            {{ _("Base MQTT topic for publishing. Messages will be published to {base_topic}/{heater}/eta and {base_topic}/{heater}/state_change") }}
+                            {{ _("Active topic:") }} <strong><span data-bind="text: activeMqttTopic"></span></strong>
                         </p>
                     </div>
                 </div>

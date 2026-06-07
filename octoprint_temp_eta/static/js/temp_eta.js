@@ -238,6 +238,62 @@ $(() => {
 			}
 			return false;
 		});
+
+		// Appearance name observable for MQTT identifier selection
+		self.appearanceNameAvailable = ko.pureComputed(() => {
+			try {
+				var settings = self._resolveSettingsRoot();
+				var appearanceName = ko.unwrap(settings?.appearance?.name);
+				return (
+					typeof appearanceName === "string" && appearanceName.trim() !== ""
+				);
+			} catch (_e) {
+				return false;
+			}
+		});
+
+		self.getAppearanceName = () => {
+			try {
+				var settings = self._resolveSettingsRoot();
+				var appearanceName = ko.unwrap(settings?.appearance?.name);
+				if (typeof appearanceName === "string") {
+					return appearanceName.trim();
+				}
+			} catch (_e) {
+				// ignore
+			}
+			return "";
+		};
+		// Sanitize a user-supplied topic segment the same way as the backend
+		// (mqtt_client.py:_sanitize_topic_segment) so the preview matches what
+		// will actually be published: MQTT PUBLISH topics must not contain the
+		// wildcard characters '+'/'#', and leading/trailing slashes are stripped.
+		self.sanitizeTopicSegment = (segment) => {
+			return (segment || "")
+				.trim()
+				.replace(/[+#\x00]/g, "")
+				.replace(/^\/+|\/+$/g, "");
+		};
+		self.activeMqttTopic = ko.pureComputed(() => {
+			try {
+				var s = self._resolveSettingsRoot();
+				var p = s?.plugins?.temp_eta;
+				if (!p) return "";
+				var base = (ko.unwrap(p.mqtt_base_topic) || "octoprint/temp_eta")
+					.trim()
+					.replace(/\/+$/, "");
+				var suffix = "";
+				if (ko.unwrap(p.mqtt_use_appearance_name) && self.appearanceNameAvailable()) {
+					suffix = self.sanitizeTopicSegment(self.getAppearanceName());
+				} else {
+					suffix = self.sanitizeTopicSegment(ko.unwrap(p.mqtt_custom_identifier));
+				}
+				return suffix ? base + "/" + suffix : base;
+			} catch (_e) {
+				return "";
+			}
+		});
+
 		self._resolveSettingsRoot = () => {
 			// OctoPrint versions can differ in how the settings model is nested.
 			// We want an object where `plugins.temp_eta.*` and `appearance.*` exist.
@@ -350,7 +406,7 @@ $(() => {
 		};
 
 		self._clearValidationForInput = (inputEl) => {
-			var $input = $(inputEl);
+			var $input = $(inputEl); // nosemgrep: jquery-insecure-selector
 			$input.removeAttr("aria-invalid");
 			var $cg = $input.closest(".control-group");
 			$cg.removeClass("error");
@@ -359,7 +415,7 @@ $(() => {
 		};
 
 		self._setValidationForInput = (inputEl, message) => {
-			var $input = $(inputEl);
+			var $input = $(inputEl); // nosemgrep: jquery-insecure-selector
 			$input.attr("aria-invalid", "true");
 			var $cg = $input.closest(".control-group");
 			$cg.addClass("error");
@@ -382,7 +438,7 @@ $(() => {
 		};
 
 		self._validateNumberInput = (inputEl) => {
-			var $input = $(inputEl);
+			var $input = $(inputEl); // nosemgrep: jquery-insecure-selector
 			self._clearValidationForInput(inputEl);
 
 			if (!$input.is(":enabled")) {
@@ -495,7 +551,7 @@ $(() => {
 			if (!rootEl) {
 				return;
 			}
-			var $root = $(rootEl);
+			var $root = $(rootEl); // nosemgrep: jquery-insecure-selector
 			if ($root.data("tempEtaValidationBound")) {
 				return;
 			}
@@ -552,7 +608,7 @@ $(() => {
 			var tick = () => {
 				attempts += 1;
 
-				var $root = $(selector);
+				var $root = $(selector); // nosemgrep: jquery-insecure-selector
 				if ($root.length) {
 					var el = $root.get(0);
 					if (!$(el).data(dataFlag)) {
