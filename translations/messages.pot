@@ -61,6 +61,10 @@ msgstr ""
 msgid "Base topic"
 msgstr ""
 
+#: octoprint_temp_eta/static/js/temp_eta.js:2214
+msgid "Bed"
+msgstr ""
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:543
 msgid "Broker Host"
 msgstr ""
@@ -90,6 +94,10 @@ msgstr ""
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr ""
 
+#: octoprint_temp_eta/static/js/temp_eta.js:2215
+msgid "Chamber"
+msgstr ""
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:318
 msgid "Choose which events should play a sound alert."
 msgstr ""
@@ -109,6 +117,10 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:698
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:721
 msgid "Confirm reset"
+msgstr ""
+
+#: octoprint_temp_eta/static/js/temp_eta.js:745
+msgid "Connected"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:680
@@ -149,11 +161,15 @@ msgstr ""
 msgid "Cooldown finished"
 msgstr ""
 
+#: octoprint_temp_eta/static/js/temp_eta.js:2239
+msgid "Cooling"
+msgstr ""
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:219
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2352
+#: octoprint_temp_eta/__init__.py:2359
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:724
 msgid "Defaults restored."
 msgstr ""
@@ -167,6 +183,10 @@ msgstr ""
 msgid ""
 "Deletes all persisted ETA history JSON files for all printer profiles "
 "(stored in OctoPrint's plugin data folder)."
+msgstr ""
+
+#: octoprint_temp_eta/static/js/temp_eta.js:742
+msgid "Disabled"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:744
@@ -317,6 +337,10 @@ msgid ""
 "How often to update ETA display (lower = more responsive, higher = less CPU)"
 msgstr ""
 
+#: octoprint_temp_eta/static/js/temp_eta.js:2241
+msgid "Idle"
+msgstr ""
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:232
 msgid "Idle color"
 msgstr ""
@@ -418,6 +442,10 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:703
 msgid "No persisted history files found."
+msgstr ""
+
+#: octoprint_temp_eta/static/js/temp_eta.js:746
+msgid "Not connected"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:750
@@ -752,6 +780,11 @@ msgstr ""
 msgid "Tip: These colors also apply to progress bars in status mode."
 msgstr ""
 
+#: octoprint_temp_eta/static/js/temp_eta.js:739
+msgid "Unavailable (paho-mqtt not installed)"
+msgstr ""
+
+#: octoprint_temp_eta/static/js/temp_eta.js:736
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:683
 msgid "Unknown"
 msgstr ""

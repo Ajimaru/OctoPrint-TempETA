@@ -2393,6 +2393,21 @@ $(() => {
 			}
 		};
 
+		// Debounced wrapper around _forceRenderAllGraphs for high-frequency
+		// triggers (window resize). Resize fires many events per second and
+		// _forceRenderAllGraphs bypasses the per-heater render throttle, so
+		// without debouncing each event would force a full, expensive Flot
+		// re-render and cause UI jank. Coalesce bursts into a single redraw.
+		self._debouncedForceRenderAllGraphs = () => {
+			if (self._forceRenderDebounceTimer) {
+				window.clearTimeout(self._forceRenderDebounceTimer);
+			}
+			self._forceRenderDebounceTimer = window.setTimeout(() => {
+				self._forceRenderDebounceTimer = null;
+				self._forceRenderAllGraphs();
+			}, 150);
+		};
+
 		self.onAfterBinding = () => {
 			self._setupVisibilitySubscriptions();
 			self._installSettingsDialogHooks();
@@ -2401,17 +2416,18 @@ $(() => {
 			self._ensureSidebarBound();
 
 			// Re-render the charts when the history sub-tab is shown: Flot needs
-			// the container laid out (non-zero size) before it can draw.
+			// the container laid out (non-zero size) before it can draw. Events
+			// are namespaced (.tempEtaGraphs) so they can be unbound cleanly.
 			try {
 				$(document).on(
-					"shown.bs.tab",
+					"shown.bs.tab.tempEtaGraphs",
 					'#temp_eta_subtabs a[href="#temp_eta_subtab_history"]',
 					() => {
 						self._forceRenderAllGraphs();
 					},
 				);
-				$(window).on("resize", () => {
-					self._forceRenderAllGraphs();
+				$(window).on("resize.tempEtaGraphs", () => {
+					self._debouncedForceRenderAllGraphs();
 				});
 			} catch (_e) {
 				// ignore
