@@ -4091,3 +4091,84 @@ def test_broadcast_sends_only_supported_heaters(
     assert "tool0" in heaters
     assert "bed" in heaters
     assert "tool1" not in heaters
+
+
+class _DummyMQTTClient:
+    """Minimal MQTT client stub exposing only is_connected() for API tests."""
+
+    def __init__(self, connected: bool) -> None:
+        """Initialize test helper state."""
+        self._connected = connected
+
+    def is_connected(self) -> bool:
+        """Return the canned connection state."""
+        return self._connected
+
+
+@pytest.mark.parametrize(
+    ("wrapper_present", "mqtt_enabled", "connected", "expected"),
+    [
+        # paho-mqtt available, MQTT on and connected to a broker.
+        (True, True, True, {"available": True, "enabled": True, "connected": True}),
+        # available and enabled, but the broker connection is down.
+        (True, True, False, {"available": True, "enabled": True, "connected": False}),
+        # available but MQTT disabled in settings: never reports connected.
+        (True, False, True, {"available": True, "enabled": False, "connected": False}),
+        # paho-mqtt not installed: wrapper absent, client is None.
+        (False, True, True, {"available": False, "enabled": True, "connected": False}),
+    ],
+)
+def test_on_api_get_reports_mqtt_status(
+    monkeypatch: pytest.MonkeyPatch,
+    temp_eta_plugin: Any,
+    wrapper_present: bool,
+    mqtt_enabled: bool,
+    connected: bool,
+    expected: dict[str, bool],
+) -> None:
+    """on_api_get should report MQTT availability/enabled/connected accurately.
+
+    Locks in the response contract the settings UI polls: mqtt_connected is
+    only ever True when the wrapper exists, MQTT is enabled, AND the client
+    reports a live broker connection.
+    """
+    p_any = cast(Any, temp_eta_plugin)
+    settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
+    settings.set(["mqtt_enabled"], mqtt_enabled)
+
+    # Avoid depending on Flask in unit tests.
+    monkeypatch.setattr(octoprint_temp_eta, "jsonify", lambda payload: payload)
+
+    if wrapper_present:
+        # Sentinel object: on_api_get only checks `MQTTClientWrapper is not None`.
+        monkeypatch.setattr(octoprint_temp_eta, "MQTTClientWrapper", object())
+        _set_attr(p_any, _member("mqtt_client"), _DummyMQTTClient(connected))
+    else:
+        # Simulate paho-mqtt being unavailable: wrapper is None, client absent.
+        monkeypatch.setattr(octoprint_temp_eta, "MQTTClientWrapper", None)
+        _set_attr(p_any, _member("mqtt_client"), None)
+
+    resp = temp_eta_plugin.on_api_get(None)
+
+    assert resp["mqtt_available"] is expected["available"]
+    assert resp["mqtt_enabled"] is expected["enabled"]
+    assert resp["mqtt_connected"] is expected["connected"]
+
+
+def test_on_api_get_connected_false_when_client_missing_but_enabled(
+    monkeypatch: pytest.MonkeyPatch, temp_eta_plugin: Any
+) -> None:
+    """A None client (e.g. before startup) must not report a connection."""
+    p_any = cast(Any, temp_eta_plugin)
+    settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
+    settings.set(["mqtt_enabled"], True)
+
+    monkeypatch.setattr(octoprint_temp_eta, "jsonify", lambda payload: payload)
+    monkeypatch.setattr(octoprint_temp_eta, "MQTTClientWrapper", object())
+    _set_attr(p_any, _member("mqtt_client"), None)
+
+    resp = temp_eta_plugin.on_api_get(None)
+
+    assert resp["mqtt_available"] is True
+    assert resp["mqtt_enabled"] is True
+    assert resp["mqtt_connected"] is False

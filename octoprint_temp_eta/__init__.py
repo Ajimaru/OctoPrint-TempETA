@@ -2290,6 +2290,28 @@ class TempETAPlugin(
             "reset_settings_defaults": [],
         }
 
+    def on_api_get(self, _request: Any):  # type: ignore[override]
+        """Return plugin status for the Simple API GET endpoint.
+
+        Currently exposes whether the MQTT integration is enabled and
+        connected to a broker so the settings UI can show a live status.
+        """
+        mqtt_client = self._mqtt_client
+        mqtt_enabled = bool(self._settings.get_boolean(["mqtt_enabled"]))
+        # Only report "connected" when MQTT is actually enabled: a client may
+        # still be mid-disconnect right after the feature is switched off, and
+        # the UI should reflect the configured state, not a lingering socket.
+        mqtt_connected = bool(
+            mqtt_enabled and mqtt_client is not None and mqtt_client.is_connected()
+        )
+        return jsonify(
+            {
+                "mqtt_available": MQTTClientWrapper is not None,
+                "mqtt_enabled": mqtt_enabled,
+                "mqtt_connected": mqtt_connected,
+            }
+        )
+
     def on_api_command(self, command: str, _data: dict[str, Any]):  # type: ignore[override]
         """Handle Simple API commands."""
         if command == "reset_profile_history":
