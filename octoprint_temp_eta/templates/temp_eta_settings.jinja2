@@ -416,6 +416,17 @@
                             <p class="help-block">{{ _("Rate limit to avoid repeated notifications due to small target/temperature jitter.") }}</p>
                         </div>
                     </div>
+                    <div class="control-group">
+                        <label class="control-label">{{ _("Test") }}</label>
+                        <div class="controls">
+                            <button type="button"
+                                    class="btn"
+                                    data-bind="click: testNotification, enable: settings.plugins.temp_eta.enabled">
+                                {{ _("Show test notification") }}
+                            </button>
+                            <p class="help-block">{{ _("Shows a sample browser notification using the current timeout setting.") }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="tab-pane" id="temp_eta_settings_tab_cooldown">

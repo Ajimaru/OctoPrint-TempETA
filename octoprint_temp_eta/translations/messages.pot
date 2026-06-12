@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -454,6 +454,14 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:356
 msgid "Plays a short test sound using the current volume setting."
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:424
+msgid "Show test notification"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:426
+msgid "Shows a sample browser notification using the current timeout setting."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:6
