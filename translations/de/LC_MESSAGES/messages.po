@@ -67,7 +67,7 @@ msgstr ""
 msgid "Base topic"
 msgstr "Basis-Topic"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2233
+#: octoprint_temp_eta/static/js/temp_eta.js:2239
 msgid "Bed"
 msgstr "Bett"
 
@@ -100,7 +100,7 @@ msgstr "Celsius (°C)"
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr "Celsius + Fahrenheit (°C/°F)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2234
+#: octoprint_temp_eta/static/js/temp_eta.js:2240
 msgid "Chamber"
 msgstr "Kammer"
 
@@ -170,7 +170,7 @@ msgstr "Cool-Down-Ziel (Tool0)"
 msgid "Cooldown finished"
 msgstr "Cooldown abgeschlossen"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2258
+#: octoprint_temp_eta/static/js/temp_eta.js:2264
 msgid "Cooling"
 msgstr "Kühlung"
 
@@ -362,7 +362,7 @@ msgstr ""
 "Wie oft die ETA-Anzeige aktualisiert wird (niedriger = reaktionsschneller, "
 "höher = weniger CPU)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2260
+#: octoprint_temp_eta/static/js/temp_eta.js:2266
 msgid "Idle"
 msgstr "Leerlauf"
 
@@ -454,7 +454,7 @@ msgstr "MQTT-Benutzername (leer lassen für keine Authentifizierung)"
 msgid "Maintenance"
 msgstr "Wartung"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1607
+#: octoprint_temp_eta/static/js/temp_eta.js:1613
 msgid "Measured temperature"
 msgstr "Gemessene Temperatur"
 
@@ -683,11 +683,13 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:425
 msgid "Show test notification"
-msgstr ""
+msgstr "Testbenachrichtigung anzeigen"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:427
 msgid "Shows a sample browser notification using the current timeout setting."
 msgstr ""
+"Zeigt eine Beispiel-Browserbenachrichtigung mit der aktuellen Timeout-"
+"Einstellung."
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:110
 msgid "Shows recent temperature history for each heater."
@@ -756,7 +758,7 @@ msgstr ""
 msgid "Target reached"
 msgstr "Ziel erreicht"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1617
+#: octoprint_temp_eta/static/js/temp_eta.js:1623
 msgid "Target temperature"
 msgstr "Zieltemperatur"
 

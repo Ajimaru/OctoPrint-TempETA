@@ -66,7 +66,7 @@ msgstr ""
 msgid "Base topic"
 msgstr "Base topic"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2233
+#: octoprint_temp_eta/static/js/temp_eta.js:2239
 msgid "Bed"
 msgstr "Bed"
 
@@ -99,7 +99,7 @@ msgstr "Celsius (°C)"
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr "Celsius + Fahrenheit (°C/°F)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2234
+#: octoprint_temp_eta/static/js/temp_eta.js:2240
 msgid "Chamber"
 msgstr "Chamber"
 
@@ -166,7 +166,7 @@ msgstr "Cool-down target (tool0)"
 msgid "Cooldown finished"
 msgstr "Cooldown finished"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2258
+#: octoprint_temp_eta/static/js/temp_eta.js:2264
 msgid "Cooling"
 msgstr "Cooling"
 
@@ -349,7 +349,7 @@ msgid ""
 msgstr ""
 "How often to update ETA display (lower = more responsive, higher = less CPU)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2260
+#: octoprint_temp_eta/static/js/temp_eta.js:2266
 msgid "Idle"
 msgstr "Idle"
 
@@ -439,7 +439,7 @@ msgstr "MQTT username (leave empty for no authentication)"
 msgid "Maintenance"
 msgstr "Maintenance"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1607
+#: octoprint_temp_eta/static/js/temp_eta.js:1613
 msgid "Measured temperature"
 msgstr "Measured temperature"
 
@@ -661,11 +661,12 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:425
 msgid "Show test notification"
-msgstr ""
+msgstr "Show test notification"
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:427
 msgid "Shows a sample browser notification using the current timeout setting."
 msgstr ""
+"Shows a sample browser notification using the current timeout setting."
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:110
 msgid "Shows recent temperature history for each heater."
@@ -733,7 +734,7 @@ msgstr ""
 msgid "Target reached"
 msgstr "Target reached"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1617
+#: octoprint_temp_eta/static/js/temp_eta.js:1623
 msgid "Target temperature"
 msgstr "Target temperature"
 

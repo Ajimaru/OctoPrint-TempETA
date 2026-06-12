@@ -1197,10 +1197,6 @@ $(() => {
 		};
 
 		self.testNotification = () => {
-			var pluginTitle = self._i18nAttrOr(
-				"data-notify-plugin-title",
-				"Temperature ETA",
-			);
 			var title = self._i18nAttrOr(
 				"data-notify-target-reached-title",
 				"Target reached",
@@ -1209,10 +1205,20 @@ $(() => {
 				"data-notify-target-reached-text",
 				"{heater}: reached {target}",
 			);
+			// Use the same heater-label/temperature formatting as real
+			// notifications so the sample honors the user's unit settings.
+			var heaterLabel = self.getHeaterLabel("tool0");
+			var targetText = self.formatTempDisplay(200);
 			var text = String(tpl)
-				.replace("{heater}", "Tool 0")
-				.replace("{target}", "200 °C");
-			_toast("success", title, text, 6000, "temp-eta-toast-target");
+				.replace("{heater}", String(heaterLabel))
+				.replace("{target}", String(targetText));
+			_toast(
+				"success",
+				title,
+				text,
+				self._getNotificationTimeoutMs(),
+				"temp-eta-toast-target",
+			);
 		};
 
 		self._notificationLastShownByKey = {};
