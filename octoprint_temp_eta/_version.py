@@ -1,3 +1,3 @@
 """Single source for plugin version used by development tooling."""
 
-VERSION = "0.8.7"
+VERSION = "0.8.8"
