@@ -13,7 +13,7 @@ import re
 import threading
 import time
 from collections import deque
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, Dict, Optional, Protocol, Type, runtime_checkable
 
@@ -1241,7 +1241,7 @@ class TempETAPlugin(
         except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
             is_logger_debug = False
         if is_logger_debug:
-            heaters_in_data = [k for k, v in data.items() if isinstance(v, dict)]
+            heaters_in_data = [k for k, v in data.items() if isinstance(v, Mapping)]
             if heaters_in_data:
                 self._logger.debug(
                     "Received temperature data for heaters: %s", heaters_in_data
@@ -1261,7 +1261,10 @@ class TempETAPlugin(
         with self._lock:
             # Protect shared history state (OctoPrint may call callbacks from worker threads).
             for heater, temps in data.items():
-                if not isinstance(temps, dict):
+                # OctoPrint wraps heater entries in frozendict when
+                # devel.useFrozenDictForPrinterState is enabled, which is not a
+                # dict subclass; accept any Mapping so ETA still works there.
+                if not isinstance(temps, Mapping):
                     continue
                 heater_key = str(heater)
                 heaters_seen += 1
@@ -1488,7 +1491,7 @@ class TempETAPlugin(
         payloads = []
         with self._lock:
             for heater, heater_data in data.items():
-                if not isinstance(heater_data, dict):
+                if not isinstance(heater_data, Mapping):
                     continue
                 if not self._is_heater_supported(heater):
                     continue

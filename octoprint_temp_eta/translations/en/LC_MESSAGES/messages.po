@@ -484,6 +484,15 @@ msgstr "Play test sound"
 msgid "Plays a short test sound using the current volume setting."
 msgstr "Plays a short test sound using the current volume setting."
 
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:424
+msgid "Show test notification"
+msgstr "Show test notification"
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:426
+msgid "Shows a sample browser notification using the current timeout setting."
+msgstr ""
+"Shows a sample browser notification using the current timeout setting."
+
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:6
 msgid "Please enter a valid number."
 msgstr "Please enter a valid number."

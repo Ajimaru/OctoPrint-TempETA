@@ -1196,6 +1196,25 @@ $(() => {
 			self._playSoundFile("heating_done.wav");
 		};
 
+		self.testNotification = () => {
+			var pluginTitle = self._i18nAttrOr(
+				"data-notify-plugin-title",
+				"Temperature ETA",
+			);
+			var title = self._i18nAttrOr(
+				"data-notify-target-reached-title",
+				"Target reached",
+			);
+			var tpl = self._i18nAttrOr(
+				"data-notify-target-reached-text",
+				"{heater}: reached {target}",
+			);
+			var text = String(tpl)
+				.replace("{heater}", "Tool 0")
+				.replace("{target}", "200 °C");
+			_toast("success", title, text, 6000, "temp-eta-toast-target");
+		};
+
 		self._notificationLastShownByKey = {};
 
 		function readKoBool(value, defaultValue) {
