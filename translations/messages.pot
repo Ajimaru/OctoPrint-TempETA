@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,8 +23,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:758
 msgid ""
-"Adjust the algorithm, threshold, and update interval above to tune the ETA "
-"calculation for your printer."
+"Adjust the algorithm, threshold, and update interval above to tune the "
+"ETA calculation for your printer."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:332
@@ -53,8 +53,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:776
 msgid ""
-"Assumes a roughly constant heating rate over the recent samples. Best for "
-"quick, stable estimates and slower/steady heaters."
+"Assumes a roughly constant heating rate over the recent samples. Best for"
+" quick, stable estimates and slower/steady heaters."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:623
@@ -204,8 +204,7 @@ msgid "Enable MQTT"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:549
-msgid ""
-"Enable MQTT integration to publish temperature ETA data and state changes."
+msgid "Enable MQTT integration to publish temperature ETA data and state changes."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:669
@@ -320,8 +319,7 @@ msgid "How it works"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:403
-msgid ""
-"How long a notification stays visible before it disappears automatically."
+msgid "How long a notification stays visible before it disappears automatically."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:536
@@ -334,7 +332,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:261
 msgid ""
-"How often to update ETA display (lower = more responsive, higher = less CPU)"
+"How often to update ETA display (lower = more responsive, higher = less "
+"CPU)"
 msgstr ""
 
 #: octoprint_temp_eta/static/js/temp_eta.js:2266
@@ -347,9 +346,9 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:109
 msgid ""
-"If disabled: ETA is shown when the temperature difference to the target is "
-"at least the heating threshold. If enabled: ETA is only shown when no print "
-"job is active."
+"If disabled: ETA is shown when the temperature difference to the target "
+"is at least the heating threshold. If enabled: ETA is only shown when no "
+"print job is active."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:506
@@ -370,8 +369,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:71
 msgid ""
-"Internally, the calculation uses °C. If you choose °F here, the value will "
-"be converted automatically."
+"Internally, the calculation uses °C. If you choose °F here, the value "
+"will be converted automatically."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:776
@@ -432,8 +431,8 @@ msgstr ""
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:779
 msgid ""
 "Models the typical slow-down as the heater approaches the target "
-"temperature. Best when your heater ramps fast initially but tapers off near "
-"the target."
+"temperature. Best when your heater ramps fast initially but tapers off "
+"near the target."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:752
@@ -468,8 +467,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:771
 msgid ""
-"Optional alerts (sound/toast) can notify you when the target is reached or "
-"when the cool-down finishes."
+"Optional alerts (sound/toast) can notify you when the target is reached "
+"or when the cool-down finishes."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:591
@@ -516,14 +515,13 @@ msgid "Quality of Service (QoS)"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:345
-msgid ""
-"Rate limit to avoid repeated beeps due to small target/temperature jitter."
+msgid "Rate limit to avoid repeated beeps due to small target/temperature jitter."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:416
 msgid ""
-"Rate limit to avoid repeated notifications due to small target/temperature "
-"jitter."
+"Rate limit to avoid repeated notifications due to small "
+"target/temperature jitter."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_tab.jinja2:5
@@ -533,7 +531,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:710
 msgid ""
-"Really delete all persisted ETA history JSON files for all printer profiles?"
+"Really delete all persisted ETA history JSON files for all printer "
+"profiles?"
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:717
@@ -622,7 +621,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:374
 msgid ""
-"Show small toast notifications in the top-right corner of the OctoPrint UI."
+"Show small toast notifications in the top-right corner of the OctoPrint "
+"UI."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:425
@@ -647,8 +647,8 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:301
 msgid ""
-"Some browsers require a user interaction before sound can play. Use the Test"
-" button to grant permission."
+"Some browsers require a user interaction before sound can play. Use the "
+"Test button to grant permission."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:293
@@ -744,9 +744,10 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:784
 msgid ""
-"This usually means an ETA is not available yet. Common reasons: the target "
-"is not high enough above the current temperature, the heating threshold is "
-"not met, or there is not enough stable data to calculate a rate."
+"This usually means an ETA is not available yet. Common reasons: the "
+"target is not high enough above the current temperature, the heating "
+"threshold is not met, or there is not enough stable data to calculate a "
+"rate."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:448
@@ -759,9 +760,9 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:452
 msgid ""
-"Threshold: cool down to a fixed target per heater. Ambient: cool down close "
-"to ambient temperature (uses an ambient value if set, otherwise estimates "
-"from recent data)."
+"Threshold: cool down to a fixed target per heater. Ambient: cool down "
+"close to ambient temperature (uses an ambient value if set, otherwise "
+"estimates from recent data)."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:197
@@ -780,9 +781,9 @@ msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:182
 msgid ""
-"Tip: In OctoPrint Settings → Appearance you can enable “Show temperatures in"
-" Fahrenheit as well as Celsius”. This plugin can also override that via the "
-"dropdown above."
+"Tip: In OctoPrint Settings → Appearance you can enable “Show temperatures"
+" in Fahrenheit as well as Celsius”. This plugin can also override that "
+"via the dropdown above."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:241
@@ -857,3 +858,4 @@ msgstr ""
 #, python-brace-format
 msgid "{heater}: reached {target}"
 msgstr ""
+
