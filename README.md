@@ -12,8 +12,6 @@
 ![Downloads](https://img.shields.io/github/downloads/Ajimaru/OctoPrint-TempETA/total.svg?style=flat-square)
 [![Made with Love](https://img.shields.io/badge/made_with-❤️-ff69b4?style=flat-square)](https://github.com/Ajimaru/OctoPrint-TempETA)
 
----
-
 ### Heat Up and Cool Down with Confidence
 
 > [!NOTE]
