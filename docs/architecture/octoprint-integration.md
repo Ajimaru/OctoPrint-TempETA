@@ -296,7 +296,7 @@ def __plugin_check__():
 ```python
 __plugin_name__ = "Temperature ETA"
 __plugin_pythoncompat__ = ">=3.9,<4"
-__plugin_version__ = "0.7.1"
+__plugin_version__ = "0.8.0"
 __plugin_description__ = "Show ETA for printer heating/cooling"
 __plugin_author__ = "Ajimaru"
 __plugin_author_email__ = "ajimaru_gdr@pm.me"
