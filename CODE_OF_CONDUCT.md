@@ -28,7 +28,7 @@ This Code of Conduct applies within all project spaces, including GitHub issues,
 
 If you experience or witness unacceptable behavior, please report it privately.
 
-- Preferred: email the maintainer at <ajimaru_gdr@pm.me>
+- Preferred: email the maintainer at <ajimaru_gdr [at] pm [dot] me>
 - Alternative: open a GitHub issue and request a private follow-up
 
 Please include as much relevant information as possible (what happened, where, when, and any screenshots/logs if applicable).

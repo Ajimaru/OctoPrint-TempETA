@@ -11,12 +11,12 @@ Preferred reporting channels:
 1. **GitHub Security Advisories** (recommended):
    - Go to the repository on GitHub → **Security** → **Advisories** → **Report a vulnerability**.
 2. **Email**:
-   - Send details to: **[ajimaru_gdr@pm.me](mailto:ajimaru_gdr@pm.me)**
+   - Send details to: **ajimaru_gdr [at] pm [dot] me**
 
 Please include:
 
 - A clear description of the issue and its impact
-- Steps to reproduce (proof-of-concept if possible)
+- Numbered steps to reproduce the issue, and a proof-of-concept (code, request, or payload) when you can provide one
 - Affected versions and environment (OctoPrint version, browser, OS)
 - Any relevant logs or screenshots (with sensitive data removed)
 
@@ -32,12 +32,8 @@ Security fixes are provided for the latest released version.
 
 ## Scope
 
-This policy applies to vulnerabilities in this repository (OctoPrint Temp ETA plugin), including backend (Python), templates, and frontend assets shipped with the plugin.
+This policy applies to vulnerabilities in this repository (OctoPrint-TempETA — plugin), including backend (Python), templates, and frontend assets shipped with the plugin.
 
 ## Safe Harbor
 
 We support good-faith security research. Please avoid privacy violations, data destruction, and service disruption.
-
-## Bug Bounty
-
-This project does not currently offer a paid bug bounty program.
