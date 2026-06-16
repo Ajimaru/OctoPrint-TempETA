@@ -23,6 +23,11 @@ htmlcov
 .pre-commit-config.yaml
 .githooks/
 
+# Local-only linter configs (not used by CI/Codacy)
+.pylintrc
+.markdownlint.json
+.stylelintrc.json
+
 # pre-commit/prettier temporary install artifacts
 node_modules/
 
@@ -47,3 +52,4 @@ out
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+.github/copilot-instructions.md
