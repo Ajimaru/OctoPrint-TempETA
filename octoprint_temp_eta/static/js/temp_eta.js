@@ -1631,7 +1631,7 @@ $(() => {
 					label: gettext("Measured temperature"),
 					data: actualSeries,
 					color: actualColor,
-					lines: { show: true, lineWidth: 2, fill: 0.08 },
+					lines: { show: true, lineWidth: 2, fill: 0.05 },
 				},
 			];
 			if (targetSeries.length > 0) {
@@ -1658,6 +1658,12 @@ $(() => {
 				"--temp-eta-graph-label",
 				"rgba(127, 127, 127, 0.9)"
 			);
+			// Leave the Flot plot area transparent (backgroundColor: null) so the
+			// surrounding theme shows through: a light tint on the default theme,
+			// the dark panel under built-in dark mode / Themeify. A translucent
+			// fill painted by Flot rendered far too faint on OctoPrint 2.0's Flot
+			// build (effective alpha ~22%), letting the bright canvas show; the CSS
+			// container (.temp-eta-chart background) provides the subtle tint.
 
 			var options = {
 				xaxis: {
@@ -1672,7 +1678,12 @@ $(() => {
 						}`,
 					font: { color: labelColor },
 				},
-				grid: { borderWidth: 1, hoverable: true, color: gridColor },
+				grid: {
+					borderWidth: 1,
+					hoverable: true,
+					color: gridColor,
+					backgroundColor: null,
+				},
 				legend: { position: "nw", backgroundOpacity: 0 },
 			};
 

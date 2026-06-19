@@ -1,182 +1,150 @@
 /* Temperature ETA Plugin Styles */
 /* Author: Ajimaru */
 /* License: AGPLv3 */
-
 :root {
-    --temp-eta-color-heating: #5cb85c;
-    --temp-eta-color-cooling: #337ab7;
-    --temp-eta-color-idle: #777;
-
-    /* Graph colors. Theme-agnostic: a translucent mid-grey reads as a faint
+  --temp-eta-color-heating: #5cb85c;
+  --temp-eta-color-cooling: #337ab7;
+  --temp-eta-color-idle: #777;
+  /* Graph colors. Theme-agnostic: a translucent mid-grey reads as a faint
        light tint on OctoPrint's default theme and as a faint dark tint under
        built-in dark mode or third-party themes (Themeify), without needing a
        per-theme selector. Lines/labels inherit the surrounding text colour. */
-    --temp-eta-graph-bg: rgba(127, 127, 127, 0.12);
-    --temp-eta-graph-grid: rgba(127, 127, 127, 0.35);
-    --temp-eta-graph-label: rgba(127, 127, 127, 0.9);
-    --temp-eta-graph-fg: currentColor;
+  --temp-eta-graph-bg: rgba(127, 127, 127, 0.12);
+  --temp-eta-graph-grid: rgba(127, 127, 127, 0.35);
+  --temp-eta-graph-label: rgba(127, 127, 127, 0.9);
+  --temp-eta-graph-fg: currentColor;
 }
-
 #navbar_plugin_temp_eta {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-    align-items: center;
-    padding: 0 10px;
-    margin-left: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  padding: 0 10px;
+  margin-left: 10px;
 }
-
 #sidebar_plugin_temp_eta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-
 #navbar_plugin_temp_eta .temp-eta-column {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.hidden,
 #sidebar_plugin_temp_eta .temp-eta-item.hidden {
-    display: none;
+  display: none;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item,
 #sidebar_plugin_temp_eta .temp-eta-item {
-    display: flex;
-    gap: 2px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
+  display: flex;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item {
-    align-items: center;
+  align-items: center;
 }
-
 #sidebar_plugin_temp_eta .temp-eta-item {
-    flex-direction: column;
+  flex-direction: column;
 }
-
 #sidebar_plugin_temp_eta .temp-eta-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-value {
-    color: #d9534f;
-    font-weight: bold;
+  color: #d9534f;
+  font-weight: bold;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-warning .temp-eta-label i {
-    color: #d9534f;
+  color: #d9534f;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-value {
-    color: #5bc0de;
+  color: #5bc0de;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-info .temp-eta-label i {
-    color: #5bc0de;
+  color: #5bc0de;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-value {
-    color: var(--temp-eta-color-cooling, #337ab7);
+  color: var(--temp-eta-color-cooling, #337ab7);
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-cooling .temp-eta-label i {
-    color: var(--temp-eta-color-cooling, #337ab7);
+  color: var(--temp-eta-color-cooling, #337ab7);
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-value {
-    color: var(--temp-eta-color-heating, #5cb85c);
-    font-weight: bold;
+  color: var(--temp-eta-color-heating, #5cb85c);
+  font-weight: bold;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-heating .temp-eta-label i {
-    color: var(--temp-eta-color-heating, #5cb85c);
+  color: var(--temp-eta-color-heating, #5cb85c);
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-value {
-    color: #5cb85c;
+  color: #5cb85c;
 }
-
 #navbar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-item.eta-normal .temp-eta-label i {
-    color: #5cb85c;
+  color: #5cb85c;
 }
-
 #navbar_plugin_temp_eta .temp-eta-label,
 #sidebar_plugin_temp_eta .temp-eta-label {
-    width: 18px;
-    text-align: center;
+  width: 18px;
+  text-align: center;
 }
-
 #navbar_plugin_temp_eta .temp-eta-label i,
 #sidebar_plugin_temp_eta .temp-eta-label i {
-    font-size: 14px;
+  font-size: 14px;
 }
-
 #navbar_plugin_temp_eta .temp-eta-name,
 #sidebar_plugin_temp_eta .temp-eta-name {
-    font-size: 11px;
-    opacity: 0.85;
-    margin-right: 2px;
+  font-size: 11px;
+  opacity: 0.85;
+  margin-right: 2px;
 }
-
 #navbar_plugin_temp_eta .temp-eta-metrics,
 #sidebar_plugin_temp_eta .temp-eta-metrics {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
-
 #sidebar_plugin_temp_eta .temp-eta-metrics {
-    margin-left: auto;
+  margin-left: auto;
 }
-
 .temp-eta-progress {
-    height: 6px;
-    margin: 0;
+  height: 6px;
+  margin: 0;
 }
-
 #sidebar_plugin_temp_eta .temp-eta-progress {
-    width: 100%;
+  width: 100%;
 }
-
 #temp_eta_content .temp-eta-progress {
-    margin-top: 8px;
+  margin-top: 8px;
 }
-
 #temp_eta_content .temp-eta-subtabs {
-    margin-top: 10px;
+  margin-top: 10px;
 }
-
 #temp_eta_content .temp-eta-subtab-content {
-    padding-top: 10px;
+  padding-top: 10px;
 }
-
 /* Bootstrap's grid .row carries a negative left margin that pulls the heater
    cards ~20px past the content's left edge (the right edge is bounded by the
    container, so only the left looks off). Reset it inside our tab so the cards
    line up with the info box and tabs above them. */
 #temp_eta_content .temp-eta-subtab-content .row {
-    margin-left: 0;
-    margin-right: 0;
+  margin-left: 0;
+  margin-right: 0;
 }
-
 /* Bootstrap paints .panel / .panel-default solid white, and dark third-party
    themes (Themeify) don't always recolour it. That white shows through the
    chart's translucent tint, making the graph look light on a dark theme. Make
@@ -185,290 +153,241 @@
 #temp_eta_content .panel,
 #temp_eta_content .panel-default,
 #temp_eta_content .panel-heading {
-    background-color: transparent;
+  background-color: transparent;
 }
-
 /* With a transparent panel background, Bootstrap's solid panel/heading borders
    stand out heavily on the light theme. Soften them to a faint theme-agnostic
    line so the layout looks calm on both light and dark themes. */
 #temp_eta_content .panel,
 #temp_eta_content .panel-default {
-    border-color: rgba(127, 127, 127, 0.2);
-    box-shadow: none;
+  border-color: rgba(127, 127, 127, 0.2);
+  box-shadow: none;
 }
-
 #temp_eta_content .panel-heading {
-    border-bottom-color: rgba(127, 127, 127, 0.2);
+  border-bottom-color: rgba(127, 127, 127, 0.2);
 }
-
 /* Flot temperature-history chart (replaces the legacy hand-rolled SVG). */
 #temp_eta_content .temp-eta-chart {
-    /* box-sizing keeps the chart inside its 100% width when given side padding,
+  /* box-sizing keeps the chart inside its 100% width when given side padding,
        so Flot's canvas doesn't bleed over the panel's left edge. */
-    box-sizing: border-box;
-    width: 100%;
-    height: 220px;
-    margin-top: 10px;
-    padding: 0 4px;
-    background: var(--temp-eta-graph-bg);
-    border-radius: 3px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 220px;
+  margin-top: 10px;
+  padding: 0 4px;
+  background: var(--temp-eta-graph-bg);
+  border-radius: 3px;
 }
-
 #temp_eta_content .temp-eta-chart .legend > div {
-    /* Flot draws an opaque legend background box; let the theme show through. */
-    background-color: transparent !important;
+  /* Flot draws an opaque legend background box; let the theme show through. */
+  background-color: transparent !important;
 }
-
 #temp_eta_content .temp-eta-chart .legend table {
-    color: var(--temp-eta-graph-fg);
+  color: var(--temp-eta-graph-fg);
 }
-
 .temp-eta-progress .progress-bar,
 .temp-eta-progress .bar {
-    transition: width 0.4s ease;
-    min-width: 2px;
+  transition: width 0.4s ease;
+  min-width: 2px;
 }
-
 .temp-eta-progress .progress-bar.eta-warning,
 .temp-eta-progress .bar.eta-warning {
-    background-color: #d9534f;
+  background-color: #d9534f;
 }
-
 .temp-eta-progress .progress-bar.eta-info,
 .temp-eta-progress .bar.eta-info {
-    background-color: #5bc0de;
+  background-color: #5bc0de;
 }
-
 .temp-eta-progress .progress-bar.eta-normal,
 .temp-eta-progress .bar.eta-normal {
-    background-color: #5cb85c;
+  background-color: #5cb85c;
 }
-
 .temp-eta-progress .progress-bar.eta-heating,
 .temp-eta-progress .bar.eta-heating {
-    background-color: var(--temp-eta-color-heating, #5cb85c);
+  background-color: var(--temp-eta-color-heating, #5cb85c);
 }
-
 .temp-eta-progress .progress-bar.eta-cooling,
 .temp-eta-progress .bar.eta-cooling {
-    background-color: var(--temp-eta-color-cooling, #337ab7);
+  background-color: var(--temp-eta-color-cooling, #337ab7);
 }
-
 .temp-eta-progress .progress-bar.eta-idle,
 .temp-eta-progress .bar.eta-idle {
-    background-color: var(--temp-eta-color-idle, #777777);
+  background-color: var(--temp-eta-color-idle, #777777);
 }
-
 #navbar_plugin_temp_eta .temp-eta-value,
 #navbar_plugin_temp_eta .temp-eta-temp,
 #sidebar_plugin_temp_eta .temp-eta-value,
 #sidebar_plugin_temp_eta .temp-eta-temp {
-    min-width: 48px;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
+  min-width: 48px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
-
 #navbar_plugin_temp_eta .temp-eta-temp,
 #sidebar_plugin_temp_eta .temp-eta-temp {
-    font-size: 10px;
-    opacity: 0.75;
+  font-size: 10px;
+  opacity: 0.75;
 }
-
 #temp_eta_content .panel-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding-left: 0;
-    text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-left: 0;
+  text-align: center;
 }
-
 #temp_eta_content .panel-title i {
-    margin: 0;
+  margin: 0;
 }
-
 #temp_eta_content .eta-display {
-    font-family: "Courier New", monospace;
-    margin: 5px 0 10px;
+  font-family: "Courier New", monospace;
+  margin: 5px 0 10px;
 }
-
 #temp_eta_content .eta-display.eta-warning {
-    color: #d9534f;
+  color: #d9534f;
 }
-
 #temp_eta_content .eta-display.eta-info {
-    color: #5bc0de;
+  color: #5bc0de;
 }
-
 #temp_eta_content .eta-display.eta-cooling {
-    color: var(--temp-eta-color-cooling, #337ab7);
+  color: var(--temp-eta-color-cooling, #337ab7);
 }
-
 #temp_eta_content .eta-display.eta-normal {
-    color: #5cb85c;
+  color: #5cb85c;
 }
-
 #temp_eta_content .eta-display.eta-heating {
-    color: var(--temp-eta-color-heating, #5cb85c);
+  color: var(--temp-eta-color-heating, #5cb85c);
 }
-
 #temp_eta_content .text-muted.eta-idle {
-    color: var(--temp-eta-color-idle, #777777);
+  color: var(--temp-eta-color-idle, #777777);
 }
-
 #temp_eta_content .text-muted.eta-cooling {
-    color: var(--temp-eta-color-cooling, #337ab7);
+  color: var(--temp-eta-color-cooling, #337ab7);
 }
-
 #temp_eta_content .panel-body {
-    min-height: 90px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 10px 8px 14px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 10px 8px 14px;
 }
-
 #temp_eta_content .panel + .panel {
-    margin-top: 12px;
+  margin-top: 12px;
 }
-
 #temp_eta_content .panel-body .temp-eta-inline {
-    margin-top: 4px;
-    margin-bottom: 0;
-    font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 0;
+  font-size: 13px;
 }
-
 #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-inner {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
 }
-
 #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-logo {
-    flex: 0 0 auto;
+  flex: 0 0 auto;
 }
-
 #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-logo-img {
-    width: 56px;
-    height: auto;
-    display: block;
+  width: 56px;
+  height: auto;
+  display: block;
 }
-
 #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text {
-    flex: 1 1 auto;
-    text-align: justify;
-    hyphens: auto;
+  flex: 1 1 auto;
+  text-align: justify;
+  hyphens: auto;
 }
-
 #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text strong {
-    display: block;
-    margin-bottom: 4px;
+  display: block;
+  margin-bottom: 4px;
 }
-
 #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text p:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
-
 @media (max-width: 480px) {
-    #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-inner {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text {
-        text-align: left;
-    }
+  #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-inner {
+    flex-direction: column;
+    align-items: center;
+  }
+  #temp_eta_content .temp-eta-tab-info .temp-eta-tab-info-text {
+    text-align: left;
+  }
 }
-
 /* Settings form styling */
 .temp-eta-settings .temp-eta-settings-group {
-    margin-top: 18px;
-    margin-bottom: 10px;
+  margin-top: 18px;
+  margin-bottom: 10px;
 }
-
 .temp-eta-settings .temp-eta-settings-group:first-of-type {
-    margin-top: 0;
+  margin-top: 0;
 }
-
 .temp-eta-settings .temp-eta-settings-divider {
-    margin: 12px 0 14px;
+  margin: 12px 0 14px;
 }
-
 .temp-eta-settings .help-block {
-    display: block;
-    margin: 5px 0 0 0;
-    padding: 0;
-    color: #666;
+  display: block;
+  margin: 5px 0 0 0;
+  padding: 0;
+  color: #666;
 }
-
 .temp-eta-settings input[type="number"] {
-    width: 120px;
+  width: 120px;
 }
-
 .temp-eta-settings select {
-    width: 280px;
+  width: 280px;
 }
-
 /* Toast notifications (PNotify) */
 .ui-pnotify.temp-eta-toast {
-    z-index: 10050;
+  z-index: 10050;
 }
-
 .ui-pnotify.temp-eta-toast .ui-pnotify-icon {
-    display: none;
+  display: none;
 }
-
 .ui-pnotify.temp-eta-toast .ui-pnotify-container {
-    border-radius: 3px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-    padding: 10px 12px;
-    border-left: 4px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  padding: 10px 12px;
+  border-left: 4px solid rgba(0, 0, 0, 0.12);
 }
-
 .ui-pnotify.temp-eta-toast .ui-pnotify-title,
 .ui-pnotify.temp-eta-toast .ui-pnotify-text {
-    padding-left: 20px;
+  padding-left: 20px;
 }
-
 .ui-pnotify.temp-eta-toast .ui-pnotify-title {
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.25;
-    margin-bottom: 2px;
-    position: relative;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 2px;
+  position: relative;
 }
-
 .ui-pnotify.temp-eta-toast .ui-pnotify-text {
-    font-size: 12px;
-    line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.35;
 }
-
 .ui-pnotify.temp-eta-toast .ui-pnotify-title:before {
-    font-family: FontAwesome;
-    font-size: 14px;
-    line-height: 14px;
-    position: absolute;
-    left: 0;
-    top: 1px;
-    opacity: 0.9;
-    content: "\f05a"; /* info-circle */
+  font-family: FontAwesome;
+  font-size: 14px;
+  line-height: 14px;
+  position: absolute;
+  left: 0;
+  top: 1px;
+  opacity: 0.9;
+  content: "\f05a";
+  /* info-circle */
 }
-
 /* Per-event accent + icon */
 .ui-pnotify.temp-eta-toast-target .ui-pnotify-container {
-    border-left-color: var(--temp-eta-color-heating, #5cb85c) !important;
+  border-left-color: var(--temp-eta-color-heating, #5cb85c) !important;
 }
-
 .ui-pnotify.temp-eta-toast-target .ui-pnotify-title:before {
-    content: "\f00c"; /* check */
-    color: var(--temp-eta-color-heating, #5cb85c);
+  content: "\f00c";
+  /* check */
+  color: var(--temp-eta-color-heating, #5cb85c);
 }
-
 .ui-pnotify.temp-eta-toast-cooldown .ui-pnotify-container {
-    border-left-color: var(--temp-eta-color-cooling, #337ab7) !important;
+  border-left-color: var(--temp-eta-color-cooling, #337ab7) !important;
 }
-
 .ui-pnotify.temp-eta-toast-cooldown .ui-pnotify-title:before {
-    content: "\f2dc"; /* snowflake-o (FA 4.7) */
-    color: var(--temp-eta-color-cooling, #337ab7);
+  content: "\f2dc";
+  /* snowflake-o (FA 4.7) */
+  color: var(--temp-eta-color-cooling, #337ab7);
 }

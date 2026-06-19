@@ -33,12 +33,8 @@ except ModuleNotFoundError:  # pragma: no cover
         class StartupPlugin:
             """Stub for octoprint.plugin.StartupPlugin."""
 
-            pass
-
         class TemplatePlugin:
             """Stub for octoprint.plugin.TemplatePlugin."""
-
-            pass
 
         class SettingsPlugin:
             """Stub for octoprint.plugin.SettingsPlugin."""
@@ -50,17 +46,11 @@ except ModuleNotFoundError:  # pragma: no cover
         class AssetPlugin:
             """Stub for octoprint.plugin.AssetPlugin."""
 
-            pass
-
         class EventHandlerPlugin:
             """Stub for octoprint.plugin.EventHandlerPlugin."""
 
-            pass
-
         class SimpleApiPlugin:
             """Stub for octoprint.plugin.SimpleApiPlugin."""
-
-            pass
 
     class _OctoPrintStubs:
         """Container exposing plugin stubs under an octoprint-like namespace."""
@@ -78,8 +68,6 @@ except ModuleNotFoundError:  # pragma: no cover
 
         class PrinterCallback:
             """Stub for octoprint.printer.PrinterCallback."""
-
-            pass
 
     octoprint_printer = _OctoPrintPrinterStubs()  # type: ignore
 
@@ -169,6 +157,8 @@ class SettingsLike(Protocol):
     def get_int(self, path: Sequence[str]) -> int: ...
 
     def get(self, path: Sequence[str]) -> Any: ...
+
+    def global_get(self, path: Sequence[str]) -> Any: ...
 
     def set(self, path: Sequence[str], value: Any) -> None: ...
 
@@ -2035,7 +2025,8 @@ class TempETAPlugin(
             appearance_name = self._settings.global_get(["appearance", "name"])
             if appearance_name and isinstance(appearance_name, str):
                 return appearance_name.strip()
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # Defensive: reading appearance is best-effort, never break startup.
             self._logger.debug("Failed to read appearance name: %s", str(e))
         return None
 
@@ -2270,7 +2261,14 @@ class TempETAPlugin(
         """
         return {
             "js": ["js/temp_eta.js"],
-            "less": ["less/temp_eta.less"],
+            # Ship pre-compiled CSS rather than LESS: OctoPrint only compiles
+            # LESS when a server-side compiler (lesscpy / Node lessc) is present,
+            # which is not guaranteed on a pip-installed plugin. Without it the
+            # LESS is silently dropped from the bundle, so none of the plugin's
+            # styling (graph colours included) reaches the page. The .less stays
+            # in the source tree as the editable origin; regenerate temp_eta.css
+            # with `npx less less/temp_eta.less css/temp_eta.css` after editing.
+            "css": ["css/temp_eta.css"],
         }
 
     # SimpleApiPlugin mixin
