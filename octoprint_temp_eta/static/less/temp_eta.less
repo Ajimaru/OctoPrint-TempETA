@@ -7,8 +7,13 @@
     --temp-eta-color-cooling: #337ab7;
     --temp-eta-color-idle: #777777;
 
-    /* Graph colors (overridable by themes) */
-    --temp-eta-graph-bg: rgba(0, 0, 0, 0.03);
+    /* Graph colors. Theme-agnostic: a translucent mid-grey reads as a faint
+       light tint on OctoPrint's default theme and as a faint dark tint under
+       built-in dark mode or third-party themes (Themeify), without needing a
+       per-theme selector. Lines/labels inherit the surrounding text colour. */
+    --temp-eta-graph-bg: rgba(127, 127, 127, 0.08);
+    --temp-eta-graph-grid: rgba(127, 127, 127, 0.35);
+    --temp-eta-graph-label: rgba(127, 127, 127, 0.9);
     --temp-eta-graph-fg: currentColor;
 }
 
@@ -179,12 +184,6 @@
 
 #temp_eta_content .temp-eta-chart .legend table {
     color: var(--temp-eta-graph-fg);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --temp-eta-graph-bg: rgba(255, 255, 255, 0.06);
-    }
 }
 
 .temp-eta-progress .progress-bar,
