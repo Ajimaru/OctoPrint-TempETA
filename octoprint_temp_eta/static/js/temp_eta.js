@@ -814,6 +814,23 @@ $(() => {
 			return defaultValue;
 		};
 
+		// Read a CSS custom property (with fallback). Used so the Flot chart,
+		// which paints onto a <canvas> that CSS cannot reach, can pick up the
+		// theme-agnostic grid/label colours defined in temp_eta.less.
+		self._readCssVar = (name, fallback) => {
+			try {
+				var root = document?.documentElement;
+				if (!root || !window.getComputedStyle) {
+					return fallback;
+				}
+				var v = window.getComputedStyle(root).getPropertyValue(name);
+				v = (v || "").trim();
+				return v || fallback;
+			} catch (_e) {
+				return fallback;
+			}
+		};
+
 		// Resolve the configured status colors (with sensible fallbacks). Used
 		// for the historical chart line color so it follows the user's theme.
 		self._getStatusColors = () => {
@@ -1627,16 +1644,35 @@ $(() => {
 				});
 			}
 
+			// Theme-agnostic grid/label colours. Flot draws the grid, axes and
+			// tick labels onto the canvas, where CSS cannot reach, so feed it the
+			// same translucent mid-grey used by the container in temp_eta.less.
+			// This keeps the chart legible on the default theme, built-in dark
+			// mode and third-party themes (Themeify) without per-theme rules.
+			var gridColor = self._readCssVar(
+				"--temp-eta-graph-grid",
+				"rgba(127, 127, 127, 0.35)"
+			);
+			var labelColor = self._readCssVar(
+				"--temp-eta-graph-label",
+				"rgba(127, 127, 127, 0.9)"
+			);
+
 			var options = {
-				xaxis: { mode: "time", timezone: "browser" },
+				xaxis: {
+					mode: "time",
+					timezone: "browser",
+					font: { color: labelColor },
+				},
 				yaxis: {
 					tickFormatter: (v) =>
 						`${Math.round(v)}${
 							self._effectiveThresholdUnit() === "f" ? "°F" : "°C"
 						}`,
+					font: { color: labelColor },
 				},
-				grid: { borderWidth: 1, hoverable: true, color: "#999" },
-				legend: { position: "nw", backgroundOpacity: 0.4 },
+				grid: { borderWidth: 1, hoverable: true, color: gridColor },
+				legend: { position: "nw", backgroundOpacity: 0 },
 			};
 
 			try {
