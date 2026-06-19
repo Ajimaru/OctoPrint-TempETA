@@ -214,7 +214,7 @@ def calculate_exponential_eta(
 
     try:
         eta = _exponential_fit(recent, target, epsilon_c)
-    except Exception as exc:
+    except (ValueError, ArithmeticError) as exc:
         _LOG.debug("Exponential ETA math error: %s", exc)
         return calculate_linear_eta(history, target)
 
@@ -359,6 +359,6 @@ def calculate_cooldown_exponential_eta(
 
     try:
         return _cooldown_exponential_fit(recent, ambient_c, goal_c, epsilon=0.5)
-    except Exception as exc:
+    except (ValueError, ArithmeticError) as exc:
         _LOG.debug("Exponential ETA math error: %s", exc)
         return None

@@ -1701,7 +1701,9 @@ def test_reset_user_settings_to_defaults_applies_runtime_state(
 def test_asset_and_api_hooks_shape(temp_eta_plugin: Any) -> None:
     """Test asset and api hooks shape."""
     assets = temp_eta_plugin.get_assets()
-    assert "js" in assets and "less" in assets
+    # Styling ships as pre-compiled CSS (not LESS) so it survives pip installs
+    # on hosts without a server-side LESS compiler.
+    assert "js" in assets and "css" in assets
 
     assert temp_eta_plugin.is_api_protected() is True
     assert temp_eta_plugin.is_api_adminonly() is True
