@@ -61,7 +61,7 @@ msgstr ""
 msgid "Base topic"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2239
+#: octoprint_temp_eta/static/js/temp_eta.js:2287
 msgid "Bed"
 msgstr ""
 
@@ -94,7 +94,7 @@ msgstr ""
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2240
+#: octoprint_temp_eta/static/js/temp_eta.js:2288
 msgid "Chamber"
 msgstr ""
 
@@ -161,7 +161,7 @@ msgstr ""
 msgid "Cooldown finished"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2264
+#: octoprint_temp_eta/static/js/temp_eta.js:2312
 msgid "Cooling"
 msgstr ""
 
@@ -169,7 +169,7 @@ msgstr ""
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2360
+#: octoprint_temp_eta/__init__.py:2358
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:735
 msgid "Defaults restored."
 msgstr ""
@@ -336,7 +336,7 @@ msgid ""
 "CPU)"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2266
+#: octoprint_temp_eta/static/js/temp_eta.js:2314
 msgid "Idle"
 msgstr ""
 
@@ -415,7 +415,7 @@ msgstr ""
 msgid "Maintenance"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1613
+#: octoprint_temp_eta/static/js/temp_eta.js:1631
 msgid "Measured temperature"
 msgstr ""
 
@@ -691,7 +691,7 @@ msgstr ""
 msgid "Target reached"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1623
+#: octoprint_temp_eta/static/js/temp_eta.js:1641
 msgid "Target temperature"
 msgstr ""
 
@@ -707,7 +707,7 @@ msgstr ""
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2065
+#: octoprint_temp_eta/__init__.py:2056
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:708
