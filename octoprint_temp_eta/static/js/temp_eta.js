@@ -1577,6 +1577,7 @@ $(() => {
 				// Drop any stale plot so it doesn't linger when the heater goes idle.
 				if (self._flotPlots[heaterObj.name]) {
 					try {
+						// nosemgrep: javascript.jquery.security.audit.jquery-insecure-selector.jquery-insecure-selector -- el is a DOM element from getElementById, not a user-controlled string
 						$(el).empty();
 					} catch (_e) {
 						// ignore
