@@ -1,344 +1,217 @@
 # ETA Calculation Algorithms
 
-OctoPrint-TempETA implements two algorithms for estimating time to target temperature.
+All ETA math lives in [`octoprint_temp_eta/calculator.py`](https://github.com/Ajimaru/OctoPrint-TempETA/blob/main/octoprint_temp_eta/calculator.py)
+as stateless module-level functions. The plugin class only selects the
+algorithm, feeds it the per-heater history and broadcasts the result — see
+[Data flow](data-flow.md).
 
-## Linear Algorithm
+There are four estimators:
 
-The default algorithm assumes a constant heating/cooling rate.
+| Function                             | Direction | Model                          | Default window |
+| ------------------------------------ | --------- | ------------------------------ | -------------- |
+| `calculate_linear_eta`               | Heating   | Constant rate (endpoint slope) | 10 s           |
+| `calculate_exponential_eta`          | Heating   | First-order exponential        | 30 s           |
+| `calculate_cooldown_linear_eta`      | Cooling   | Constant rate (endpoint slope) | 60 s           |
+| `calculate_cooldown_exponential_eta` | Cooling   | Newton's law of cooling        | 60 s           |
 
-### Theory
+All functions return the estimated seconds to target, or `None` when no
+trustworthy estimate is possible. The plugin hides ETAs below one second, so
+"almost there" never flickers a `0:00` countdown.
 
-For heating/cooling with approximately constant power:
+Heating history samples are `(timestamp, actual_temp, target_temp)` tuples;
+cooldown history samples are `(timestamp, actual_temp)` tuples. Both are kept
+in bounded `deque`s (see the `history_size` setting). Windows are anchored to
+the **newest sample timestamp**, not the wall clock, so stale histories don't
+silently shrink to zero usable samples.
 
-```text
-rate = ΔT / Δt  (°C per second)
-ETA = (T_target - T_current) / rate
-```
+## Linear heating ETA
 
-### Implementation
-
-```python
-def calculate_linear_eta(self, history, target):
-    """
-    Calculate ETA using linear extrapolation.
-
-    Args:
-        history: deque of (timestamp, temperature, target) tuples
-        target: Target temperature
-
-    Returns:
-        Estimated seconds to target, or None if insufficient data
-    """
-    if len(history) < 2:
-        return None
-
-    # Use last 10 seconds of data
-    now = time.time()
-    recent = [h for h in history if h[0] > now - 10]
-
-    if len(recent) < 2:
-        return None
-
-    # Calculate rate: ΔT / Δt
-    t0, temp0, _ = recent[0]
-    t1, temp1, _ = recent[-1]
-
-    delta_t = t1 - t0
-    delta_temp = temp1 - temp0
-
-    if delta_t <= 0:
-        return None
-
-    rate = delta_temp / delta_t  # °C/s
-
-    # Check minimum rate threshold
-    if abs(rate) < self.min_rate:
-        return None
-
-    # Calculate remaining temperature difference
-    remaining = target - temp1
-
-    # Same sign = approaching target
-    # Different sign = moving away
-    if (remaining > 0 and rate > 0) or (remaining < 0 and rate < 0):
-        eta = abs(remaining / rate)
-        return min(eta, self.max_eta)
-
-    return None
-```
-
-### Advantages
-
-- **Simple**: Easy to understand and debug
-- **Fast**: Minimal computation
-- **Robust**: Works well for most heating scenarios
-
-### Limitations
-
-- **Inaccurate for thermal lag**: Doesn't account for heat dissipation
-- **Poor near target**: Rate changes as temperature stabilizes
-- **Overshoot issues**: Can't predict thermal overshoot
-
-### Best Use Cases
-
-- Initial heating phase (far from target)
-- Constant power heating
-- When speed is more important than accuracy
-
-## Exponential Algorithm
-
-Models thermal dynamics using first-order exponential decay/growth.
+The default algorithm (`algorithm: "linear"`) assumes a constant heating rate.
 
 ### Theory
 
-Temperature change follows Newton's Law of Cooling:
-
 ```text
-T(t) = T_ambient + (T_initial - T_ambient) * e^(-t/tau)
+rate = ΔT / Δt          (°C per second)
+ETA  = (T_target - T_now) / rate
 ```
 
-For heating to target with thermal losses:
+### How it works
+
+`calculate_linear_eta(history, target, window_seconds=10.0)`:
+
+1. Rejects non-finite targets and non-positive windows.
+2. Filters the history to finite samples within the last `window_seconds`
+   (relative to the newest sample) and needs at least 2 of them.
+3. Takes the **first and last** sample of that window and computes the
+   endpoint slope. It intentionally does not fit all points: printer heating
+   is noisy at ~2 Hz sampling, and the endpoints over a short window average
+   that noise well enough while staying O(n) with a tiny constant.
+4. Requires the heater to actually be heating (`ΔT > 0`, `Δt > 0`) and below
+   target (`target - T_now > 0`); otherwise returns `None`.
+
+### Strengths and limits
+
+- **Fast and robust** — works well during the initial heating ramp where the
+  rate really is nearly constant.
+- **Overestimates near the target** — real heaters slow down as they approach
+  the setpoint (thermal losses grow with temperature), which the linear model
+  can't see.
+
+## Exponential heating ETA
+
+Selectable via `algorithm: "exponential"`. Models the slowdown near the
+target as a first-order exponential approach:
 
 ```text
 T(t) = T_target - (T_target - T_0) * e^(-t/tau)
 ```
 
-Where `tau` is the thermal time constant.
+where `tau` is the thermal time constant.
 
-### Implementation
+### Fit and fallbacks
 
-```python
-def calculate_exponential_eta(self, history, target):
-    """
-    Calculate ETA using exponential model.
+`calculate_exponential_eta(history, target, window_seconds=30.0)`:
 
-    Args:
-        history: deque of (timestamp, temperature, target) tuples
-        target: Target temperature
+1. Filters the window like the linear variant and drops duplicate
+   timestamps. Fewer than 6 usable samples → **falls back to the linear
+   estimate**.
+2. Returns `None` when already at/above target or when the window shows no
+   meaningful heating (rise ≤ 0.2 °C).
+3. Returns `0.0` when the remaining delta is inside the convergence band
+   `ε = 0.5 °C` (an exponential never mathematically *reaches* its asymptote,
+   so "arrived" means "within ε").
+4. Fits a line to `ln(target - T)` over time via least squares
+   (`_linear_regression`). The slope `b` maps to the time constant
+   `tau = -1/b`.
+5. Sanity-checks the fit — all of these fall back to the linear estimate:
+   - fewer than 6 log-transformed points, or a time span under 5 s
+   - slope not meaningfully negative (`b >= -1e-4`, i.e. not converging)
+   - implausible time constant (`tau > 2000 s`)
+   - any `ValueError`/`ArithmeticError` from the math
+6. Computes `ETA = tau * ln((target - T_now) / ε)`.
+7. **Spike protection**: if the exponential ETA exceeds 5× the linear
+   estimate, the linear value is returned instead. A noisy fit close to the
+   asymptote can otherwise produce absurdly long countdowns.
 
-    Returns:
-        Estimated seconds to target, or None if insufficient data
-    """
-    if len(history) < 3:
-        return None
+### Accuracy trade-offs
 
-    # Use last 30 seconds for fitting
-    now = time.time()
-    recent = [h for h in history if h[0] > now - 30]
+- **More accurate near the target**, where the linear model overestimates.
+- **Needs more data** (≥ 6 samples spanning ≥ 5 s) and degrades to linear
+  when it can't get a trustworthy fit — the user always gets *some* estimate.
 
-    if len(recent) < 3:
-        return None
+## Linear cooldown ETA
 
-    # Extract time and temperature arrays
-    times = np.array([h[0] for h in recent])
-    temps = np.array([h[1] for h in recent])
+Used in `cooldown_mode: "threshold"` — countdown to a fixed per-heater
+temperature (e.g. "bed safe to touch at 40 °C").
 
-    # Normalize time to start at 0
-    times = times - times[0]
-    current_temp = temps[-1]
+`calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds=60.0)`
+mirrors the linear heating estimator with inverted signs:
 
-    # Fit exponential model: T(t) = T_f - (T_f - T_0) * e^(-t/tau)
-    try:
-        # Use scipy.optimize.curve_fit or manual least-squares
-        tau = self._fit_time_constant(times, temps, target)
+- The endpoint slope must be meaningfully negative (`< -1e-3 °C/s`); a heater
+  that only drifts is treated as "not cooling" and gets no ETA.
+- The current temperature must still be above the goal.
+- The result is capped at 24 hours.
 
-        if tau <= 0 or tau > self.max_tau:
-            return None
+## Exponential cooldown ETA
 
-        # Calculate ETA: solve for t when T(t) = target
-        # t = -tau * ln((target - T_f) / (current - T_f))
+Used in `cooldown_mode: "ambient"` — countdown until the heater is "near
+ambient". Passive cooling follows Newton's law of cooling:
 
-        remaining = target - current_temp
-        initial_diff = temps[0] - target
-
-        if abs(remaining) < 0.5:  # Close enough
-            return 0
-
-        ratio = remaining / initial_diff
-
-        if ratio <= 0 or ratio >= 1:
-            return None
-
-        eta = -tau * math.log(ratio)
-        return min(max(eta, 0), self.max_eta)
-
-    except (ValueError, RuntimeError, FloatingPointError):
-        # Fitting failed, fall back to None
-        return None
+```text
+T(t) = T_ambient + (T_0 - T_ambient) * e^(-t/tau)
 ```
 
-### Time Constant Fitting
+`calculate_cooldown_exponential_eta(cooldown_history, ambient_c, goal_c, window_seconds=60.0)`:
 
-```python
-def _fit_time_constant(self, times, temps, target):
-    """
-    Fit exponential time constant from temperature data.
+1. Requires `goal_c > ambient_c` (the goal must be reachable by passive
+   cooling) and at least 4 samples; fewer than 6 samples in the window →
+   falls back to the linear cooldown estimate.
+2. Fits `ln(T - T_ambient)` over time, requiring at least 4 usable points, a
+   negative slope, and a plausible time constant (`0 < tau <= 20000 s`).
+3. Computes `ETA = tau * ln((T_now - T_ambient) / (goal - T_ambient))`,
+   capped at 24 hours.
 
-    Uses linear regression on log-transformed data:
-    ln(T - T_target) = ln(T_0 - T_target) - t/tau
-    """
-    # Transform to linear: y = ln|T - T_target|
-    diff = temps - target
+The ambient temperature comes from the `cooldown_ambient_temp` setting when
+set; otherwise the plugin learns a baseline from the lowest temperature
+observed while the heater is off (see `_get_cooldown_ambient_c` in
+`__init__.py`).
 
-    # Avoid log(0) or log(negative)
-    if np.any(np.abs(diff) < 0.1):
-        raise ValueError("Too close to target for fitting")
+## How the plugin drives the estimators
 
-    y = np.log(np.abs(diff))
+The plugin (not the calculator) decides *when* an estimate is computed and
+shown — see [Data flow](data-flow.md) for the full pipeline:
 
-    # Linear regression: y = a + b*t, where b = -1/tau
-    A = np.vstack([times, np.ones(len(times))]).T
-    b, a = np.linalg.lstsq(A, y, rcond=None)[0]
+- Heating samples are recorded only while a heater has an active target and
+  is more than `threshold_start` degrees below it; holding at temperature
+  records nothing, so the fit window always reflects an actual ramp.
+- Cooldown samples are kept in a **separate history** that is cleared on the
+  heating → off transition, so old pre-heat data never pollutes the cooling
+  fit.
+- ETAs under 1 second are suppressed, and heaters not present in the active
+  printer profile are skipped entirely.
 
-    if b >= 0:
-        raise ValueError("Positive slope indicates moving away")
+### Edge cases
 
-    tau = -1 / b
-    return tau
-```
+- **Target changes mid-heat**: history is *not* cleared; the window (10/30 s)
+  ages the old ramp out quickly, and the persistence backoff schedule is
+  reset (`target_change`) so fresh data is persisted soon.
+- **Stalled heating**: no temperature rise in the window → `None` → the UI
+  shows the idle state instead of a frozen countdown.
+- **Overshoot / already there**: `remaining <= 0` → `None` (heating) or
+  `T_now <= goal` → `None` (cooling).
+- **Bad samples**: non-finite timestamps/temperatures are filtered out before
+  fitting; math errors inside a fit degrade to the simpler estimator instead
+  of raising into OctoPrint's callback thread.
 
-### Advantages
+## Configuration
 
-- **Accurate**: Models real thermal behavior
-- **Better near target**: Accounts for decreasing rate
-- **Predictive**: Can forecast overshoot
-
-### Limitations
-
-- **Complex**: More computation required
-- **Needs data**: Requires 30+ seconds of history
-- **Fitting errors**: Can fail with noisy data
-
-### Best Use Cases
-
-- Final approach to target temperature
-- High-precision requirements
-- When thermal modeling is important
-
-## Algorithm Selection
-
-The plugin allows users to choose:
+Real settings that influence the algorithms (see
+[Configuration](../reference/configuration.md) for the full list):
 
 ```yaml
 plugins:
   temp_eta:
-    algorithm: "linear"  # or "exponential"
-```
-
-### Recommendation
-
-- **Linear**: Default, works well for most users
-- **Exponential**: Advanced users, precision heating
-
-## Hybrid Approach (Future)
-
-A potential improvement is to use both algorithms:
-
-```python
-def calculate_hybrid_eta(self, history, target):
-    """Use linear far from target, exponential when close."""
-    current = history[-1][1]
-    diff = abs(target - current)
-
-    if diff > 20:  # Far from target
-        return self.calculate_linear_eta(history, target)
-    else:  # Close to target
-        return self.calculate_exponential_eta(history, target)
-```
-
-## Edge Cases
-
-### Cooling
-
-Both algorithms work for cooling (negative rate):
-
-```python
-rate = delta_temp / delta_t  # Negative for cooling
-remaining = target - current  # Negative when cooling
-```
-
-### Target Changes
-
-When target changes during heating:
-
-```python
-def _on_target_changed(self, heater, new_target):
-    # Clear history to avoid using data from old target
-    self._history[heater].clear()
-```
-
-### Stalled Heating
-
-If rate drops below threshold:
-
-```python
-if abs(rate) < self.min_rate:
-    return None  # "Stalled" - no ETA
-```
-
-### Overshoot
-
-Temperature overshooting target:
-
-```python
-if (current > target and rate > 0) or (current < target and rate < 0):
-    return 0  # Already at/past target
+    algorithm: "linear" # or "exponential" (heating only)
+    threshold_start: 5.0 # start showing ETA within this delta (°C)
+    update_interval: 1.0 # seconds between frontend updates
+    history_size: 60 # samples kept per heater
+    enable_cooldown_eta: true
+    cooldown_mode: "threshold" # or "ambient"
+    cooldown_fit_window_seconds: 120 # cooldown fit window
+    cooldown_ambient_temp: null # fixed ambient (ambient mode), else learned
 ```
 
 ## Performance
 
-### Linear Algorithm
+Both heating estimators run inside OctoPrint's temperature callback
+(~2 Hz), so they are deliberately allocation-light and pure Python — no
+numpy/scipy dependency:
 
-- **Time**: O(1) - processes last 2 samples
-- **Memory**: O(1) - no additional storage
-- **Latency**: < 1ms
-
-### Exponential Algorithm
-
-- **Time**: O(n) - processes up to 30 samples
-- **Memory**: O(n) - temporary arrays
-- **Latency**: < 10ms (with numpy)
+- **Linear**: one filtered pass over ≤ `history_size` samples, then O(1)
+  endpoint math.
+- **Exponential**: one filtered pass plus a least-squares fit over the ≤ 60
+  windowed samples; well under a millisecond on a Raspberry Pi class device.
 
 ## Testing
 
-Both algorithms have comprehensive tests:
+The estimators are pure functions, which keeps their tests trivial to write —
+see [`tests/test_calculator.py`](https://github.com/Ajimaru/OctoPrint-TempETA/blob/main/tests/test_calculator.py):
 
 ```python
-def test_linear_heating():
-    """Test linear algorithm with constant heating rate."""
-    history = deque()
-    for i in range(10):
-        history.append((i, 25 + i * 2, 200))
-
-    calc = Calculator(algorithm="linear")
-    eta = calc.calculate_eta(history, 200)
-
-    # Rate = 2°C/s, remaining = 175°C
-    # Expected ETA = 175 / 2 = 87.5s
-    assert abs(eta - 87.5) < 0.1
+def test_heating_linear(self):
+    """Constant 2 °C/s ramp, 30 °C remaining -> 15 s."""
+    history = deque([(0.0, 20.0, 60.0), (5.0, 30.0, 60.0)])
+    result = calculator.calculate_linear_eta(history, 60.0, window_seconds=10.0)
+    self.assertAlmostEqual(result, 15.0, places=3)
 ```
 
-See [Testing](../development/testing.md) for more examples.
-
-## Configuration
-
-Algorithm-specific settings:
-
-```yaml
-plugins:
-  temp_eta:
-    algorithm: "linear"
-    min_rate: 0.1          # Minimum rate (°C/s) to show ETA
-    max_eta: 3600          # Maximum ETA (seconds)
-    history_window: 10     # Seconds of history for linear
-    fitting_window: 30     # Seconds for exponential fitting
-```
+See [Testing](../development/testing.md) for the full suite.
 
 ## References
 
 - [Issue #469](https://github.com/OctoPrint/OctoPrint/issues/469) - Original request
 - Newton's Law of Cooling - [Wikipedia](https://en.wikipedia.org/wiki/Newton%27s_law_of_cooling)
-- Thermal Time Constant - [Engineering](https://www.engineeringtoolbox.com/thermal-time-constant-d_1006.html)
+- Thermal Time Constant - [Engineering Toolbox](https://www.engineeringtoolbox.com/thermal-time-constant-d_1006.html)
 
 ## Next Steps
 

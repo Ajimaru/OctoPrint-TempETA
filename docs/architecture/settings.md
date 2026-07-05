@@ -1,386 +1,110 @@
-# Settings Reference
+# Settings Architecture
 
-Complete reference for all OctoPrint-TempETA configuration options.
+How OctoPrint-TempETA defines, validates, applies and caches its settings.
 
-## Configuration Structure
+For the key-by-key reference (types, defaults, ranges) see
+[Configuration Reference](../reference/configuration.md).
 
-Settings are stored in OctoPrint's `config.yaml`:
+## Overview
 
-```yaml
-plugins:
-  temp_eta:
-    # ... settings here
+```text
+Settings UI (temp_eta_settings.jinja2)
+      │  client-side validation (min/max, blocked save)
+      ▼
+on_settings_save(data)
+      │  _sanitize_settings_payload(data)   ← server-side clamping
+      ▼
+octoprint.plugin.SettingsPlugin.on_settings_save
+      │  persists to config.yaml
+      ▼
+post-save refresh:
+      • _refresh_debug_logging_flag()
+      • _refresh_runtime_caches()          ← hot-path value cache
+      • _set_history_maxlen(...)           ← resize history deques
+      • _configure_mqtt_client()           ← reconnect/disconnect broker
+      • clear frontend if plugin was just disabled
 ```
 
-## General Settings
-
-### enabled
-
-- **Type**: `boolean`
-- **Default**: `true`
-- **Description**: Enable/disable the plugin globally
-
-```yaml
-enabled: true
-```
-
-### algorithm
-
-- **Type**: `string`
-- **Default**: `"linear"`
-- **Options**: `"linear"`, `"exponential"`
-- **Description**: ETA calculation algorithm
-
-```yaml
-algorithm: "linear"
-```
-
-### update_interval
-
-- **Type**: `float`
-- **Default**: `1.0`
-- **Range**: `0.5` - `5.0`
-- **Unit**: seconds
-- **Description**: How often to send updates to frontend
-
-```yaml
-update_interval: 1.0
-```
-
-### min_rate
-
-- **Type**: `float`
-- **Default**: `0.1`
-- **Range**: `0.01` - `1.0`
-- **Unit**: °C/s
-- **Description**: Minimum temperature change rate to show ETA
-
-```yaml
-min_rate: 0.1
-```
-
-### max_eta
-
-- **Type**: `integer`
-- **Default**: `3600`
-- **Range**: `60` - `7200`
-- **Unit**: seconds
-- **Description**: Maximum ETA to display (longer = "calculating")
-
-```yaml
-max_eta: 3600
-```
-
-## Heating ETA Settings
-
-### heating_enabled
-
-- **Type**: `boolean`
-- **Default**: `true`
-- **Description**: Show ETA for heating
-
-```yaml
-heating_enabled: true
-```
-
-### heating_threshold
-
-- **Type**: `float`
-- **Default**: `1.0`
-- **Range**: `0.1` - `10.0`
-- **Unit**: °C
-- **Description**: Temperature difference to start showing ETA
-
-```yaml
-heating_threshold: 1.0
-```
-
-### heating_sound_enabled
-
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Play sound when heating completes
-
-```yaml
-heating_sound_enabled: false
-```
-
-### heating_sound_file
-
-- **Type**: `string`
-- **Default**: `"default"`
-- **Description**: Sound file to play
-
-```yaml
-heating_sound_file: "default"
-```
-
-## Cool-down ETA Settings
-
-### cooling_enabled
-
-- **Type**: `boolean`
-- **Default**: `true`
-- **Description**: Show ETA for cooling
-
-```yaml
-cooling_enabled: true
-```
-
-### cooling_threshold
-
-- **Type**: `float`
-- **Default**: `1.0`
-- **Range**: `0.1` - `10.0`
-- **Unit**: °C
-- **Description**: Temperature difference to start showing ETA
-
-```yaml
-cooling_threshold: 1.0
-```
-
-### cooling_sound_enabled
-
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Play sound when cooling completes
-
-```yaml
-cooling_sound_enabled: false
-```
-
-### cooling_sound_file
-
-- **Type**: `string`
-- **Default**: `"default"`
-- **Description**: Sound file to play
-
-```yaml
-cooling_sound_file: "default"
-```
-
-## Display Settings
-
-### show_in_graph
-
-- **Type**: `boolean`
-- **Default**: `true`
-- **Description**: Show ETA in temperature graph
-
-```yaml
-show_in_graph: true
-```
-
-### show_in_sidebar
-
-- **Type**: `boolean`
-- **Default**: `true`
-- **Description**: Show ETA in sidebar
-
-```yaml
-show_in_sidebar: true
-```
-
-### time_format
-
-- **Type**: `string`
-- **Default**: `"auto"`
-- **Options**: `"auto"`, `"seconds"`, `"minutes"`, `"hours"`
-- **Description**: ETA display format
-
-```yaml
-time_format: "auto"
-```
-
-## MQTT Settings
-
-### mqtt_enabled
-
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Enable MQTT publishing
-
-```yaml
-mqtt_enabled: false
-```
-
-### mqtt_broker
-
-- **Type**: `string`
-- **Default**: `"localhost"`
-- **Description**: MQTT broker hostname/IP
-
-```yaml
-mqtt_broker: "localhost"
-```
-
-### mqtt_port
-
-- **Type**: `integer`
-- **Default**: `1883`
-- **Range**: `1` - `65535`
-- **Description**: MQTT broker port
-
-```yaml
-mqtt_port: 1883
-```
-
-### mqtt_username
-
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: MQTT username (optional)
-
-```yaml
-mqtt_username: ""
-```
-
-### mqtt_password
-
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: MQTT password (optional)
-
-```yaml
-mqtt_password: ""
-```
-
-### mqtt_tls_enabled
-
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Use TLS/SSL for MQTT
-
-```yaml
-mqtt_tls_enabled: false
-```
-
-### mqtt_topic_prefix
-
-- **Type**: `string`
-- **Default**: `"octoprint/temp_eta"`
-- **Description**: MQTT topic prefix
-
-```yaml
-mqtt_topic_prefix: "octoprint/temp_eta"
-```
-
-### mqtt_retain
-
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Set retain flag on MQTT messages
-
-```yaml
-mqtt_retain: false
-```
-
-### mqtt_qos
-
-- **Type**: `integer`
-- **Default**: `0`
-- **Options**: `0`, `1`, `2`
-- **Description**: MQTT quality of service level
-
-```yaml
-mqtt_qos: 0
-```
-
-## Advanced Settings
-
-### history_max_age
-
-- **Type**: `integer`
-- **Default**: `60`
-- **Range**: `10` - `300`
-- **Unit**: seconds
-- **Description**: Maximum age of history data
-
-```yaml
-history_max_age: 60
-```
-
-### history_max_samples
-
-- **Type**: `integer`
-- **Default**: `120`
-- **Range**: `10` - `1000`
-- **Description**: Maximum number of samples per heater
-
-```yaml
-history_max_samples: 120
-```
-
-### exponential_window
-
-- **Type**: `integer`
-- **Default**: `30`
-- **Range**: `10` - `60`
-- **Unit**: seconds
-- **Description**: Time window for exponential fitting
-
-```yaml
-exponential_window: 30
-```
-
-### linear_window
-
-- **Type**: `integer`
-- **Default**: `10`
-- **Range**: `5` - `30`
-- **Unit**: seconds
-- **Description**: Time window for linear calculation
-
-```yaml
-linear_window: 10
-```
-
-## Complete Example
-
-```yaml
-plugins:
-  temp_eta:
-    # General
-    enabled: true
-    algorithm: "linear"
-    update_interval: 1.0
-    min_rate: 0.1
-    max_eta: 3600
-
-    # Heating
-    heating_enabled: true
-    heating_threshold: 1.0
-    heating_sound_enabled: false
-    heating_sound_file: "default"
-
-    # Cooling
-    cooling_enabled: true
-    cooling_threshold: 1.0
-    cooling_sound_enabled: false
-    cooling_sound_file: "default"
-
-    # Display
-    show_in_graph: true
-    show_in_sidebar: true
-    time_format: "auto"
-
-    # MQTT
-    mqtt_enabled: false
-    mqtt_broker: "localhost"
-    mqtt_port: 1883
-    mqtt_username: ""
-    mqtt_password: ""
-    mqtt_tls_enabled: false
-    mqtt_topic_prefix: "octoprint/temp_eta"
-    mqtt_retain: false
-    mqtt_qos: 0
-
-    # Advanced
-    history_max_age: 60
-    history_max_samples: 120
-    exponential_window: 30
-    linear_window: 10
-```
+## Defaults
+
+`get_settings_defaults()` in `octoprint_temp_eta/__init__.py` is the single
+source of truth for every key and its default. OctoPrint only writes keys to
+`config.yaml` when they differ from these defaults.
+
+## Validation layers
+
+Settings pass through two independent validation layers:
+
+1. **Client-side** — the settings dialog validates every
+   `input[type="number"]` against its `min`/`max` attributes on
+   input/change/blur, marks invalid fields (`aria-invalid`, Bootstrap error
+   classes) and blocks saving via `onSettingsBeforeSave` until fixed. The
+   heating threshold gets special handling because it is entered in the
+   selected display unit (°C or °F delta) but stored in °C.
+2. **Server-side** — `_sanitize_settings_payload()` clamps every posted
+   numeric value to its allowed range as a safety net (the UI can be
+   bypassed via the REST API). Empty or unparsable values fall back to a
+   safe default instead of failing the save; the optional
+   `cooldown_ambient_temp` becomes `None` when invalid or out of range.
+
+There is deliberately **no settings migration logic**: new keys simply get
+their default from `get_settings_defaults()`, and obsolete keys in
+`config.yaml` are ignored.
+
+## Runtime caches (hot path)
+
+The temperature callback runs at ~2 Hz and must not hit OctoPrint's settings
+machinery on every sample. Frequently needed values are cached on the plugin
+instance and refreshed on startup, on settings save, and (as a safety net)
+at most every 5 seconds from the callback itself:
+
+- `_threshold_start_c` ← `threshold_start`
+- `_update_interval_s` ← `update_interval`
+- `_history_maxlen` ← `history_size` (also resizes the per-heater deques)
+- `_debug_logging_enabled` ← `debug_logging`
+- persistence tuning (`persist_backoff_*`, `persist_max_json_bytes`)
+
+Out-of-range values read from `config.yaml` are ignored and the previous
+(cached or default) value keeps applying — a hand-edited bad value can't
+break the callback.
+
+Less frequently used settings (algorithm selection, cooldown configuration,
+UI visibility flags) are read directly from `self._settings` when needed,
+each wrapped defensively so a settings hiccup never raises into OctoPrint's
+callback thread.
+
+## Applying changes
+
+`on_settings_save` compares before/after state and applies side effects only
+when relevant:
+
+- **Plugin disabled** → clears all heater ETAs in every connected frontend so
+  no stale countdown lingers.
+- **`history_size` changed** → rebuilds the history deques with the new
+  `maxlen` (trimming oldest samples if shrunk) and marks history dirty for
+  persistence.
+- **Debug flag flipped** → logs the transition once.
+- **Always** → reconfigures the MQTT client; the wrapper itself decides
+  whether it needs to connect, reconnect or disconnect.
+
+## Frontend binding
+
+The settings template uses `custom_bindings: True`. The view model binds it
+lazily when the settings dialog opens (with retries, because OctoPrint
+injects the template asynchronously) and unbinds on close. The settings
+object is resolved defensively (`_resolveSettingsRoot`) because different
+OctoPrint versions nest the settings view model differently, with a fallback
+to the last known-good object during transient reloads.
+
+## Maintenance actions
+
+Two admin-only Simple API commands (buttons on the Maintenance tab):
+
+- `reset_profile_history` — deletes all persisted per-profile history files
+  and clears in-memory + frontend state.
+- `reset_settings_defaults` — resets the user-editable keys back to their
+  defaults (persistence tuning and history files are untouched) and
+  broadcasts `settings_reset` so open settings dialogs refresh.
 
 ## Programmatic Access
 
@@ -400,66 +124,19 @@ self._settings.save()
 ### JavaScript (Frontend)
 
 ```javascript
+// Observables live under the plugin's settings namespace:
+var ps = self.settings.plugins.temp_eta;
+
 // Get setting
-var algorithm = self.settings.algorithm();
+var algorithm = ps.algorithm();
 
-// Set setting
-self.settings.algorithm("exponential");
-
-// Save settings (triggers server update)
-self.saveSettings();
-```
-
-## Validation
-
-Settings are validated on save:
-
-```python
-def on_settings_save(self, data):
-    # Validate algorithm
-    if data.get("algorithm") not in ["linear", "exponential"]:
-        raise ValueError("Invalid algorithm")
-
-    # Validate ranges
-    min_rate = data.get("min_rate", 0.1)
-    if not 0.01 <= min_rate <= 1.0:
-        raise ValueError("min_rate out of range")
-
-    # ... more validation
-
-    octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-```
-
-## Migration
-
-Settings are automatically migrated between versions:
-
-```python
-def get_settings_version(self):
-    return 2
-
-def on_settings_migrate(self, target, current):
-    if current == 1:
-        # Migrate from v1 to v2
-        self._settings.set(["new_setting"], "default")
-```
-
-## Reset to Defaults
-
-Via OctoPrint UI:
-
-```text
-Settings → Temperature ETA → Reset to Defaults
-```
-
-Programmatically:
-
-```python
-self._settings.clean_all_data()
+// Set setting (persisted when the settings dialog is saved)
+ps.algorithm("exponential");
 ```
 
 ## Next Steps
 
+- [Configuration Reference](../reference/configuration.md) - All keys, types, defaults, ranges
 - [Python API](../api/python.md) - Programmatic access
 - [OctoPrint Integration](octoprint-integration.md) - Settings plugin implementation
 - [Frontend Settings](../frontend/ui-placements.md) - Settings UI

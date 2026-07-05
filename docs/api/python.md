@@ -97,89 +97,82 @@ mqtt_client.publish_eta_update(
 mqtt_client.disconnect()
 ```
 
-### Plugin Integration
+### Consuming ETA data from another plugin or client
 
-```python
-import octoprint.plugin
+The plugin does not expose a Python getter for current ETAs. Consume the data
+through one of its public channels instead:
 
-class MyPlugin(octoprint.plugin.OctoPrintPlugin):
-    def on_after_startup(self):
-        # Access TempETA plugin
-        temp_eta = self._plugin_manager.get_plugin("temp_eta")
-
-        if temp_eta:
-            # Get current ETA
-            eta_data = temp_eta.get_current_eta()
-            self._logger.info(f"Current ETA: {eta_data}")
-```
+- **Plugin messages**: every update is broadcast via
+  `send_plugin_message("temp_eta", payload)`; frontend components can listen
+  in `onDataUpdaterPluginMessage` (see the [JavaScript API](javascript.md)).
+- **MQTT**: enable the MQTT integration and subscribe to
+  `{active_topic}/{heater}/eta` and `{active_topic}/{heater}/state_change`
+  (see the README for payload formats).
+- **Simple API**: `GET /api/plugin/temp_eta` returns the MQTT integration
+  status; `POST` supports the `reset_profile_history` and
+  `reset_settings_defaults` commands (admin only).
 
 ## Threading Considerations
 
-All public methods are thread-safe when accessed through the plugin instance. However, when using calculator or MQTT client directly, ensure proper synchronization:
-
-```python
-import threading
-
-class SafeCalculator:
-    def __init__(self):
-        self._calculator = ETACalculator()
-        self._lock = threading.RLock()
-
-    def calculate(self, history, target):
-        with self._lock:
-            return self._calculator.calculate_eta(history, target)
-```
+The calculator functions are **pure and stateless** — they read the history
+they are given and share no module state, so they are safe to call from any
+thread as long as the caller does not mutate the passed history concurrently.
+The plugin itself guards its history deques with an internal lock, and
+`MQTTClientWrapper` serializes all its state behind its own lock.
 
 ## Error Handling
 
-All methods handle errors gracefully and return `None` or default values on failure:
+The estimators signal "no trustworthy estimate" by returning `None` rather
+than raising:
 
 ```python
-try:
-    eta = calculator.calculate_eta(history, target)
-    if eta is None:
-        print("Insufficient data for ETA calculation")
-    else:
-        print(f"ETA: {eta:.1f}s")
-except Exception as e:
-    logger.error(f"Calculation failed: {e}")
+eta = calculate_linear_eta(history, target)
+if eta is None:
+    print("Insufficient data for ETA calculation")
+else:
+    print(f"ETA: {eta:.1f}s")
 ```
+
+Invalid inputs (NaN/infinite targets, non-positive windows, malformed
+samples) are filtered or rejected the same way; internal math errors in the
+exponential fit degrade to the linear estimate instead of propagating.
 
 ## Type Hints
 
-The codebase uses Python type hints for better IDE support:
+The public estimator signatures (from `octoprint_temp_eta/calculator.py`):
 
 ```python
-from typing import Optional, Deque, Tuple
+from collections import deque
+from typing import Optional
 
-def calculate_eta(
-    history: Deque[Tuple[float, float, float]],
-    target: float
-) -> Optional[float]:
-    """
-    Calculate ETA to target temperature.
+def calculate_linear_eta(
+    history: deque, target: float, window_seconds: float = 10.0
+) -> Optional[float]: ...
 
-    Args:
-        history: Temperature history deque
-        target: Target temperature
+def calculate_exponential_eta(
+    history: deque, target: float, window_seconds: float = 30.0
+) -> Optional[float]: ...
 
-    Returns:
-        ETA in seconds, or None if calculation fails
-    """
-    pass
+def calculate_cooldown_linear_eta(
+    cooldown_history: deque, goal_c: float, window_seconds: float = 60.0
+) -> Optional[float]: ...
+
+def calculate_cooldown_exponential_eta(
+    cooldown_history: deque,
+    ambient_c: float,
+    goal_c: float,
+    window_seconds: float = 60.0,
+) -> Optional[float]: ...
 ```
+
+Heating histories hold `(timestamp, actual_temp, target_temp)` tuples;
+cooldown histories hold `(timestamp, actual_temp)` tuples.
 
 ## Logging
 
-Use the provided logger for all log messages:
-
-```python
-self._logger.debug("Debug message")
-self._logger.info("Info message")
-self._logger.warning("Warning message")
-self._logger.error("Error message")
-self._logger.exception("Exception with traceback")
-```
+The plugin logs under the `octoprint_temp_eta` logger. Enable the
+**Debug logging** setting to get verbose `[debug]`-prefixed messages (emitted
+at info level so they show up without reconfiguring OctoPrint's logging).
 
 ## Next Steps
 

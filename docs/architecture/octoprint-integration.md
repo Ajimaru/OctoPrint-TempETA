@@ -1,312 +1,233 @@
 # OctoPrint Integration
 
-This page describes how OctoPrint-TempETA integrates with OctoPrint's plugin framework.
+This page describes how OctoPrint-TempETA integrates with OctoPrint's plugin
+framework. All snippets below mirror the actual implementation in
+`octoprint_temp_eta/__init__.py`.
+
+## Temperature source: PrinterCallback
+
+The plugin's data source is **not** an event handler — it registers itself as
+an `octoprint.printer.PrinterCallback` and receives temperature updates
+directly:
+
+```python
+class TempETAPlugin(octoprint.printer.PrinterCallback, ...):
+    def on_after_startup(self):
+        self._printer.register_callback(self)
+
+    def on_printer_add_temperature(self, data):
+        # data = {"bed": {"actual": 40.2, "target": 60.0}, "tool0": {...}, ...}
+        ...
+```
+
+`on_printer_add_temperature` fires at roughly 2 Hz whenever OctoPrint polls
+the printer. This is the plugin's hot path: it records history samples,
+computes ETAs, broadcasts them to the frontend and (optionally) publishes to
+MQTT. Everything in this path is wrapped defensively — an exception here
+would hit OctoPrint's printer communication thread.
+
+The callback interface also requires `on_printer_send_current_data`,
+`on_printer_add_log` and `on_printer_add_message`; the plugin implements them
+as no-op stubs.
 
 ## Plugin Mixins
 
-The plugin implements multiple OctoPrint plugin mixins to integrate with different subsystems.
-
 ### StartupPlugin
 
-Handles plugin initialization and cleanup.
-
 ```python
-class TempETAPlugin(octoprint.plugin.StartupPlugin):
-    def on_after_startup(self):
-        """Called after OctoPrint has fully started."""
-        self._logger.info("TempETA plugin started")
-        self._initialize_history()
-        self._start_mqtt_client()
+def on_after_startup(self):
+    """Called after OctoPrint startup, register for temperature updates."""
+    self._logger.info("Temperature ETA Plugin started")
+    self._printer.register_callback(self)
 
-    def on_shutdown(self):
-        """Called when OctoPrint is shutting down."""
-        self._logger.info("TempETA plugin shutting down")
-        self._stop_mqtt_client()
+    self._refresh_debug_logging_flag()
+    self._refresh_runtime_caches()
+    self._set_history_maxlen(self._read_history_maxlen_setting())
+
+    # Load persisted history for the active printer profile.
+    self._switch_active_profile_if_needed(force=True)
+
+    # Initialize MQTT client
+    if MQTTClientWrapper is not None:
+        self._mqtt_client = MQTTClientWrapper(self._logger, self._identifier)
+        self._configure_mqtt_client()
 ```
 
-**Use Cases:**
-
-- Initialize data structures
-- Start background services (MQTT)
-- Register event handlers
-- Clean up on shutdown
+There is no `on_shutdown` handler; MQTT is disconnected from the `Shutdown`
+event instead (see EventHandlerPlugin below).
 
 ### TemplatePlugin
 
-Provides custom UI templates.
-
 ```python
-class TempETAPlugin(octoprint.plugin.TemplatePlugin):
-    def get_template_configs(self):
-        """Return template configurations."""
-        return [
-            {
-                "type": "settings",
-                "custom_bindings": True,
-                "template": "temp_eta_settings.jinja2"
-            },
-            {
-                "type": "sidebar",
-                "custom_bindings": False,
-                "template": "temp_eta_sidebar.jinja2",
-                "icon": "clock-o"
-            },
-            {
-                "type": "tab",
-                "custom_bindings": True,
-                "template": "temp_eta_tab.jinja2"
-            }
-        ]
+def get_template_configs(self):
+    return [
+        {"type": "navbar", "custom_bindings": True},
+        {
+            "type": "sidebar",
+            "custom_bindings": False,
+            "name": gettext("Temperature ETA"),
+            "icon": "fa fa-clock",
+        },
+        {"type": "settings", "custom_bindings": True},
+        {"type": "tab", "custom_bindings": False},
+    ]
 ```
 
-**Template Types:**
-
-- **settings**: Plugin settings page
-- **sidebar**: Sidebar widget
-- **tab**: Main content tab
-- **navbar**: Navigation bar item
-
-**Template Location:**
+Template files follow OctoPrint's naming convention and need no explicit
+`template` key:
 
 ```text
 octoprint_temp_eta/templates/
+├── temp_eta_navbar.jinja2
 ├── temp_eta_settings.jinja2
 ├── temp_eta_sidebar.jinja2
 └── temp_eta_tab.jinja2
 ```
 
-### SettingsPlugin
-
-Manages plugin configuration.
-
-```python
-class TempETAPlugin(octoprint.plugin.SettingsPlugin):
-    def get_settings_defaults(self):
-        """Return default settings."""
-        return {
-            "enabled": True,
-            "algorithm": "linear",
-            "update_interval": 1.0,
-            "min_rate": 0.1,
-            "max_eta": 3600,
-            # ... more defaults
-        }
-
-    def on_settings_save(self, data):
-        """Called when settings are saved."""
-        # Validate settings
-        self._validate_settings(data)
-
-        # Save settings
-        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-
-        # Apply changes
-        self._apply_settings()
-
-    def get_settings_version(self):
-        """Return settings version for migration."""
-        return 2
-
-    def on_settings_migrate(self, target, current):
-        """Migrate settings from old version."""
-        if current == 1:
-            # Migrate v1 to v2
-            self._settings.set(["new_setting"], "default")
-```
-
-**Settings Access:**
+The plugin also opts into template autoescaping (OctoPrint 1.11+) to reduce
+XSS risk:
 
 ```python
-# Get setting
-value = self._settings.get(["key"])
-
-# Set setting
-self._settings.set(["key"], value)
-
-# Get with default
-value = self._settings.get(["key"], merged=True)
-```
-
-### AssetPlugin
-
-Serves static files (JavaScript, CSS, images).
-
-```python
-class TempETAPlugin(octoprint.plugin.AssetPlugin):
-    def get_assets(self):
-        """Return static assets."""
-        return {
-            "js": ["js/temp_eta.js"],
-            "css": ["css/temp_eta.css"],
-            "less": ["less/temp_eta.less"]
-        }
-```
-
-**Asset Location:**
-
-```text
-octoprint_temp_eta/static/
-├── js/
-│   └── temp_eta.js
-├── css/
-│   └── temp_eta.css
-├── less/
-│   └── temp_eta.less
-├── img/
-│   └── temp_eta.svg
-└── sounds/
-    └── heating_complete.mp3
-```
-
-**Asset URLs:**
-
-```text
-/plugin/temp_eta/static/js/temp_eta.js
-/plugin/temp_eta/static/css/temp_eta.css
-```
-
-### EventHandlerPlugin
-
-Receives OctoPrint events.
-
-```python
-class TempETAPlugin(octoprint.plugin.EventHandlerPlugin):
-    def on_event(self, event, payload):
-        """Handle OctoPrint events."""
-        if event == "PrintStarted":
-            self._logger.info("Print started")
-            self._reset_eta()
-
-        elif event == "PrintDone":
-            self._logger.info("Print completed")
-            self._clear_eta()
-
-        elif event == "CurrentTemperatureUpdated":
-            self._on_temperature_update(payload)
-```
-
-**Key Events:**
-
-- **CurrentTemperatureUpdated**: Temperature change (~2Hz)
-- **PrintStarted**: Print job starts
-- **PrintDone**: Print job completes
-- **Disconnected**: Printer disconnects
-- **Connected**: Printer connects
-
-### SimpleApiPlugin
-
-Provides REST API endpoints.
-
-```python
-class TempETAPlugin(octoprint.plugin.SimpleApiPlugin):
-    def get_api_commands(self):
-        """Return available API commands."""
-        return {
-            "get_eta": [],
-            "reset": []
-        }
-
-    def on_api_command(self, command, data):
-        """Handle API command."""
-        if command == "get_eta":
-            return flask.jsonify(self._get_current_eta())
-
-        elif command == "reset":
-            self._reset_history()
-            return flask.jsonify({"success": True})
-
-    def on_api_get(self, request):
-        """Handle GET request."""
-        return flask.jsonify({
-            "eta": self._get_current_eta(),
-            "settings": self._get_public_settings()
-        })
-```
-
-**API Endpoints:**
-
-```text
-GET  /api/plugin/temp_eta
-POST /api/plugin/temp_eta
-```
-
-**Example Request:**
-
-```bash
-# Get ETA
-curl http://octopi.local/api/plugin/temp_eta
-
-# Reset history
-curl -X POST \
-  -H "X-Api-Key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"command": "reset"}' \
-  http://octopi.local/api/plugin/temp_eta
-```
-
-## Plugin Lifecycle
-
-```mermaid
-graph TD
-    A[OctoPrint Starts] --> B[Load Plugin]
-    B --> C[__plugin_load__]
-    C --> D[__plugin_init__]
-    D --> E[on_after_startup]
-    E --> F[Plugin Running]
-    F --> G{Event?}
-    G -->|Temperature| H[on_event]
-    G -->|Settings| I[on_settings_save]
-    G -->|API| J[on_api_command]
-    H --> F
-    I --> F
-    J --> F
-    F --> K[OctoPrint Stops]
-    K --> L[on_shutdown]
-    L --> M[Plugin Stopped]
-```
-
-## Plugin Registration
-
-### `__init__.py` Structure
-
-```python
-# Module-level plugin interface
-def __plugin_load__():
-    """Load the plugin."""
-    global __plugin_implementation__
-    __plugin_implementation__ = TempETAPlugin()
-
-    global __plugin_hooks__
-    __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config":
-            __plugin_implementation__.get_update_information
-    }
-
-def __plugin_check__():
-    """Check plugin requirements."""
-    try:
-        import paho.mqtt
-    except ImportError:
-        return False
+def is_template_autoescaped(self) -> bool:
     return True
 ```
 
-### Plugin Metadata
+### SettingsPlugin
+
+`get_settings_defaults()` is the single source of truth for all keys (see
+the [Configuration Reference](../reference/configuration.md)).
+`on_settings_save` sanitizes the posted payload, delegates to OctoPrint, then
+applies side effects — see [Settings Architecture](settings.md) for the full
+flow. The plugin has no settings versioning/migration; new keys simply get
+defaults.
+
+### AssetPlugin
+
+```python
+def get_assets(self):
+    return {
+        "js": ["js/temp_eta.js"],
+        # Ship pre-compiled CSS rather than LESS: OctoPrint only compiles
+        # LESS when a server-side compiler is present, which is not
+        # guaranteed on a pip-installed plugin.
+        "css": ["css/temp_eta.css"],
+    }
+```
+
+Note the deliberate omission of the `less` asset type: the `.less` source
+stays in the tree as the editable origin, but the shipped stylesheet is the
+pre-compiled `temp_eta.css` (regenerate with
+`npx less less/temp_eta.less css/temp_eta.css`).
+
+```text
+octoprint_temp_eta/static/
+├── js/temp_eta.js          # Knockout view model (runtime)
+├── js/temp_eta.docs.js     # JSDoc-only, not loaded by OctoPrint
+├── css/temp_eta.css        # shipped stylesheet (compiled from LESS)
+├── less/temp_eta.less      # editable source
+├── img/temp_eta.svg
+└── sounds/
+    ├── heating_done.wav
+    └── cooling_done.wav
+```
+
+Assets are served at `/plugin/temp_eta/static/...`.
+
+### EventHandlerPlugin
+
+Events are used only to keep UI/state consistent — temperature data itself
+arrives via the printer callback:
+
+```python
+def on_event(self, event, _payload):
+    if event in ("Disconnected", "Error", "Shutdown"):
+        # Persist what we have, then clear histories and frontend ETAs
+        self._persist_current_profile_history()
+        ...
+        if event == "Shutdown" and mqtt_client is not None:
+            mqtt_client.disconnect()
+
+    if event in ("PrintStarted", "PrintResumed", "PrintDone",
+                 "PrintFailed", "PrintCancelled"):
+        # Reset the "suppress while printing" latch; the temperature
+        # callback re-evaluates suppression on the next sample.
+        ...
+```
+
+### SimpleApiPlugin
+
+The Simple API is authenticated and admin-only:
+
+```python
+def is_api_protected(self) -> bool:
+    return True
+
+def is_api_adminonly(self) -> bool:
+    return True
+
+def get_api_commands(self):
+    return {
+        "reset_profile_history": [],
+        "reset_settings_defaults": [],
+    }
+```
+
+`GET /api/plugin/temp_eta` returns the MQTT integration status for the
+settings UI:
+
+```json
+{ "mqtt_available": true, "mqtt_enabled": false, "mqtt_connected": false }
+```
+
+**Example requests:**
+
+```bash
+# MQTT status
+curl -H "X-Api-Key: YOUR_API_KEY" http://octopi.local/api/plugin/temp_eta
+
+# Delete persisted history for all printer profiles
+curl -X POST \
+  -H "X-Api-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"command": "reset_profile_history"}' \
+  http://octopi.local/api/plugin/temp_eta
+```
+
+Current ETA values are **not** exposed via the Simple API — consume them via
+plugin messages (frontend) or MQTT instead.
+
+## Plugin Registration
+
+The plugin uses module-level registration (no `__plugin_load__` /
+`__plugin_check__` functions):
 
 ```python
 __plugin_name__ = "Temperature ETA"
-__plugin_pythoncompat__ = ">=3.9,<4"
-__plugin_version__ = "0.8.0"
-__plugin_description__ = "Show ETA for printer heating/cooling"
 __plugin_author__ = "Ajimaru"
-__plugin_author_email__ = "ajimaru_gdr@pm.me"
 __plugin_url__ = "https://github.com/Ajimaru/OctoPrint-TempETA"
-__plugin_license__ = "AGPLv3"
+__plugin_description__ = (
+    "OctoPrint plugin to show estimated time remaining for printer heating"
+)
+__plugin_license__ = "AGPL-3.0-or-later"
+__plugin_version__ = VERSION  # from octoprint_temp_eta/_version.py
+__plugin_pythoncompat__ = ">=3.9,<4"
+__plugin_implementation__ = TempETAPlugin()
+
+__plugin_hooks__ = {
+    "octoprint.plugin.softwareupdate.check_config":
+        __plugin_implementation__.get_update_information
+}
 ```
+
+Optional imports (OctoPrint itself, Flask, Flask-Babel, paho-mqtt) are
+guarded with fallback stubs so the module can be imported in CI and static
+analysis environments where OctoPrint is not installed.
 
 ## WebSocket Communication
 
 ### Send Message to Frontend
+
+Every ETA update is broadcast as a flat payload:
 
 ```python
 self._plugin_manager.send_plugin_message(
@@ -314,47 +235,44 @@ self._plugin_manager.send_plugin_message(
     {
         "type": "eta_update",
         "heater": "tool0",
-        "data": {
-            "current": 25.0,
-            "target": 200.0,
-            "eta_seconds": 120
-        }
-    }
+        "eta": 120.0,            # seconds, or None
+        "eta_kind": "heating",   # "heating" | "cooling" | None
+        "target": 200.0,
+        "actual": 25.0,
+        "cooldown_target": None,
+        "cooldown_mode": None,   # "threshold" | "ambient" | None
+    },
 )
 ```
+
+Other message types: `history_reset` (clear client-side graph buffers) and
+`settings_reset` (refresh open settings dialogs).
 
 ### Receive in Frontend
 
 ```javascript
-self.onDataUpdaterPluginMessage = function(plugin, data) {
-    if (plugin !== "temp_eta") return;
+self.onDataUpdaterPluginMessage = (plugin, data) => {
+  if (plugin !== "temp_eta") return;
 
-    if (data.type === "eta_update") {
-        self.updateETA(data.heater, data.data);
-    }
+  if (data.type === "eta_update") {
+    // register heater lazily, update observables, trigger alerts
+  }
 };
 ```
 
 ## Plugin Dependencies
 
-### Required
-
 ```toml
-# In pyproject.toml
+# pyproject.toml
 [project]
 dependencies = [
-    "paho-mqtt>=1.6.0,<3.0.0",
+    "paho-mqtt>=2.0.0,<3.0.0"
 ]
 ```
 
-OctoPrint itself is the runtime environment, not a pip dependency of the plugin.
-
-### Optional
-
-Dependencies that enhance functionality but aren't required:
-
-- numpy: For exponential algorithm
-- scipy: For advanced fitting
+OctoPrint itself is the runtime environment, not a pip dependency of the
+plugin. The MQTT wrapper degrades gracefully when paho-mqtt is missing.
+There are **no** numpy/scipy dependencies — all ETA math is pure Python.
 
 ## Plugin Hooks
 
@@ -362,39 +280,25 @@ Dependencies that enhance functionality but aren't required:
 
 ```python
 def get_update_information(self):
-    """Provide update information."""
     return {
         "temp_eta": {
-            "displayName": "Temperature ETA",
+            "displayName": "Temperature ETA Plugin",
             "displayVersion": self._plugin_version,
-
             "type": "github_release",
             "user": "Ajimaru",
             "repo": "OctoPrint-TempETA",
             "current": self._plugin_version,
-
-            "pip": "https://github.com/Ajimaru/OctoPrint-TempETA/releases/latest/download/release.zip"
+            "pip": "https://github.com/Ajimaru/OctoPrint-TempETA/archive/{target_version}.zip",
         }
     }
 ```
 
 ## Logging
 
-Use OctoPrint's logging system:
-
-```python
-# Get logger
-self._logger = logging.getLogger(__name__)
-
-# Log levels
-self._logger.debug("Debug message")
-self._logger.info("Info message")
-self._logger.warning("Warning message")
-self._logger.error("Error message")
-self._logger.exception("Exception with traceback")
-```
-
-**Configure in OctoPrint:**
+The plugin uses the `self._logger` injected by OctoPrint
+(`octoprint.plugins.temp_eta`). To see verbose output, enable the plugin's
+**Debug logging** setting — debug messages are emitted at info level with a
+`[debug]` prefix, so no logger reconfiguration is needed. Alternatively:
 
 ```text
 Settings → Logging → Add logger
@@ -404,31 +308,11 @@ Level: DEBUG
 
 ## Error Handling
 
-### Graceful Degradation
-
-```python
-try:
-    self._mqtt_client.connect()
-except Exception as e:
-    self._logger.warning(f"MQTT connection failed: {e}")
-    self._mqtt_enabled = False
-    # Plugin continues without MQTT
-```
-
-### User Notifications
-
-```python
-# Show notification in UI
-self._plugin_manager.send_plugin_message(
-    self._identifier,
-    {
-        "type": "notification",
-        "level": "error",
-        "title": "Temperature ETA Error",
-        "message": "Failed to calculate ETA"
-    }
-)
-```
+The guiding rule: **never raise into OctoPrint's core threads.** The
+temperature callback, event handler and settings hooks catch expected error
+types (`_EXPECTED_ERRORS` in `__init__.py`), log at debug level and continue.
+The MQTT wrapper connects in a background thread and retries with a 30 s
+backoff, so a broker outage never blocks temperature processing.
 
 ## Testing with OctoPrint
 
@@ -445,36 +329,17 @@ pip install -e .
 octoprint serve --debug
 ```
 
-### Mock Printer
+See [.development/README.md](https://github.com/Ajimaru/OctoPrint-TempETA/tree/main/.development)
+for the project's setup and restart helper scripts.
+
+### Virtual Printer
 
 Use OctoPrint's virtual printer for testing:
 
 ```text
-Settings → Serial Connection → Additional serial ports
-Add: /dev/ttyFAKE
-
-Connect to /dev/ttyFAKE
+Settings → Serial Connection → Enable virtual printer
+Connect to VIRTUAL
 ```
-
-## Plugin Distribution
-
-### PyPI Package
-
-```bash
-# Build package
-python -m build
-
-# Upload to PyPI
-twine upload dist/*
-```
-
-### Plugin Repository
-
-Submit to [OctoPrint Plugin Repository](https://plugins.octoprint.org/):
-
-1. Create release on GitHub
-2. Submit plugin via web form
-3. Wait for review
 
 ## Best Practices
 
@@ -489,5 +354,5 @@ Submit to [OctoPrint Plugin Repository](https://plugins.octoprint.org/):
 ## Next Steps
 
 - [Plugin API Reference](../api/python.md) - Detailed API documentation
-- [Settings Reference](settings.md) - All configuration options
+- [Settings Architecture](settings.md) - Settings flow and validation
 - [Testing Guide](../development/testing.md) - How to test the plugin

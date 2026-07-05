@@ -214,7 +214,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
   - State changes are published to: `{active_topic}/{heater}/state_change`
 - **QoS**: MQTT Quality of Service level (0=At most once, 1=At least once, 2=Exactly once)
 - **Retain Messages**: Enable MQTT retain flag (new subscribers receive the last message)
-- **Publish Interval**: Minimum seconds between MQTT publishes (default: `1.0`)
+- **Publish Interval**: Minimum seconds between MQTT publishes, tracked per heater (default: `1.0`)
 
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -254,7 +254,7 @@ The plugin estimates how long it will take for each heater (bed, hotend, chamber
 
 - ETA is only shown when the heater is actively heating/cooling and within a configurable threshold of the target.
 - The plugin automatically handles multiple heaters and adapts to target changes.
-- All calculations are optimized for performance and run in a background thread.
+- Calculations piggyback on OctoPrint's existing ~2Hz temperature updates and are lightweight pure Python (no numpy/scipy) — a few hundred floating-point operations per heater.
 
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -378,7 +378,7 @@ A: Yes. The UI registers heaters dynamically as OctoPrint reports them (e.g. too
 A: Yes! Enable chamber in settings if your printer has a chamber heater.
 
 **Q: Will this slow down my prints?**
-A: No. The plugin uses efficient algorithms and runs in a separate thread. Impact is negligible.
+A: No. The plugin piggybacks on the temperature updates OctoPrint already receives (~2Hz) and the math is trivial. Impact is negligible.
 
 **Q: Can I hide the ETA during an active print?**
 A: Yes. If you enable "Hide ETA while printing", the plugin will only show ETA when no print job is active. If the option is disabled (default), ETA is shown whenever the target temperature is at least the configured heating threshold above the current temperature.

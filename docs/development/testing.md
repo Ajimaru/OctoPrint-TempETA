@@ -66,178 +66,116 @@ tests/
 
 ## Writing Tests
 
-### Basic Test
+### Calculator tests (pure functions)
+
+The estimators in `octoprint_temp_eta/calculator.py` are stateless module
+functions, so their tests need no plugin setup at all
+(`tests/test_calculator.py` uses `unittest.TestCase` style):
 
 ```python
-def test_calculator_initialization():
-    """Test calculator can be initialized."""
-    calculator = ETACalculator(algorithm="linear")
-
-    assert calculator.algorithm == "linear"
-    assert calculator.min_rate == 0.1
-    assert calculator.max_eta == 3600
-```
-
-### Test with Fixtures
-
-```python
-import pytest
 from collections import deque
 
-@pytest.fixture
-def mock_history():
-    """Create mock temperature history."""
-    history = deque()
-    for i in range(10):
-        history.append((i, 25 + i * 2, 200))
-    return history
+from octoprint_temp_eta import calculator
 
-def test_linear_eta(mock_history):
-    """Test linear ETA calculation."""
-    calculator = ETACalculator(algorithm="linear")
-    eta = calculator.calculate_eta(mock_history, 200)
 
-    assert eta is not None
-    assert 80 < eta < 100  # ~87.5 seconds
+class TestCalculateLinearETA(TestCase):
+    def test_heating_linear(self):
+        """Constant 2 °C/s ramp, 30 °C remaining -> 15 s."""
+        history = deque([(0.0, 20.0, 60.0), (5.0, 30.0, 60.0)])
+        result = calculator.calculate_linear_eta(history, 60.0)
+        self.assertAlmostEqual(result, 15.0, places=3)
+
+    def test_cooling_returns_none(self):
+        """A falling temperature must not produce a heating ETA."""
+        history = deque([(0.0, 60.0, 60.0), (5.0, 50.0, 60.0)])
+        self.assertIsNone(calculator.calculate_linear_eta(history, 60.0))
 ```
 
-### Parameterized Tests
+### Plugin tests (stubbed OctoPrint)
+
+`tests/test_print_temp_eta.py` instantiates the real `TempETAPlugin` and
+injects small hand-written stubs (`DummyLogger`, `DummySettings`,
+`DummyPluginManager`, `DummyPrinterProfileManager`) instead of OctoPrint's
+components. A fixture wires them together:
 
 ```python
-@pytest.mark.parametrize("algorithm,expected_range", [
-    ("linear", (80, 100)),
-    ("exponential", (70, 110)),
-])
-def test_algorithms(algorithm, expected_range):
-    """Test different algorithms."""
-    calculator = ETACalculator(algorithm=algorithm)
-    history = create_heating_history()
-    eta = calculator.calculate_eta(history, 200)
-
-    assert expected_range[0] < eta < expected_range[1]
-```
-
-### Mocking OctoPrint
-
-```python
-from unittest.mock import MagicMock, patch
-
-def test_plugin_initialization():
-    """Test plugin initializes correctly."""
-    # Mock OctoPrint components
+@pytest.fixture(name="temp_eta_plugin")
+def fixture_temp_eta_plugin(...) -> TempETAPlugin:
     plugin = TempETAPlugin()
-    plugin._logger = MagicMock()
-    plugin._settings = MagicMock()
-    plugin._plugin_manager = MagicMock()
-
-    # Configure mocks
-    plugin._settings.get.return_value = True
-
-    # Test initialization
-    plugin.on_after_startup()
-
-    # Verify calls
-    plugin._logger.info.assert_called()
+    plugin._logger = DummyLogger()
+    plugin._settings = DummySettings(defaults=plugin.get_settings_defaults())
+    plugin._plugin_manager = DummyPluginManager()  # records sent messages
+    ...
+    return plugin
 ```
 
-### Testing Exceptions
+Internal members are accessed via the `_get_attr`/`_set_attr`/`_call_attr`/
+`_member` helpers so linters don't flag protected-member access in tests.
+
+### Testing time-dependent code
+
+Never `sleep()` in tests — monkeypatch `time.time` instead. The main test
+file provides a `_set_time` helper for this:
 
 ```python
-def test_invalid_algorithm():
-    """Test calculator rejects invalid algorithm."""
-    with pytest.raises(ValueError):
-        ETACalculator(algorithm="invalid")
+def test_callback_records_history(monkeypatch, temp_eta_plugin) -> None:
+    _set_time(monkeypatch, 1000.0)
+    temp_eta_plugin.on_printer_add_temperature(
+        {"tool0": {"actual": 25.0, "target": 200.0}}
+    )
 ```
 
-## Test Categories
+### Mocking paho-mqtt
 
-### Unit Tests
-
-Test individual components in isolation:
+`tests/test_mqtt_client.py` subclasses the wrapper with a test harness that
+exposes internals, and patches the `mqtt` module where it is used:
 
 ```python
-def test_calculate_rate():
-    """Test rate calculation."""
-    calculator = ETACalculator()
-    history = deque([
-        (0, 25.0, 200),
-        (5, 35.0, 200)
-    ])
-
-    rate = calculator._calculate_rate(history)
-
-    assert abs(rate - 2.0) < 0.01  # 10°C / 5s = 2°C/s
+@patch("octoprint_temp_eta.mqtt_client.mqtt")
+def test_mqtt_configure_enabled_with_host(mock_mqtt, wrapper) -> None:
+    mock_mqtt.Client.return_value = MagicMock()
+    wrapper.configure({"mqtt_enabled": True, "mqtt_broker_host": "test-broker"})
+    assert wrapper.get_internal_state("enabled")
 ```
 
-### Integration Tests
+### Testing "no estimate" paths
 
-Test component interactions:
-
-```python
-def test_plugin_eta_calculation():
-    """Test plugin calculates and sends ETA."""
-    plugin = setup_test_plugin()
-
-    # Simulate temperature updates
-    for i in range(10):
-        plugin._on_temperature_update({
-            "tool0": {"actual": 25 + i * 2, "target": 200}
-        })
-
-    # Verify ETA was calculated and sent
-    assert plugin._last_eta["tool0"] is not None
-```
-
-### End-to-End Tests
-
-Test complete workflows:
+The estimators signal failure by returning `None` — assert on that rather
+than expecting exceptions:
 
 ```python
-def test_heating_workflow():
-    """Test complete heating workflow."""
-    plugin = setup_test_plugin()
-
-    # Start heating
-    plugin._on_event("PrintStarted", {})
-
-    # Simulate heating
-    for temp in range(25, 205, 5):
-        plugin._on_temperature_update({
-            "tool0": {"actual": temp, "target": 200}
-        })
-
-    # Verify completion
-    assert plugin._heating_complete["tool0"]
-    plugin._logger.info.assert_any_call("Heating complete")
+def test_insufficient_data_empty_history(self):
+    self.assertIsNone(calculator.calculate_linear_eta(deque(), 60.0))
 ```
 
 ## Test Data
 
 ### Creating Mock Data
 
+Heating history samples are `(timestamp, actual_temp, target_temp)` tuples;
+cooldown samples are `(timestamp, actual_temp)` tuples:
+
 ```python
-def create_linear_heating(start=25, end=200, rate=2.0, samples=10):
-    """Create mock linear heating history."""
-    history = deque()
-    duration = (end - start) / rate
+import math
+from collections import deque
 
+
+def create_linear_heating(start=25.0, end=200.0, rate=2.0, samples=10):
+    """Mock a constant-rate heating ramp."""
+    history = deque(maxlen=60)
     for i in range(samples):
-        t = (duration / samples) * i
-        temp = start + rate * t
-        history.append((t, temp, end))
-
+        t = float(i)
+        history.append((t, start + rate * t, end))
     return history
 
-def create_exponential_heating(start=25, end=200, tau=30, samples=20):
-    """Create mock exponential heating history."""
-    import math
-    history = deque()
 
+def create_exponential_heating(start=25.0, end=200.0, tau=30.0, samples=20):
+    """Mock a first-order exponential approach to the target."""
+    history = deque(maxlen=60)
     for i in range(samples):
-        t = i
+        t = float(i)
         temp = end - (end - start) * math.exp(-t / tau)
         history.append((t, temp, end))
-
     return history
 ```
 
@@ -249,22 +187,10 @@ Aim for:
 - **Critical paths**: 100%
 - **New code**: > 90%
 
-Check coverage:
+Check coverage (per-module breakdown with missing line numbers):
 
 ```bash
 pytest --cov=octoprint_temp_eta --cov-report=term-missing
-```
-
-Output:
-
-```text
-Name                               Stmts   Miss  Cover   Missing
-----------------------------------------------------------------
-octoprint_temp_eta/__init__.py       150      5    97%   234-238
-octoprint_temp_eta/calculator.py      80      2    98%   56, 89
-octoprint_temp_eta/mqtt_client.py     45      8    82%   67-74
-----------------------------------------------------------------
-TOTAL                                275     15    95%
 ```
 
 ## Continuous Integration
@@ -296,9 +222,10 @@ octoprint serve --debug
 
 In OctoPrint:
 
-1. Settings → Serial Connection → Additional serial ports: `/dev/ttyFAKE`
-2. Connect to `/dev/ttyFAKE`
-3. Set temperatures and observe ETA
+1. Enable the virtual printer (Settings → Serial Connection, or via the
+   `devel.virtualPrinter` section in `config.yaml`)
+2. Connect to the `VIRTUAL` port
+3. Set temperatures (e.g. `M104 S200`) and observe the ETA
 
 ### Manual Testing Checklist
 
@@ -318,49 +245,31 @@ In OctoPrint:
 
 ## Performance Testing
 
-### Profiling
+The estimators run inside OctoPrint's ~2 Hz temperature callback, so keep an
+eye on their cost when changing them:
 
 ```python
 import cProfile
 import pstats
 
-def test_calculator_performance():
-    """Profile calculator performance."""
-    calculator = ETACalculator()
-    history = create_large_history()
+def profile_linear_eta():
+    """Profile the linear estimator over a full history."""
+    history = create_linear_heating(samples=60)
 
     profiler = cProfile.Profile()
     profiler.enable()
 
     for _ in range(1000):
-        calculator.calculate_eta(history, 200)
+        calculator.calculate_linear_eta(history, 200.0)
 
     profiler.disable()
     stats = pstats.Stats(profiler)
-    stats.sort_stats('cumulative')
+    stats.sort_stats("cumulative")
     stats.print_stats(10)
 ```
 
-### Benchmarking
-
-```python
-import time
-
-def test_calculation_speed():
-    """Ensure calculation is fast enough."""
-    calculator = ETACalculator()
-    history = create_heating_history()
-
-    start = time.time()
-
-    for _ in range(100):
-        calculator.calculate_eta(history, 200)
-
-    elapsed = time.time() - start
-
-    # Should complete 100 calculations in < 10ms
-    assert elapsed < 0.01
-```
+For live monitoring against a real OctoPrint instance, see
+`.development/monitor_octoprint_performance.sh`.
 
 ## Debugging Tests
 
@@ -379,14 +288,13 @@ pytest -x --pdb
 ```python
 def test_with_debug():
     """Test with debug output."""
-    calculator = ETACalculator()
-    history = create_heating_history()
+    history = create_linear_heating()
 
     print(f"History length: {len(history)}")
     print(f"First sample: {history[0]}")
     print(f"Last sample: {history[-1]}")
 
-    eta = calculator.calculate_eta(history, 200)
+    eta = calculator.calculate_linear_eta(history, 200.0)
 
     print(f"Calculated ETA: {eta}")
 
@@ -432,33 +340,15 @@ def teardown_function():
     pass
 ```
 
-### Testing Async Code
-
-```python
-import asyncio
-
-@pytest.mark.asyncio
-async def test_async_operation():
-    """Test async operation."""
-    result = await async_function()
-    assert result == expected
-```
-
 ### Testing Time-Dependent Code
 
+Patch `time.time` in the module under test (both the plugin module and the
+calculator module read it):
+
 ```python
-from unittest.mock import patch
-import time
-
-def test_time_dependent():
-    """Test time-dependent code."""
-    with patch('time.time') as mock_time:
-        mock_time.return_value = 1000
-
-        # Test code that uses time.time()
-        result = function_using_time()
-
-        assert result == expected
+def _set_time(monkeypatch: pytest.MonkeyPatch, now: float) -> None:
+    monkeypatch.setattr(octoprint_temp_eta.time, "time", lambda: now)
+    monkeypatch.setattr(calc_module.time, "time", lambda: now)
 ```
 
 ## Test Documentation

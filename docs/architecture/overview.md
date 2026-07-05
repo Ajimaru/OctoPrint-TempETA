@@ -15,8 +15,9 @@ The plugin consists of three main components:
 ### 2. Frontend (JavaScript)
 
 - **View Model** (`temp_eta.js`): Knockout.js-based UI component
-- Displays ETA in the temperature graph and sidebar
-- Handles user interactions and settings
+- Displays ETA countdowns in the navbar, sidebar and a dedicated tab
+  (including per-heater history charts)
+- Handles user interactions, alerts (sound/toast) and settings validation
 
 ### 3. Communication Layer
 
@@ -31,20 +32,24 @@ The plugin consists of three main components:
 Temperature callbacks occur on separate threads (~2Hz). All shared data structures use thread locks to prevent race conditions.
 
 ```python
-self._lock = threading.RLock()
+self._lock = threading.Lock()
 
-def _on_temp_callback(self, data):
+def on_printer_add_temperature(self, data):
+    ...
     with self._lock:
-        # Safe data access
-        self._update_history(data)
+        # Safe access to the per-heater history deques
+        self._temp_history[heater].append((now, actual, target))
 ```
+
+See [Data Flow](data-flow.md#thread-safety) for the full set of locks and
+their nesting rules.
 
 ### Performance
 
-- **Callback Processing**: < 10ms per invocation
-- **History Management**: Rolling window (60 seconds max)
-- **Memory Usage**: < 5MB for all history
-- **Frontend Updates**: Configurable rate (default 1Hz)
+- **Callback Processing**: well under 10ms per invocation (pure Python, no numpy)
+- **History Management**: bounded deques (`history_size`, default 60 samples per heater)
+- **Memory Usage**: negligible — a few hundred small tuples
+- **Frontend Updates**: configurable rate (`update_interval`, default 1Hz)
 
 ### Modularity
 
@@ -100,14 +105,16 @@ See [Algorithms](algorithms.md) for implementation details.
 
 ## OctoPrint Integration
 
-The plugin implements several OctoPrint mixins:
+The plugin implements OctoPrint's `PrinterCallback` (the temperature data
+source) plus several plugin mixins:
 
-- **StartupPlugin**: Initialization and cleanup
-- **TemplatePlugin**: UI integration
-- **SettingsPlugin**: Configuration management
-- **AssetPlugin**: Static file serving
-- **EventHandlerPlugin**: Temperature monitoring
-- **SimpleApiPlugin**: REST API endpoints
+- **PrinterCallback**: receives temperature updates (~2Hz)
+- **StartupPlugin**: initialization (callback registration, history restore, MQTT)
+- **TemplatePlugin**: UI integration (navbar, sidebar, tab, settings)
+- **SettingsPlugin**: configuration management
+- **AssetPlugin**: static file serving
+- **EventHandlerPlugin**: connection/print-job lifecycle handling
+- **SimpleApiPlugin**: REST API endpoints (status + maintenance commands)
 
 See [OctoPrint Integration](octoprint-integration.md) for details.
 
@@ -121,11 +128,12 @@ plugins:
     enabled: true
     algorithm: linear
     update_interval: 1.0
-    min_rate: 0.1
+    threshold_start: 5.0
     # ... more settings
 ```
 
-See [Settings](settings.md) for all configuration options.
+See the [Configuration Reference](../reference/configuration.md) for all
+keys and [Settings Architecture](settings.md) for how they are applied.
 
 ## Internationalization
 
@@ -157,7 +165,7 @@ Developers can extend the plugin through:
 
 - Python 3.9+
 - OctoPrint 1.10.2+
-- paho-mqtt >=1.6.0,<3.0.0 (installed automatically; the MQTT publishing feature itself is opt-in via settings)
+- paho-mqtt >=2.0.0,<3.0.0 (installed automatically; the MQTT publishing feature itself is opt-in via settings)
 
 ### Development
 
@@ -185,20 +193,13 @@ Developers can extend the plugin through:
 - **MQTT authentication**: Supports username/password and TLS
 - **Template autoescape**: Enabled to prevent XSS
 
-## Performance Monitoring
+## Diagnostics
 
-The plugin tracks its own performance:
-
-- Callback execution time
-- Memory usage
-- ETA calculation time
-- History buffer size
-
-Enable debug logging to see performance metrics:
-
-```text
-Settings → Logging → octoprint.plugins.temp_eta → DEBUG
-```
+Enable the plugin's **Debug logging** setting for throttled diagnostic
+output (callback statistics, persist scheduling, cooldown fit decisions,
+settings snapshots) in `octoprint.log` — no logger reconfiguration needed.
+For live resource monitoring of a development instance, see
+`.development/monitor_octoprint_performance.sh`.
 
 ## Next Steps
 

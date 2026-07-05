@@ -2,7 +2,6 @@
 # pylint: disable=line-too-long
 """Unit tests for the calculator module."""
 
-
 import time
 from collections import deque
 from unittest import TestCase
