@@ -15,7 +15,19 @@ import time
 from collections import deque
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol, Type, runtime_checkable
+from typing import Any, Optional, Protocol, runtime_checkable
+
+# Non-fatal error types tolerated in defensive paths. The temperature callback,
+# settings access and persistence run inside OctoPrint's core loops and must
+# never let an expected runtime error bubble out of the plugin.
+_EXPECTED_ERRORS = (
+    AttributeError,
+    KeyError,
+    OSError,
+    RuntimeError,
+    TypeError,
+    ValueError,
+)
 
 try:
     from ._version import VERSION
@@ -520,14 +532,12 @@ class TempETAPlugin(
         except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
 
-        # Ensure ordering and keep current interval within bounds.
+        # Ensure ordering and keep current interval within bounds. (The reset
+        # interval is allowed to be shorter than the initial interval.)
         self._persist_backoff_max_s = max(
             self._persist_backoff_max_s,
             self._persist_backoff_initial_s,
         )
-        if self._persist_backoff_initial_s < self._persist_backoff_reset_s:
-            # Reset interval may be shorter than initial.
-            pass
         self._persist_backoff_current_s = max(
             1.0,
             min(
@@ -594,7 +604,7 @@ class TempETAPlugin(
                 profile_id = profile.get("id")
                 if profile_id:
                     return str(profile_id)
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             pass
         return "default"
 
@@ -620,7 +630,7 @@ class TempETAPlugin(
             if path.exists():
                 path.unlink()
                 deleted = True
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             self._logger.debug(
                 "Failed to delete history file for profile '%s'",
                 str(profile_id),
@@ -656,18 +666,11 @@ class TempETAPlugin(
                     if path.is_file():
                         path.unlink()
                         deleted_count += 1
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     self._logger.debug(
                         "Failed to delete history file '%s'", str(path), exc_info=True
                     )
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             self._logger.debug(
                 "Failed to enumerate history files in '%s'", str(folder), exc_info=True
             )
@@ -713,7 +716,7 @@ class TempETAPlugin(
 
         try:
             self._settings.save()
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             # Best-effort: UI should still refresh, and errors are logged by OctoPrint.
             pass
 
@@ -733,7 +736,7 @@ class TempETAPlugin(
 
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             self._logger.debug(
                 "Failed to read history file for profile '%s'",
                 profile_id,
@@ -761,14 +764,7 @@ class TempETAPlugin(
                     ts = float(p[0])
                     actual = float(p[1])
                     target = float(p[2])
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     continue
 
                 if ts < min_ts or ts > now + 5:
@@ -866,14 +862,7 @@ class TempETAPlugin(
                 try:
                     if tmp_path.exists():
                         tmp_path.unlink()
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     pass
 
             # Only clear the dirty flag if no new sample landed during the
@@ -888,7 +877,7 @@ class TempETAPlugin(
                 total_samples,
                 str(path),
             )
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             self._logger.debug(
                 "Failed to persist history for profile '%s'",
                 str(profile_id),
@@ -996,14 +985,7 @@ class TempETAPlugin(
                             str(heated_bed),
                             str(heated_chamber),
                         )
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     self._debug_log(
                         "Profile summary unavailable id=%s", str(profile_id)
                     )
@@ -1052,7 +1034,7 @@ class TempETAPlugin(
 
         try:
             value = int(self._settings.get_int(["history_size"]))
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             value = self._default_history_size
 
         # UI constrains to 10..300; keep backend aligned.
@@ -1170,7 +1152,7 @@ class TempETAPlugin(
             _log_support_if_changed(False, f"profile={profile_name} unknown_heater")
             self._heater_supported_cache[heater_key] = False
             return False
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             if self._debug_logging_enabled:
                 self._debug_log("Heater support error heater=%s", str(heater_name))
             self._heater_supported_cache[heater_key] = False
@@ -1228,7 +1210,7 @@ class TempETAPlugin(
         # Avoid eager f-string formatting in the hot path.
         try:
             is_logger_debug = bool(getattr(self._logger, "isEnabledFor")(10))  # type: ignore[attr-defined]
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             is_logger_debug = False
         if is_logger_debug:
             heaters_in_data = [k for k, v in data.items() if isinstance(v, Mapping)]
@@ -1266,26 +1248,12 @@ class TempETAPlugin(
                     continue
                 try:
                     actual = float(actual_raw)
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     continue
 
                 try:
                     target = float(target_raw or 0)
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     # Some firmwares/virtual printer formats may provide a non-numeric
                     # target (e.g. "off"). Treat that as OFF for cooldown tracking.
                     target = 0.0
@@ -1495,26 +1463,12 @@ class TempETAPlugin(
 
                 try:
                     target = float(target_raw or 0)
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     target = 0.0
 
                 try:
                     actual = float(actual_raw or 0)
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     actual = 0.0
 
                 if target <= 0:
@@ -1569,14 +1523,7 @@ class TempETAPlugin(
                                 try:
                                     h = self._cooldown_history.get(heater)
                                     hist_len = len(h) if h is not None else 0
-                                except (
-                                    AttributeError,
-                                    KeyError,
-                                    OSError,
-                                    RuntimeError,
-                                    TypeError,
-                                    ValueError,
-                                ):
+                                except _EXPECTED_ERRORS:
                                     hist_len = 0
                                 self._debug_log_throttled(
                                     time.time(),
@@ -1652,7 +1599,7 @@ class TempETAPlugin(
             return True
         try:
             return bool(self._settings.get_boolean(["enable_heating_eta"]))
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             return True
 
     def _cooldown_enabled(self) -> bool:
@@ -1661,7 +1608,7 @@ class TempETAPlugin(
             return False
         try:
             return bool(self._settings.get_boolean(["enable_cooldown_eta"]))
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             return False
 
     def _cooldown_mode(self) -> str:
@@ -1672,7 +1619,7 @@ class TempETAPlugin(
             mode = self._settings.get(["cooldown_mode"])
             if mode in ("threshold", "ambient"):
                 return str(mode)
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             pass
         return "threshold"
 
@@ -1685,7 +1632,7 @@ class TempETAPlugin(
             if v <= 0:
                 return 1.0
             return v
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             return 1.0
 
     def _cooldown_fit_window_seconds(self) -> float:
@@ -1699,7 +1646,7 @@ class TempETAPlugin(
             if v > 1800:
                 return 1800.0
             return v
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             return 120.0
 
     def _get_cooldown_threshold_target_c(self, heater_name: str) -> Optional[float]:
@@ -1723,7 +1670,7 @@ class TempETAPlugin(
             if not math.isfinite(value) or value <= 0:
                 return None
             return value
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             return None
 
     def _get_cooldown_ambient_c(self, heater_name: str) -> Optional[float]:
@@ -1738,7 +1685,7 @@ class TempETAPlugin(
                 v = float(raw)
                 if math.isfinite(v) and v > -50:
                     return v
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             pass
 
         base = self._cooldown_ambient_baseline.get(heater_name)
@@ -1763,7 +1710,7 @@ class TempETAPlugin(
         # already learned baseline.
         try:
             current = float(recent[-1])
-        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError):
+        except _EXPECTED_ERRORS:
             current = mn
         if mn >= (current - 2.0):
             return None
@@ -1828,61 +1775,57 @@ class TempETAPlugin(
         if not hist:
             return None
 
-        # Use calculator module if available
-        if calculator is not None:
-            now = time.time()
-            window = self._cooldown_fit_window_seconds()
-            cutoff = now - window
-            recent = deque(
-                (
-                    (ts, temp)
-                    for ts, temp in hist
-                    if math.isfinite(ts) and math.isfinite(temp) and ts > cutoff
-                ),
-                maxlen=hist.maxlen,
+        now = time.time()
+        window = self._cooldown_fit_window_seconds()
+        cutoff = now - window
+        recent = deque(
+            (
+                (ts, temp)
+                for ts, temp in hist
+                if math.isfinite(ts) and math.isfinite(temp) and ts > cutoff
+            ),
+            maxlen=hist.maxlen,
+        )
+
+        if len(recent) < 2:
+            self._debug_log_throttled(
+                now,
+                15.0,
+                "Cooldown linear fit: not enough recent samples heater=%s "
+                "window=%.0fs hist=%d",
+                str(heater_name),
+                float(window),
+                int(len(hist)),
             )
+            return None
 
-            if len(recent) < 2:
-                self._debug_log_throttled(
-                    now,
-                    15.0,
-                    "Cooldown linear fit: not enough recent samples heater=%s "
-                    "window=%.0fs hist=%d",
-                    str(heater_name),
-                    float(window),
-                    int(len(hist)),
-                )
-                return None
+        result = calculator.calculate_cooldown_linear_eta(recent, goal_c, window)
 
-            result = calculator.calculate_cooldown_linear_eta(recent, goal_c, window)
+        # Debug log when slope is not negative (calculator returns None)
+        if result is None:
+            t0, temp0 = recent[0]
+            t1, temp1 = recent[-1]
+            dt = t1 - t0
+            dtemp = temp1 - temp0
+            if dt > 0:
+                slope = dtemp / dt
+                if slope >= -1e-3:
+                    self._debug_log_throttled(
+                        now,
+                        15.0,
+                        "Cooldown linear fit: slope not negative "
+                        "heater=%s slope=%.6f dt=%.2f dT=%.2f "
+                        "t0=%.1f t1=%.1f goal=%.1f",
+                        str(heater_name),
+                        float(slope),
+                        float(dt),
+                        float(dtemp),
+                        float(temp0),
+                        float(temp1),
+                        float(goal_c),
+                    )
 
-            # Debug log when slope is not negative (calculator returns None)
-            if result is None:
-                t0, temp0 = recent[0]
-                t1, temp1 = recent[-1]
-                dt = t1 - t0
-                dtemp = temp1 - temp0
-                if dt > 0:
-                    slope = dtemp / dt
-                    if slope >= -1e-3:
-                        self._debug_log_throttled(
-                            now,
-                            15.0,
-                            "Cooldown linear fit: slope not negative "
-                            "heater=%s slope=%.6f dt=%.2f dT=%.2f "
-                            "t0=%.1f t1=%.1f goal=%.1f",
-                            str(heater_name),
-                            float(slope),
-                            float(dt),
-                            float(dtemp),
-                            float(temp0),
-                            float(temp1),
-                            float(goal_c),
-                        )
-
-            return result
-
-        return None
+        return result
 
     def _calculate_cooldown_exponential_eta(
         self, heater_name: str, ambient_c: float, goal_c: float
@@ -1892,14 +1835,10 @@ class TempETAPlugin(
         if not hist:
             return None
 
-        # Use calculator module if available
-        if calculator is not None:
-            window = self._cooldown_fit_window_seconds()
-            return calculator.calculate_cooldown_exponential_eta(
-                hist, ambient_c, goal_c, window
-            )
-
-        return None
+        window = self._cooldown_fit_window_seconds()
+        return calculator.calculate_cooldown_exponential_eta(
+            hist, ambient_c, goal_c, window
+        )
 
     def _calculate_linear_eta(self, heater, target):
         """Calculate ETA assuming constant heating rate.
@@ -1915,11 +1854,7 @@ class TempETAPlugin(
         if not history:
             return None
 
-        # Use calculator module if available, otherwise fallback not implemented
-        if calculator is not None:
-            return calculator.calculate_linear_eta(history, target)
-
-        return None
+        return calculator.calculate_linear_eta(history, target)
 
     def _calculate_exponential_eta(self, heater, target):
         """Calculate ETA accounting for thermal asymptotic behavior.
@@ -1933,15 +1868,11 @@ class TempETAPlugin(
         Returns:
             float: Estimated seconds to target, or None if insufficient data
         """
-        history = self._temp_history.get(heater, deque())
+        history = self._temp_history.get(heater)
         if not history:
             return None
 
-        # Use calculator module if available, otherwise fallback not implemented
-        if calculator is not None:
-            return calculator.calculate_exponential_eta(history, target)
-
-        return None
+        return calculator.calculate_exponential_eta(history, target)
 
     # SettingsPlugin mixin
     def get_settings_defaults(self):
@@ -2112,52 +2043,50 @@ class TempETAPlugin(
             key: str,
             min_value: float,
             max_value: float,
+            default: Optional[float] = None,
         ) -> None:
+            """Clamp data[key] to [min_value, max_value].
+
+            Empty/unparsable values become *default* (min_value if not given).
+            """
             if key not in data:
                 return
+            fallback = float(min_value if default is None else default)
             raw = data.get(key)
             if raw is None or raw == "":
-                data[key] = float(min_value)
+                data[key] = fallback
                 return
             try:
                 value = float(raw)
-            except (
-                AttributeError,
-                KeyError,
-                OSError,
-                RuntimeError,
-                TypeError,
-                ValueError,
-            ):
-                data[key] = float(min_value)
+            except _EXPECTED_ERRORS:
+                data[key] = fallback
                 return
 
-            value = max(min_value, value)
-            value = min(value, max_value)
-            data[key] = float(value)
+            data[key] = float(max(min_value, min(value, max_value)))
 
-        def _clamp_int(key: str, min_value: int, max_value: int) -> None:
+        def _clamp_int(
+            key: str,
+            min_value: int,
+            max_value: int,
+            default: Optional[int] = None,
+        ) -> None:
+            """Clamp data[key] to [min_value, max_value].
+
+            Empty/unparsable values become *default* (min_value if not given).
+            """
             if key not in data:
                 return
+            fallback = int(min_value if default is None else default)
             raw = data.get(key)
             if raw is None or raw == "":
-                data[key] = int(min_value)
+                data[key] = fallback
                 return
             try:
                 value = int(float(raw))
-            except (
-                AttributeError,
-                KeyError,
-                OSError,
-                RuntimeError,
-                TypeError,
-                ValueError,
-            ):
-                data[key] = int(min_value)
+            except _EXPECTED_ERRORS:
+                data[key] = fallback
                 return
-            value = max(min_value, value)
-            value = min(value, max_value)
-            data[key] = int(value)
+            data[key] = int(max(min_value, min(value, max_value)))
 
         # General / heating ETA
         _clamp_float("threshold_start", 1.0, 50.0)
@@ -2178,6 +2107,11 @@ class TempETAPlugin(
         _clamp_float("cooldown_hysteresis_c", 0.1, 20.0)
         _clamp_int("cooldown_fit_window_seconds", 10, 1800)
 
+        # MQTT (mirror the min/max constraints of the settings UI)
+        _clamp_int("mqtt_broker_port", 1, 65535, default=1883)
+        _clamp_int("mqtt_qos", 0, 2)
+        _clamp_float("mqtt_publish_interval", 0.1, 60.0, default=1.0)
+
         # Optional ambient: keep None if invalid/out of range.
         if "cooldown_ambient_temp" in data:
             raw = data.get("cooldown_ambient_temp")
@@ -2186,14 +2120,7 @@ class TempETAPlugin(
             else:
                 try:
                     v = float(raw)
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     v = None
                 if v is None or v < 0.0 or v > 80.0:
                     data["cooldown_ambient_temp"] = None
@@ -2345,14 +2272,7 @@ class TempETAPlugin(
                     self._plugin_manager.send_plugin_message(
                         self._identifier, {"type": "settings_reset"}
                     )
-                except (
-                    AttributeError,
-                    KeyError,
-                    OSError,
-                    RuntimeError,
-                    TypeError,
-                    ValueError,
-                ):
+                except _EXPECTED_ERRORS:
                     pass
 
             return jsonify({"success": True, "message": gettext("Defaults restored.")})

@@ -7,6 +7,7 @@ configurable settings for broker details, authentication, and QoS.
 """
 
 import json
+import math
 import ssl
 import threading
 import time
@@ -63,8 +64,11 @@ class MQTTClientWrapper:
         self._retain = False
         self._publish_interval = 1.0
 
-        # State tracking for state transition events
-        self._last_published_time = 0.0
+        # State tracking for state transition events.
+        # Publish throttling is tracked per heater: a shared timestamp would let
+        # the first heater in every broadcast batch consume the publish slot and
+        # permanently starve the others.
+        self._last_published_time: dict[str, float] = {}
         self._last_heater_state: dict[str, Optional[str]] = {}
 
         # Connection retry logic
@@ -97,7 +101,9 @@ class MQTTClientWrapper:
 
             self._enabled = bool(settings.get("mqtt_enabled", False))
             self._broker_host = str(settings.get("mqtt_broker_host", "")).strip()
-            self._broker_port = int(settings.get("mqtt_broker_port", 1883))
+            self._broker_port = self._coerce_int(
+                settings.get("mqtt_broker_port"), default=1883, lo=1, hi=65535
+            )
             self._username = str(settings.get("mqtt_username", "")).strip()
             self._password = str(settings.get("mqtt_password", "")).strip()
             self._use_tls = bool(settings.get("mqtt_use_tls", False))
@@ -115,15 +121,43 @@ class MQTTClientWrapper:
                 base_topic, use_appearance_name, appearance_name, custom_identifier
             )
 
-            self._qos = int(settings.get("mqtt_qos", 0))
+            self._qos = self._coerce_int(
+                settings.get("mqtt_qos"), default=0, lo=0, hi=2
+            )
             self._retain = bool(settings.get("mqtt_retain", False))
-            self._publish_interval = float(settings.get("mqtt_publish_interval", 1.0))
+            self._publish_interval = self._coerce_float(
+                settings.get("mqtt_publish_interval"), default=1.0, lo=0.0, hi=3600.0
+            )
 
             # Reconnect if settings changed and enabled
             if self._enabled and (not old_enabled or not self._connected):
                 self._schedule_connect()
             elif not self._enabled and old_enabled:
                 self._disconnect_internal()
+
+    @staticmethod
+    def _coerce_int(raw: Any, default: int, lo: int, hi: int) -> int:
+        """Coerce a settings value to an int clamped to [lo, hi].
+
+        Settings may arrive as str/None/garbage (e.g. hand-edited config.yaml);
+        configuration must never raise into OctoPrint's settings-save flow.
+        """
+        try:
+            value = int(float(raw))  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, value))
+
+    @staticmethod
+    def _coerce_float(raw: Any, default: float, lo: float, hi: float) -> float:
+        """Coerce a settings value to a finite float clamped to [lo, hi]."""
+        try:
+            value = float(raw)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return default
+        if not math.isfinite(value):
+            return default
+        return max(lo, min(hi, value))
 
     def _build_final_topic(
         self,
@@ -425,12 +459,14 @@ class MQTTClientWrapper:
             if not self._enabled or not self._connected:
                 return
 
-            # Check if we should publish based on interval
+            # Check if we should publish based on the per-heater interval
             now = time.time()
-            if (now - self._last_published_time) < self._publish_interval:
+            if (
+                now - self._last_published_time.get(heater, 0.0)
+            ) < self._publish_interval:
                 return
 
-            self._last_published_time = now
+            self._last_published_time[heater] = now
 
             # Determine state for transition detection
             current_state = None

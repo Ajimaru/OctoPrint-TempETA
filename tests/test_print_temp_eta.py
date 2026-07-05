@@ -700,6 +700,9 @@ def test_sanitize_settings_payload_clamps_and_handles_invalid_values(
         "cooldown_hysteresis_c": 0,
         "cooldown_fit_window_seconds": "",
         "cooldown_ambient_temp": "nope",
+        "mqtt_broker_port": "",
+        "mqtt_qos": 7,
+        "mqtt_publish_interval": "nope",
     }
 
     _call_attr(temp_eta_plugin, _member("sanitize_settings_payload"), data)
@@ -713,6 +716,10 @@ def test_sanitize_settings_payload_clamps_and_handles_invalid_values(
     assert data["cooldown_hysteresis_c"] == 0.1
     assert data["cooldown_fit_window_seconds"] == 10
     assert data["cooldown_ambient_temp"] is None
+    # MQTT: empty/invalid values fall back to defaults, out-of-range clamps.
+    assert data["mqtt_broker_port"] == 1883
+    assert data["mqtt_qos"] == 2
+    assert data["mqtt_publish_interval"] == 1.0
 
     data2: dict[str, Any] = {"cooldown_ambient_temp": "25"}
     _call_attr(temp_eta_plugin, _member("sanitize_settings_payload"), data2)

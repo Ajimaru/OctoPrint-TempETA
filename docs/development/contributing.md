@@ -46,13 +46,14 @@ flake8 octoprint_temp_eta tests
 PEP 8 + OctoPrint conventions. Type hints where useful.
 
 ```python
-def calculate_eta(self, history: Deque, target: float) -> Optional[float]:
-    """Calculate ETA via linear extrapolation. Returns seconds or None."""
-    if len(history) < 2:
-        return None
-    rate = self._calculate_rate(history)
-    remaining = target - history[-1][1]
-    return remaining / rate if rate > 0 else None
+def calculate_linear_eta(
+    history: deque, target: float, window_seconds: float = 10.0
+) -> Optional[float]:
+    """Calculate ETA assuming constant heating rate.
+
+    Returns:
+        Estimated seconds to target, or None if insufficient data
+    """
 ```
 
 ### JavaScript

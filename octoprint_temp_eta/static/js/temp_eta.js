@@ -1705,22 +1705,25 @@ $(() => {
 		};
 
 		/**
-		 * Format seconds into a human-readable minutes:seconds string.
+		 * Format seconds into a human-readable countdown string.
 		 *
-		 * This is a pure documentation block (JSDoc) and does not alter runtime
-		 * behavior; it must be kept as a comment-only insertion to avoid parse
-		 * issues during documentation generation.
-		 *
-		 * @param {number} seconds - Seconds until target (positive integer)
-		 * @returns {string} Formatted ETA like "M:SS" or "--:--" if unknown
+		 * @param {number} seconds - Seconds until target (positive number)
+		 * @returns {string} Formatted ETA like "M:SS", or "H:MM:SS" for ETAs of
+		 *   an hour or more (long cool-downs), or "--:--" if unknown
 		 */
 		self.formatETA = (seconds) => {
 			if (!seconds || seconds <= 0) {
 				return "--:--";
 			}
-			var mins = Math.floor(seconds / 60);
-			var secs = Math.floor(seconds % 60);
-			return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+			var total = Math.floor(seconds);
+			var hours = Math.floor(total / 3600);
+			var mins = Math.floor((total % 3600) / 60);
+			var secs = total % 60;
+			var pad = (n) => `${n < 10 ? "0" : ""}${n}`;
+			if (hours > 0) {
+				return `${hours}:${pad(mins)}:${pad(secs)}`;
+			}
+			return `${mins}:${pad(secs)}`;
 		};
 
 		self._getTempDisplayMode = () => {
@@ -2299,14 +2302,6 @@ $(() => {
 		 * @param {Heater} heater - heater object
 		 * @returns {string} localized idle text
 		 */
-
-		/**
-		 * Return a user-facing label for a heater id.
-		 * @function TempETAViewModel#getHeaterLabel
-		 * @param {string} heaterName - heater identifier (e.g. 'tool0','bed')
-		 * @returns {string} localized label
-		 */
-
 		self.getHeaterIdleText = (heater) => {
 			if (heater?.etaKind && heater.etaKind() === "cooling") {
 				return _gettext("Cooling");

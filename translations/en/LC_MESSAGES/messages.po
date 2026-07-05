@@ -66,7 +66,7 @@ msgstr ""
 msgid "Base topic"
 msgstr "Base topic"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2287
+#: octoprint_temp_eta/static/js/temp_eta.js:2290
 msgid "Bed"
 msgstr "Bed"
 
@@ -99,7 +99,7 @@ msgstr "Celsius (°C)"
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr "Celsius + Fahrenheit (°C/°F)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2288
+#: octoprint_temp_eta/static/js/temp_eta.js:2291
 msgid "Chamber"
 msgstr "Chamber"
 
@@ -166,7 +166,7 @@ msgstr "Cool-down target (tool0)"
 msgid "Cooldown finished"
 msgstr "Cooldown finished"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2312
+#: octoprint_temp_eta/static/js/temp_eta.js:2307
 msgid "Cooling"
 msgstr "Cooling"
 
@@ -174,7 +174,7 @@ msgstr "Cooling"
 msgid "Cooling color"
 msgstr "Cooling color"
 
-#: octoprint_temp_eta/__init__.py:2358
+#: octoprint_temp_eta/__init__.py:2278
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:735
 msgid "Defaults restored."
 msgstr "Defaults restored."
@@ -349,7 +349,7 @@ msgid ""
 msgstr ""
 "How often to update ETA display (lower = more responsive, higher = less CPU)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2314
+#: octoprint_temp_eta/static/js/temp_eta.js:2309
 msgid "Idle"
 msgstr "Idle"
 
@@ -750,7 +750,7 @@ msgstr "Target temperature for the chamber when using threshold mode."
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr "Target temperature for tool0 when using threshold mode."
 
-#: octoprint_temp_eta/__init__.py:2056
+#: octoprint_temp_eta/__init__.py:1987
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:708

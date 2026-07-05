@@ -90,8 +90,8 @@ def calculate_linear_eta(
     """
     Calculate ETA assuming constant heating rate.
 
-    Uses linear regression on recent temperature samples to estimate
-    the rate of temperature change and predict time to target.
+    Estimates the heating rate from the first and last sample within the
+    recent time window and extrapolates linearly to the target.
 
     Args:
         history: Deque of (timestamp, actual_temp, target_temp) tuples
@@ -100,6 +100,7 @@ def calculate_linear_eta(
 
     Returns:
         Estimated seconds to target, or None if insufficient data
+        or the heater is not heating within the window
     """
     if not _validate_scalar(target) or not _validate_window(window_seconds):
         return None
@@ -159,10 +160,13 @@ def _exponential_fit(recent, target: float, epsilon_c: float):
         return None
 
     slope, _ = result
-    if slope >= -1e-4 or not (-1.0 / slope) > 0 or (-1.0 / slope) > 2000:
-        return None
+    if slope >= -1e-4:
+        return None  # not heating towards target → fallback
 
     tau = -1.0 / slope
+    if tau > 2000:
+        return None  # implausibly slow time constant → fallback
+
     remaining_now = target - recent[-1][1]
     # ValueError propagates to calculate_exponential_eta for fallback handling
     eta = tau * math.log(remaining_now / epsilon_c)
@@ -234,8 +238,9 @@ def calculate_cooldown_linear_eta(
     """
     Linear cooldown ETA from recent slope.
 
-    Uses linear regression on recent cooldown samples to estimate
-    the rate of temperature decrease and predict time to goal.
+    Estimates the cooling rate from the first and last sample within the
+    recent time window and extrapolates linearly to the goal. The result
+    is capped at 24 hours.
 
     Args:
         cooldown_history: Deque of (timestamp, temp) tuples
@@ -244,6 +249,7 @@ def calculate_cooldown_linear_eta(
 
     Returns:
         Estimated seconds to goal, or None if insufficient data
+        or the heater is not cooling within the window
     """
     if not _validate_scalar(goal_c) or not _validate_window(window_seconds):
         return None

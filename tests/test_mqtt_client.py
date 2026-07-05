@@ -243,7 +243,7 @@ def test_mqtt_state_transition_detection(
         connected=True,
         client=mock_client,
         base_topic="test/topic",
-        last_published_time=0.0,
+        last_published_time={},
     )
 
     mock_result = MagicMock()
@@ -254,12 +254,12 @@ def test_mqtt_state_transition_detection(
         heater="bed", eta=120.0, eta_kind="heating", target=60.0, actual=40.0
     )
 
-    wrapper.set_internal_state(last_published_time=0.0)
+    wrapper.set_internal_state(last_published_time={})
     wrapper.publish_eta_update(
         heater="bed", eta=115.0, eta_kind="heating", target=60.0, actual=42.0
     )
 
-    wrapper.set_internal_state(last_published_time=0.0)
+    wrapper.set_internal_state(last_published_time={})
     wrapper.publish_eta_update(
         heater="bed", eta=None, eta_kind=None, target=60.0, actual=60.0
     )
@@ -291,13 +291,52 @@ def test_mqtt_publish_interval_throttling(wrapper: MQTTClientWrapperHarness) -> 
         connected=True,
         client=mock_client,
         publish_interval=1.0,
-        last_published_time=time.time(),
+        last_published_time={"bed": time.time()},
     )
 
     wrapper.publish_eta_update(
         heater="bed", eta=120.0, eta_kind="heating", target=60.0, actual=40.0
     )
 
+    assert not mock_client.publish.called
+
+
+def test_mqtt_publish_interval_is_tracked_per_heater(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """A publish for one heater must not consume the slot of other heaters.
+
+    Regression test: with a shared throttle timestamp, the first heater in a
+    broadcast batch published and permanently starved the remaining heaters.
+    """
+    mock_client = MagicMock()
+    mock_result = MagicMock()
+    mock_result.rc = 0
+    mock_client.publish.return_value = mock_result
+
+    wrapper.set_internal_state(
+        enabled=True,
+        connected=True,
+        client=mock_client,
+        base_topic="test/topic",
+        publish_interval=1.0,
+        last_published_time={},
+    )
+
+    for heater in ("bed", "tool0", "chamber"):
+        wrapper.publish_eta_update(
+            heater=heater, eta=120.0, eta_kind="heating", target=60.0, actual=40.0
+        )
+
+    published_topics = [call.args[0] for call in mock_client.publish.call_args_list]
+    for heater in ("bed", "tool0", "chamber"):
+        assert f"test/topic/{heater}/eta" in published_topics
+
+    # A second update for the same heater within the interval is throttled.
+    mock_client.publish.reset_mock()
+    wrapper.publish_eta_update(
+        heater="bed", eta=110.0, eta_kind="heating", target=60.0, actual=42.0
+    )
     assert not mock_client.publish.called
 
 
@@ -317,6 +356,39 @@ def test_mqtt_qos_levels(wrapper: MQTTClientWrapperHarness) -> None:
     assert wrapper.get_internal_state("qos") == 2
     assert wrapper.get_internal_state("retain") is True
     assert wrapper.get_internal_state("publish_interval") == 0.5
+
+
+def test_mqtt_configure_tolerates_invalid_numeric_settings(
+    wrapper: MQTTClientWrapperHarness,
+) -> None:
+    """Garbage numeric settings must not raise and fall back to defaults."""
+    wrapper.configure(
+        {
+            "mqtt_enabled": False,
+            "mqtt_broker_host": "test-broker",
+            "mqtt_broker_port": "not-a-port",
+            "mqtt_qos": None,
+            "mqtt_publish_interval": "oops",
+        }
+    )
+
+    assert wrapper.get_internal_state("broker_port") == 1883
+    assert wrapper.get_internal_state("qos") == 0
+    assert wrapper.get_internal_state("publish_interval") == 1.0
+
+    # Out-of-range values are clamped instead of accepted verbatim.
+    wrapper.configure(
+        {
+            "mqtt_enabled": False,
+            "mqtt_broker_port": 99999,
+            "mqtt_qos": 7,
+            "mqtt_publish_interval": -3.0,
+        }
+    )
+
+    assert wrapper.get_internal_state("broker_port") == 65535
+    assert wrapper.get_internal_state("qos") == 2
+    assert wrapper.get_internal_state("publish_interval") == 0.0
 
 
 def test_mqtt_tls_configuration(wrapper: MQTTClientWrapperHarness) -> None:
@@ -672,7 +744,7 @@ def test_mqtt_publish_eta_update_sets_cooled_down_state(
         connected=True,
         client=mock_client,
         base_topic="test/topic",
-        last_published_time=0.0,
+        last_published_time={},
         publish_interval=0.0,
     )
 
@@ -883,7 +955,7 @@ def test_mqtt_publish_eta_update_sets_cooling_state(
         connected=True,
         client=mock_client,
         base_topic="test/topic",
-        last_published_time=0.0,
+        last_published_time={},
         publish_interval=0.0,
     )
 
