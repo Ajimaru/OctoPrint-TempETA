@@ -66,7 +66,7 @@ msgstr ""
 msgid "Base topic"
 msgstr "Base topic"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2290
+#: octoprint_temp_eta/static/js/temp_eta.js:2307
 msgid "Bed"
 msgstr "Bed"
 
@@ -99,7 +99,7 @@ msgstr "Celsius (°C)"
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr "Celsius + Fahrenheit (°C/°F)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2291
+#: octoprint_temp_eta/static/js/temp_eta.js:2308
 msgid "Chamber"
 msgstr "Chamber"
 
@@ -124,7 +124,7 @@ msgstr "Configure algorithm and threshold in Settings → Temperature ETA"
 msgid "Confirm reset"
 msgstr "Confirm reset"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:745
+#: octoprint_temp_eta/static/js/temp_eta.js:762
 msgid "Connected"
 msgstr "Connected"
 
@@ -166,7 +166,7 @@ msgstr "Cool-down target (tool0)"
 msgid "Cooldown finished"
 msgstr "Cooldown finished"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2307
+#: octoprint_temp_eta/static/js/temp_eta.js:2324
 msgid "Cooling"
 msgstr "Cooling"
 
@@ -192,7 +192,7 @@ msgstr ""
 "Deletes all persisted ETA history JSON files for all printer profiles "
 "(stored in OctoPrint's plugin data folder)."
 
-#: octoprint_temp_eta/static/js/temp_eta.js:742
+#: octoprint_temp_eta/static/js/temp_eta.js:759
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -349,7 +349,7 @@ msgid ""
 msgstr ""
 "How often to update ETA display (lower = more responsive, higher = less CPU)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2309
+#: octoprint_temp_eta/static/js/temp_eta.js:2326
 msgid "Idle"
 msgstr "Idle"
 
@@ -439,7 +439,7 @@ msgstr "MQTT username (leave empty for no authentication)"
 msgid "Maintenance"
 msgstr "Maintenance"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1631
+#: octoprint_temp_eta/static/js/temp_eta.js:1648
 msgid "Measured temperature"
 msgstr "Measured temperature"
 
@@ -470,7 +470,7 @@ msgstr "Monitors temperature changes in real-time"
 msgid "No persisted history files found."
 msgstr "No persisted history files found."
 
-#: octoprint_temp_eta/static/js/temp_eta.js:746
+#: octoprint_temp_eta/static/js/temp_eta.js:763
 msgid "Not connected"
 msgstr "Not connected"
 
@@ -734,7 +734,7 @@ msgstr ""
 msgid "Target reached"
 msgstr "Target reached"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1641
+#: octoprint_temp_eta/static/js/temp_eta.js:1658
 msgid "Target temperature"
 msgstr "Target temperature"
 
@@ -843,11 +843,11 @@ msgstr ""
 msgid "Tip: These colors also apply to progress bars in status mode."
 msgstr "Tip: These colors also apply to progress bars in status mode."
 
-#: octoprint_temp_eta/static/js/temp_eta.js:739
+#: octoprint_temp_eta/static/js/temp_eta.js:756
 msgid "Unavailable (paho-mqtt not installed)"
 msgstr "Unavailable (paho-mqtt not installed)"
 
-#: octoprint_temp_eta/static/js/temp_eta.js:736
+#: octoprint_temp_eta/static/js/temp_eta.js:753
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:694
 msgid "Unknown"
 msgstr "Unknown"
