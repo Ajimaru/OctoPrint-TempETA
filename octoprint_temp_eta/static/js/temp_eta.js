@@ -612,10 +612,27 @@ $(() => {
 				if ($root.length) {
 					var el = $root.get(0);
 					if (!$(el).data(dataFlag)) {
+						// Avoid "You cannot apply bindings multiple times to the same
+						// element": OctoPrint may already have bound this element (e.g.
+						// via the viewmodel's `elements` list, or a custom_bindings
+						// container binding). ko.dataFor() returns a context only for
+						// nodes KO has already bound, so treat that as "already bound"
+						// and just mark our flag instead of re-applying.
+						var alreadyBound = false;
 						try {
-							ko.applyBindings(self, el);
+							alreadyBound = ko.dataFor(el) !== undefined;
+						} catch (_e) {
+							alreadyBound = false;
+						}
+
+						if (alreadyBound) {
 							$(el).data(dataFlag, true);
-						} catch (_e) {}
+						} else {
+							try {
+								ko.applyBindings(self, el);
+								$(el).data(dataFlag, true);
+							} catch (_e) {}
+						}
 					}
 					if ($(el).data(dataFlag)) {
 						return;

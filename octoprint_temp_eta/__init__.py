@@ -1983,7 +1983,7 @@ class TempETAPlugin(
             {"type": "navbar", "custom_bindings": True},
             {
                 "type": "sidebar",
-                "custom_bindings": False,
+                "custom_bindings": True,
                 "name": gettext("Temperature ETA"),
                 "icon": "fa fa-clock",
             },
