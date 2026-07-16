@@ -10,7 +10,7 @@ The plugin consists of three main components:
 
 - **Plugin Core** (`__init__.py`): Main plugin implementation using OctoPrint's plugin framework
 - **Calculator** (`calculator.py`): Temperature ETA calculation algorithms
-- **MQTT Client** (`mqtt_client.py`): Optional MQTT integration for external monitoring
+- **MQTT Publisher** (`mqtt_publisher.py`): Optional MQTT publishing for external monitoring, delegated to the OctoPrint-MQTT plugin via its `mqtt_publish` helper (incl. Home Assistant autodiscovery)
 
 ### 2. Frontend (JavaScript)
 
@@ -165,7 +165,7 @@ Developers can extend the plugin through:
 
 - Python 3.9+
 - OctoPrint 1.10.2+
-- paho-mqtt >=2.0.0,<3.0.0 (installed automatically; the MQTT publishing feature itself is opt-in via settings)
+- OctoPrint-MQTT plugin (soft requirement, installed separately; needed only for the opt-in MQTT publishing feature)
 
 ### Development
 

@@ -67,7 +67,7 @@ Add release notes to `CHANGELOG.md`:
 - Python 3.10 support
 
 ### Security
-- Updated paho-mqtt to address CVE-XXXX-XXXX
+- Updated a dependency to address CVE-XXXX-XXXX
 ```
 
 ### 4. Create Release Branch

@@ -538,6 +538,14 @@
                 </div>
             </div>
             <div class="tab-pane" id="temp_eta_settings_tab_mqtt">
+                <!-- OctoPrint-MQTT plugin missing warning -->
+                <div class="alert alert-warning"
+                     data-bind="visible: !mqttPluginAvailable()">
+                    {{ _("The OctoPrint-MQTT plugin is not installed or not enabled. It is required for MQTT publishing.") }}
+                    <a href="https://plugins.octoprint.org/plugins/mqtt/"
+                       target="_blank"
+                       rel="noopener noreferrer">{{ _("Get the plugin") }}</a>
+                </div>
                 <!-- Enable MQTT -->
                 <div class="control-group">
                     <label class="control-label" for="temp_eta_mqtt_enabled">{{ _("Enable MQTT") }}</label>
@@ -546,76 +554,9 @@
                                id="temp_eta_mqtt_enabled"
                                data-bind="checked: settings.plugins.temp_eta.mqtt_enabled, enable: settings.plugins.temp_eta.enabled">
                         <span class="label label-warning" style="margin-left: 8px;">{{ _("Experimental") }}</span>
-                        <p class="help-block">{{ _("Enable MQTT integration to publish temperature ETA data and state changes.") }}</p>
-                    </div>
-                </div>
-                <!-- Broker Host -->
-                <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_broker_host">{{ _("Broker Host") }}</label>
-                    <div class="controls">
-                        <input type="text"
-                               class="input-xlarge"
-                               id="temp_eta_mqtt_broker_host"
-                               data-bind="value: settings.plugins.temp_eta.mqtt_broker_host, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
-                               placeholder="localhost">
-                        <p class="help-block">{{ _("MQTT broker hostname or IP address") }}</p>
-                    </div>
-                </div>
-                <!-- Broker Port -->
-                <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_broker_port">{{ _("Broker Port") }}</label>
-                    <div class="controls">
-                        <input type="number"
-                               class="input-small"
-                               id="temp_eta_mqtt_broker_port"
-                               data-bind="value: settings.plugins.temp_eta.mqtt_broker_port, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
-                               min="1"
-                               max="65535">
-                        <p class="help-block">{{ _("MQTT broker port (default: 1883)") }}</p>
-                    </div>
-                </div>
-                <!-- Username -->
-                <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_username">{{ _("Username") }}</label>
-                    <div class="controls">
-                        <input type="text"
-                               class="input-xlarge"
-                               id="temp_eta_mqtt_username"
-                               data-bind="value: settings.plugins.temp_eta.mqtt_username, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
-                               placeholder="{{ _('Optional') }}">
-                        <p class="help-block">{{ _("MQTT username (leave empty for no authentication)") }}</p>
-                    </div>
-                </div>
-                <!-- Password -->
-                <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_password">{{ _("Password") }}</label>
-                    <div class="controls">
-                        <input type="password"
-                               class="input-xlarge"
-                               id="temp_eta_mqtt_password"
-                               data-bind="value: settings.plugins.temp_eta.mqtt_password, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled"
-                               placeholder="{{ _('Optional') }}">
-                        <p class="help-block">{{ _("MQTT password") }}</p>
-                    </div>
-                </div>
-                <!-- Use TLS -->
-                <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_use_tls">{{ _("Use TLS/SSL") }}</label>
-                    <div class="controls">
-                        <input type="checkbox"
-                               id="temp_eta_mqtt_use_tls"
-                               data-bind="checked: settings.plugins.temp_eta.mqtt_use_tls, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled">
-                        <p class="help-block">{{ _("Enable TLS/SSL encryption for MQTT connection") }}</p>
-                    </div>
-                </div>
-                <!-- TLS Insecure -->
-                <div class="control-group">
-                    <label class="control-label" for="temp_eta_mqtt_tls_insecure">{{ _("Skip TLS certificate verification") }}</label>
-                    <div class="controls">
-                        <input type="checkbox"
-                               id="temp_eta_mqtt_tls_insecure"
-                               data-bind="checked: settings.plugins.temp_eta.mqtt_tls_insecure, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled && settings.plugins.temp_eta.mqtt_use_tls">
-                        <p class="help-block">{{ _("Skip certificate verification (not recommended for production)") }}</p>
+                        <p class="help-block">
+                            {{ _("Publish temperature ETA data and state changes via the OctoPrint-MQTT plugin. The broker connection (host, credentials, TLS) is configured in that plugin.") }}
+                        </p>
                     </div>
                 </div>
                 <!-- Base Topic -->
@@ -683,16 +624,30 @@
                         <p class="help-block">{{ _("Minimum interval between MQTT publishes (default: 1.0 seconds)") }}</p>
                     </div>
                 </div>
-                <!-- Connection status -->
+                <!-- Home Assistant autodiscovery -->
                 <div class="temp-eta-settings-divider">
                     <hr>
                 </div>
                 <div class="control-group">
-                    <label class="control-label">{{ _("Connection status") }}</label>
+                    <label class="control-label" for="temp_eta_mqtt_discovery_enabled">{{ _("Home Assistant autodiscovery") }}</label>
                     <div class="controls">
-                        <span class="label"
-                              data-bind="css: mqttStatusLabelClass, text: mqttStatusText">{{ _("Unknown") }}</span>
-                        <p class="help-block">{{ _("Whether the plugin is currently connected to the MQTT broker.") }}</p>
+                        <input type="checkbox"
+                               id="temp_eta_mqtt_discovery_enabled"
+                               data-bind="checked: settings.plugins.temp_eta.mqtt_discovery_enabled, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled">
+                        <p class="help-block">
+                            {{ _("Publish retained discovery configs so the per-heater ETA sensors appear automatically as a device in Home Assistant.") }}
+                        </p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="temp_eta_mqtt_discovery_prefix">{{ _("Discovery prefix") }}</label>
+                    <div class="controls">
+                        <input type="text"
+                               class="input-medium"
+                               id="temp_eta_mqtt_discovery_prefix"
+                               data-bind="value: settings.plugins.temp_eta.mqtt_discovery_prefix, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.mqtt_enabled && settings.plugins.temp_eta.mqtt_discovery_enabled"
+                               placeholder="homeassistant">
+                        <p class="help-block">{{ _("Home Assistant discovery topic prefix (default: homeassistant)") }}</p>
                     </div>
                 </div>
             </div>

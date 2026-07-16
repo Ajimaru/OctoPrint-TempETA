@@ -700,7 +700,6 @@ def test_sanitize_settings_payload_clamps_and_handles_invalid_values(
         "cooldown_hysteresis_c": 0,
         "cooldown_fit_window_seconds": "",
         "cooldown_ambient_temp": "nope",
-        "mqtt_broker_port": "",
         "mqtt_qos": 7,
         "mqtt_publish_interval": "nope",
     }
@@ -717,7 +716,6 @@ def test_sanitize_settings_payload_clamps_and_handles_invalid_values(
     assert data["cooldown_fit_window_seconds"] == 10
     assert data["cooldown_ambient_temp"] is None
     # MQTT: empty/invalid values fall back to defaults, out-of-range clamps.
-    assert data["mqtt_broker_port"] == 1883
     assert data["mqtt_qos"] == 2
     assert data["mqtt_publish_interval"] == 1.0
 
@@ -2014,30 +2012,36 @@ def test_on_settings_save_reconfigures_mqtt_client(
     settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
 
     settings.set(["mqtt_enabled"], True)
-    settings.set(["mqtt_broker_host"], "broker")
-    settings.set(["mqtt_broker_port"], 1883)
-    settings.set(["mqtt_username"], "u")
-    settings.set(["mqtt_password"], "p")
-    settings.set(["mqtt_use_tls"], False)
-    settings.set(["mqtt_tls_insecure"], False)
     settings.set(["mqtt_base_topic"], "octoprint/temp_eta")
     settings.set(["mqtt_qos"], 1)
     settings.set(["mqtt_retain"], True)
     settings.set(["mqtt_publish_interval"], 2.0)
+    settings.set(["mqtt_discovery_enabled"], False)
+    settings.set(["mqtt_discovery_prefix"], "homeassistant")
 
-    class RecordingMQTT:
+    class RecordingPublisher:
         """Record calls for test assertions."""
 
         def __init__(self) -> None:
             """Initialize test helper state."""
             self.configured: dict[str, Any] = {}
+            self.discovery_published: list[list[str]] = []
+            self.cleared = 0
 
         def configure(self, cfg: dict[str, Any]) -> None:
             """Provide a test stub implementation."""
             self.configured = dict(cfg)
 
-    mqtt_client = RecordingMQTT()
-    _set_attr(p_any, _member("mqtt_client"), mqtt_client)
+        def publish_discovery(self, heaters: list[str]) -> None:
+            """Provide a test stub implementation."""
+            self.discovery_published.append(list(heaters))
+
+        def clear_retained_topics(self) -> None:
+            """Provide a test stub implementation."""
+            self.cleared += 1
+
+    mqtt_publisher = RecordingPublisher()
+    _set_attr(p_any, _member("mqtt_publisher"), mqtt_publisher)
 
     monkeypatch.setattr(
         octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
@@ -2046,9 +2050,72 @@ def test_on_settings_save_reconfigures_mqtt_client(
     )
     temp_eta_plugin.on_settings_save({"mqtt_enabled": True})
 
-    assert mqtt_client.configured.get("mqtt_enabled") is True
-    assert mqtt_client.configured.get("mqtt_broker_host") == "broker"
-    assert mqtt_client.configured.get("mqtt_broker_port") == 1883
+    assert mqtt_publisher.configured.get("mqtt_enabled") is True
+    assert mqtt_publisher.configured.get("mqtt_qos") == 1
+    assert mqtt_publisher.configured.get("mqtt_retain") is True
+    # Broker settings are owned by OctoPrint-MQTT and no longer passed on.
+    assert "mqtt_broker_host" not in mqtt_publisher.configured
+    assert "mqtt_username" not in mqtt_publisher.configured
+    # Discovery disabled: nothing published or cleared.
+    assert mqtt_publisher.discovery_published == []
+    assert mqtt_publisher.cleared == 0
+
+
+def test_on_settings_save_syncs_mqtt_discovery(
+    monkeypatch: pytest.MonkeyPatch, temp_eta_plugin: Any
+) -> None:
+    """Enabling discovery republishes; disabling MQTT clears retained topics."""
+    p_any = cast(Any, temp_eta_plugin)
+    settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
+
+    class RecordingPublisher:
+        """Record calls for test assertions."""
+
+        def __init__(self) -> None:
+            """Initialize test helper state."""
+            self.discovery_published: list[list[str]] = []
+            self.cleared = 0
+
+        def configure(self, cfg: dict[str, Any]) -> None:
+            """Provide a test stub implementation."""
+
+        def publish_discovery(self, heaters: list[str]) -> None:
+            """Provide a test stub implementation."""
+            self.discovery_published.append(list(heaters))
+
+        def clear_retained_topics(self) -> None:
+            """Provide a test stub implementation."""
+            self.cleared += 1
+
+    mqtt_publisher = RecordingPublisher()
+    _set_attr(p_any, _member("mqtt_publisher"), mqtt_publisher)
+
+    monkeypatch.setattr(
+        octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
+        "on_settings_save",
+        lambda _self, _data: {},
+    )
+
+    # MQTT + discovery active: a save republishes discovery configs.
+    settings.set(["mqtt_enabled"], True)
+    settings.set(["mqtt_discovery_enabled"], True)
+    temp_eta_plugin.on_settings_save({})
+    assert len(mqtt_publisher.discovery_published) == 1
+    assert mqtt_publisher.cleared == 0
+
+    # Disabling MQTT clears the retained discovery configs.
+    def _disable(_self: Any, _data: Any) -> dict[str, Any]:
+        settings.set(["mqtt_enabled"], False)
+        return {}
+
+    monkeypatch.setattr(
+        octoprint_temp_eta.octoprint.plugin.SettingsPlugin,
+        "on_settings_save",
+        _disable,
+    )
+    temp_eta_plugin.on_settings_save({})
+    assert mqtt_publisher.cleared == 1
+    assert len(mqtt_publisher.discovery_published) == 1
 
 
 def test_on_printer_add_temperature_records_sample_and_triggers_update(
@@ -3342,7 +3409,7 @@ def test_broadcast_publishes_to_mqtt_when_configured(
             self.calls.append(dict(kwargs))
 
     mqtt_client = RecordingMQTT()
-    _set_attr(temp_eta_plugin, _member("mqtt_client"), mqtt_client)
+    _set_attr(temp_eta_plugin, _member("mqtt_publisher"), mqtt_client)
 
     _call_attr(temp_eta_plugin, _member("calculate_and_broadcast_eta"), data)
 
@@ -3392,7 +3459,7 @@ def test_broadcast_mqtt_publish_connection_errors_are_logged(
     logger = PublishErrorLogger()
     p_any = cast(Any, temp_eta_plugin)
     _set_attr(p_any, _member("logger"), logger)
-    _set_attr(p_any, _member("mqtt_client"), FailingMQTT())
+    _set_attr(p_any, _member("mqtt_publisher"), FailingMQTT())
 
     _call_attr(temp_eta_plugin, _member("calculate_and_broadcast_eta"), data)
 
@@ -3440,7 +3507,7 @@ def test_broadcast_mqtt_publish_other_errors_are_logged_debug(
     logger = BroadcastRecordingLogger()
     p_any = cast(Any, temp_eta_plugin)
     _set_attr(p_any, _member("logger"), logger)
-    _set_attr(p_any, _member("mqtt_client"), FailingMQTT())
+    _set_attr(p_any, _member("mqtt_publisher"), FailingMQTT())
 
     _call_attr(temp_eta_plugin, _member("calculate_and_broadcast_eta"), data)
 
@@ -3903,26 +3970,51 @@ def test_on_event_print_started_resets_suppression_flag(temp_eta_plugin: Any) ->
     assert _get_attr(p_any, _member("suppressing_due_to_print")) is False
 
 
-def test_on_event_shutdown_disconnects_mqtt(temp_eta_plugin: Any) -> None:
-    """Shutdown should disconnect the MQTT client when present."""
+def test_settings_migration_removes_broker_settings(temp_eta_plugin: Any) -> None:
+    """Migration to version 2 removes the plugin's own broker settings."""
     p_any = cast(Any, temp_eta_plugin)
+    settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
+    settings.set(["mqtt_broker_host"], "broker")
+    settings.set(["mqtt_username"], "u")
+    settings.set(["mqtt_password"], "p")
 
-    class RecordingMQTT:
-        """Record calls for test assertions."""
+    assert temp_eta_plugin.get_settings_version() == 2
+    temp_eta_plugin.on_settings_migrate(2, None)
 
-        def __init__(self) -> None:
-            """Initialize test helper state."""
-            self.disconnected = False
+    for key in (
+        "mqtt_broker_host",
+        "mqtt_broker_port",
+        "mqtt_username",
+        "mqtt_password",
+        "mqtt_use_tls",
+        "mqtt_tls_insecure",
+    ):
+        assert settings.get([key]) is None
 
-        def disconnect(self) -> None:
-            """Provide a test stub implementation."""
-            self.disconnected = True
 
-    mqtt_client = RecordingMQTT()
-    _set_attr(p_any, _member("mqtt_client"), mqtt_client)
+def test_settings_migration_prefers_remove_over_set(temp_eta_plugin: Any) -> None:
+    """Migration uses settings.remove when available (deletes config keys)."""
+    p_any = cast(Any, temp_eta_plugin)
+    settings = cast(Any, _get_attr(p_any, _member("settings")))
+    removed: list[str] = []
+    settings.remove = lambda path: removed.append(path[0])
 
-    temp_eta_plugin.on_event("Shutdown", {})
-    assert mqtt_client.disconnected is True
+    temp_eta_plugin.on_settings_migrate(2, 1)
+
+    assert "mqtt_broker_host" in removed
+    assert "mqtt_password" in removed
+    assert len(removed) == 6
+
+
+def test_settings_migration_noop_when_current(temp_eta_plugin: Any) -> None:
+    """Migration does nothing when the settings are already current."""
+    p_any = cast(Any, temp_eta_plugin)
+    settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
+    settings.set(["mqtt_broker_host"], "broker")
+
+    temp_eta_plugin.on_settings_migrate(2, 2)
+
+    assert settings.get(["mqtt_broker_host"]) == "broker"
 
 
 def test_get_update_information_contains_current_version(temp_eta_plugin: Any) -> None:
@@ -4102,44 +4194,41 @@ def test_broadcast_sends_only_supported_heaters(
     assert "tool1" not in heaters
 
 
-class _DummyMQTTClient:
-    """Minimal MQTT client stub exposing only is_connected() for API tests."""
+class _DummyMqttPublisher:
+    """Minimal publisher stub exposing plugin availability for API tests."""
 
-    def __init__(self, connected: bool) -> None:
+    def __init__(self, available: bool) -> None:
         """Initialize test helper state."""
-        self._connected = connected
+        self._available = available
 
-    def is_connected(self) -> bool:
-        """Return the canned connection state."""
-        return self._connected
+    def is_mqtt_plugin_available(self) -> bool:
+        """Return the canned availability state."""
+        return self._available
 
 
 @pytest.mark.parametrize(
-    ("wrapper_present", "mqtt_enabled", "connected", "expected"),
+    ("helper_present", "mqtt_enabled", "expected"),
     [
-        # paho-mqtt available, MQTT on and connected to a broker.
-        (True, True, True, {"available": True, "enabled": True, "connected": True}),
-        # available and enabled, but the broker connection is down.
-        (True, True, False, {"available": True, "enabled": True, "connected": False}),
-        # available but MQTT disabled in settings: never reports connected.
-        (True, False, True, {"available": True, "enabled": False, "connected": False}),
-        # paho-mqtt not installed: wrapper absent, client is None.
-        (False, True, True, {"available": False, "enabled": True, "connected": False}),
+        # OctoPrint-MQTT installed, publishing enabled.
+        (True, True, {"available": True, "enabled": True}),
+        # OctoPrint-MQTT installed, publishing disabled in settings.
+        (True, False, {"available": True, "enabled": False}),
+        # OctoPrint-MQTT missing: helper absent.
+        (False, True, {"available": False, "enabled": True}),
     ],
 )
 def test_on_api_get_reports_mqtt_status(
     monkeypatch: pytest.MonkeyPatch,
     temp_eta_plugin: Any,
-    wrapper_present: bool,
+    helper_present: bool,
     mqtt_enabled: bool,
-    connected: bool,
     expected: dict[str, bool],
 ) -> None:
-    """on_api_get should report MQTT availability/enabled/connected accurately.
+    """on_api_get should report MQTT plugin availability and enabled state.
 
-    Locks in the response contract the settings UI polls: mqtt_connected is
-    only ever True when the wrapper exists, MQTT is enabled, AND the client
-    reports a live broker connection.
+    Locks in the response contract of the settings UI: mqtt_available means
+    the OctoPrint-MQTT plugin (delegation target) provides its publish
+    helper; the broker connection itself is owned by that plugin.
     """
     p_any = cast(Any, temp_eta_plugin)
     settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
@@ -4148,36 +4237,27 @@ def test_on_api_get_reports_mqtt_status(
     # Avoid depending on Flask in unit tests.
     monkeypatch.setattr(octoprint_temp_eta, "jsonify", lambda payload: payload)
 
-    if wrapper_present:
-        # Sentinel object: on_api_get only checks `MQTTClientWrapper is not None`.
-        monkeypatch.setattr(octoprint_temp_eta, "MQTTClientWrapper", object())
-        _set_attr(p_any, _member("mqtt_client"), _DummyMQTTClient(connected))
-    else:
-        # Simulate paho-mqtt being unavailable: wrapper is None, client absent.
-        monkeypatch.setattr(octoprint_temp_eta, "MQTTClientWrapper", None)
-        _set_attr(p_any, _member("mqtt_client"), None)
+    _set_attr(p_any, _member("mqtt_publisher"), _DummyMqttPublisher(helper_present))
 
     resp = temp_eta_plugin.on_api_get(None)
 
     assert resp["mqtt_available"] is expected["available"]
     assert resp["mqtt_enabled"] is expected["enabled"]
-    assert resp["mqtt_connected"] is expected["connected"]
+    assert "mqtt_connected" not in resp
 
 
-def test_on_api_get_connected_false_when_client_missing_but_enabled(
+def test_on_api_get_unavailable_when_publisher_missing(
     monkeypatch: pytest.MonkeyPatch, temp_eta_plugin: Any
 ) -> None:
-    """A None client (e.g. before startup) must not report a connection."""
+    """A None publisher (e.g. before startup) must report unavailable."""
     p_any = cast(Any, temp_eta_plugin)
     settings = cast(DummySettings, _get_attr(p_any, _member("settings")))
     settings.set(["mqtt_enabled"], True)
 
     monkeypatch.setattr(octoprint_temp_eta, "jsonify", lambda payload: payload)
-    monkeypatch.setattr(octoprint_temp_eta, "MQTTClientWrapper", object())
-    _set_attr(p_any, _member("mqtt_client"), None)
+    _set_attr(p_any, _member("mqtt_publisher"), None)
 
     resp = temp_eta_plugin.on_api_get(None)
 
-    assert resp["mqtt_available"] is True
+    assert resp["mqtt_available"] is False
     assert resp["mqtt_enabled"] is True
-    assert resp["mqtt_connected"] is False
