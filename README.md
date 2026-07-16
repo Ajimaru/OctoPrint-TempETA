@@ -14,7 +14,7 @@
 
 ### Heat Up and Cool Down with Confidence
 
-[![41% Vibe_Coded](https://img.shields.io/badge/41%25-Vibe_Coded-ff69b4?style=flat-square&logo=githubcopilot&logoColor=white)](https://github.com/ai-ecoverse/vibe-coded-badge-action)
+[![36% Vibe_Coded](https://img.shields.io/badge/36%25-Vibe_Coded-ff69b4?style=flat-square&logo=githubcopilot&logoColor=white)](https://github.com/ai-ecoverse/vibe-coded-badge-action)
 
 > [!NOTE]
 > **About this project.** I built this for my own printer setup with AI, and if
