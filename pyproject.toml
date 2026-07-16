@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "octoprint-temp-eta"
-version = "0.8.12"
+version = "0.8.13dev1+57fcf54"
 description = "OctoPrint plugin to show estimated time remaining for printer heating"
 authors = [
     {name = "Ajimaru", email = "ajimaru_gdr@pm.me"}
@@ -27,10 +27,10 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 
-# any additional requirements (besides OctoPrint) should be listed here
-dependencies = [
-    "paho-mqtt>=2.0.0,<3.0.0"
-]
+# any additional requirements (besides OctoPrint) should be listed here.
+# MQTT publishing is delegated to the OctoPrint-MQTT plugin (soft
+# requirement, installed separately via the plugin manager).
+dependencies = []
 
 [tool.setuptools]
 include-package-data = true

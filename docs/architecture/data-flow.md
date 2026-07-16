@@ -100,7 +100,8 @@ countdowns.
 
 ### 5. MQTT publish (optional)
 
-Each payload is also handed to the `MQTTClientWrapper`, which applies its own
+Each payload is also handed to the `MqttPublisher`, which forwards messages
+through the OctoPrint-MQTT plugin's `mqtt_publish` helper. It applies its own
 **per-heater** `mqtt_publish_interval` throttle, detects state transitions
 (`heating` / `cooling` / `at_target` / `cooled_down`) and publishes to:
 

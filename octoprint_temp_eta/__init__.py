@@ -126,14 +126,7 @@ except ModuleNotFoundError:  # pragma: no cover
         return message
 
 
-try:
-    from .mqtt_client import MQTTClientWrapper  # type: ignore
-except ImportError as e:  # pragma: no cover
-    # MQTT support is optional. Log warning if unavailable.
-    import logging
-
-    logging.getLogger("octoprint_temp_eta").warning("MQTT support disabled: %s", e)
-    MQTTClientWrapper = None  # type: ignore
+from .mqtt_publisher import MqttPublisher
 
 try:
     from . import calculator  # type: ignore
@@ -245,8 +238,9 @@ class TempETAPlugin(
         self._last_heater_support_decision = {}
         self._heater_supported_cache: dict[str, bool] = {}
 
-        # MQTT client (initialized in on_after_startup when logger is available)
-        self._mqtt_client: Optional[Any] = None
+        # MQTT publisher (initialized in on_after_startup when logger is
+        # available; delegates publishing to the OctoPrint-MQTT plugin)
+        self._mqtt_publisher: Optional[MqttPublisher] = None
 
         # Number of temperature samples to keep per heater.
         # This is configurable via settings (history_size). We cache the active
@@ -454,26 +448,21 @@ class TempETAPlugin(
         # Load persisted history for the active printer profile.
         self._switch_active_profile_if_needed(force=True)
 
-        # Initialize MQTT client
-        if MQTTClientWrapper is not None:
-            self._mqtt_client = MQTTClientWrapper(self._logger, self._identifier)
-            self._configure_mqtt_client()
-        else:
-            self._logger.info("MQTT support disabled: paho-mqtt not available")
+        # Initialize MQTT publishing via the OctoPrint-MQTT plugin helper
+        self._mqtt_publisher = MqttPublisher(
+            self._logger, plugin_version=str(getattr(self, "_plugin_version", ""))
+        )
+        self._mqtt_publisher.initialize(self._plugin_manager)
+        self._configure_mqtt_publisher()
+        self._mqtt_publisher.publish_discovery(self._get_discovery_heaters())
 
-    def _configure_mqtt_client(self) -> None:
-        """Configure MQTT client with current settings."""
-        if self._mqtt_client is None:
+    def _configure_mqtt_publisher(self) -> None:
+        """Configure the MQTT publisher with current settings."""
+        if self._mqtt_publisher is None:
             return
 
         mqtt_settings = {
             "mqtt_enabled": self._settings.get_boolean(["mqtt_enabled"]),
-            "mqtt_broker_host": self._settings.get(["mqtt_broker_host"]),
-            "mqtt_broker_port": self._settings.get_int(["mqtt_broker_port"]),
-            "mqtt_username": self._settings.get(["mqtt_username"]),
-            "mqtt_password": self._settings.get(["mqtt_password"]),
-            "mqtt_use_tls": self._settings.get_boolean(["mqtt_use_tls"]),
-            "mqtt_tls_insecure": self._settings.get_boolean(["mqtt_tls_insecure"]),
             "mqtt_base_topic": self._settings.get(["mqtt_base_topic"]),
             "mqtt_use_appearance_name": self._settings.get_boolean(
                 ["mqtt_use_appearance_name"]
@@ -485,9 +474,42 @@ class TempETAPlugin(
             "mqtt_publish_interval": self._settings.get_float(
                 ["mqtt_publish_interval"]
             ),
+            "mqtt_discovery_enabled": self._settings.get_boolean(
+                ["mqtt_discovery_enabled"]
+            ),
+            "mqtt_discovery_prefix": self._settings.get(["mqtt_discovery_prefix"]),
         }
 
-        self._mqtt_client.configure(mqtt_settings)
+        self._mqtt_publisher.configure(mqtt_settings)
+
+    def _get_discovery_heaters(self) -> list[str]:
+        """Determine heater names for Home Assistant discovery.
+
+        Derived from the active printer profile: one entry per extruder tool,
+        plus bed and chamber when the profile declares them heated.
+        """
+        heaters: list[str] = []
+        profile: dict[str, Any] = {}
+        profile_manager = getattr(self, "_printer_profile_manager", None)
+        if profile_manager is not None:
+            try:
+                profile = profile_manager.get_current_or_default() or {}
+            except _EXPECTED_ERRORS:
+                profile = {}
+
+        extruder = profile.get("extruder") or {}
+        try:
+            tool_count = int(extruder.get("count", 1))
+        except (TypeError, ValueError):
+            tool_count = 1
+        heaters.extend(f"tool{index}" for index in range(max(tool_count, 1)))
+
+        if profile.get("heatedBed", True):
+            heaters.append("bed")
+        if profile.get("heatedChamber", False):
+            heaters.append("chamber")
+
+        return heaters
 
     def _refresh_runtime_caches(self) -> None:
         """Refresh cached settings values used in hot paths."""
@@ -1412,12 +1434,6 @@ class TempETAPlugin(
 
             self._send_clear_messages(heaters)
 
-            # Disconnect MQTT on shutdown. Snapshot the reference so the
-            # null-check and use cannot race a concurrent reassignment.
-            mqtt_client = self._mqtt_client
-            if event == "Shutdown" and mqtt_client is not None:
-                mqtt_client.disconnect()
-
         # Reset suppression flag on job lifecycle changes; actual suppression is decided in the temperature callback.
         if event in (
             "PrintStarted",
@@ -1569,18 +1585,18 @@ class TempETAPlugin(
                     }
                 )
 
-        # Snapshot the MQTT client reference once so the null-check and use
-        # cannot race a concurrent reassignment from on_settings_save.
-        mqtt_client = self._mqtt_client
+        # Snapshot the MQTT publisher reference once so the null-check and
+        # use cannot race a concurrent reassignment.
+        mqtt_publisher = self._mqtt_publisher
 
         # Always send updates so the frontend can clear stale values.
         for payload in payloads:
             self._plugin_manager.send_plugin_message(self._identifier, payload)
 
             # Publish to MQTT if enabled
-            if mqtt_client is not None:
+            if mqtt_publisher is not None:
                 try:
-                    mqtt_client.publish_eta_update(
+                    mqtt_publisher.publish_eta_update(
                         heater=payload.get("heater"),
                         eta=payload.get("eta"),
                         eta_kind=payload.get("eta_kind"),
@@ -1929,21 +1945,51 @@ class TempETAPlugin(
             "notification_cooldown_finished": False,
             "notification_timeout_s": 6.0,
             "notification_min_interval_s": 10.0,
-            # MQTT settings
+            # MQTT settings (publishing via the OctoPrint-MQTT plugin;
+            # broker connection settings live in that plugin)
             "mqtt_enabled": False,
-            "mqtt_broker_host": "",
-            "mqtt_broker_port": 1883,
-            "mqtt_username": "",
-            "mqtt_password": "",
-            "mqtt_use_tls": False,
-            "mqtt_tls_insecure": False,
             "mqtt_base_topic": "octoprint/temp_eta",
             "mqtt_use_appearance_name": True,
             "mqtt_custom_identifier": "",
             "mqtt_qos": 0,
             "mqtt_retain": False,
             "mqtt_publish_interval": 1.0,
+            "mqtt_discovery_enabled": False,
+            "mqtt_discovery_prefix": "homeassistant",
         }
+
+    def get_settings_version(self) -> int:
+        """Return the settings format version for migration handling."""
+        return 2
+
+    def on_settings_migrate(self, target: int, current: Optional[int]) -> None:
+        """Migrate stored plugin settings to the current format.
+
+        Version 2 delegates the MQTT broker connection to the OctoPrint-MQTT
+        plugin; the plugin's own broker settings (including the stored
+        password) are removed from config.yaml.
+        """
+        if current is None or current < 2:
+            remove = getattr(self._settings, "remove", None)
+            for key in (
+                "mqtt_broker_host",
+                "mqtt_broker_port",
+                "mqtt_username",
+                "mqtt_password",
+                "mqtt_use_tls",
+                "mqtt_tls_insecure",
+            ):
+                if callable(remove):
+                    try:
+                        remove([key])
+                        continue
+                    except _EXPECTED_ERRORS:
+                        pass
+                self._settings.set([key], None)
+            self._logger.info(
+                "Migrated MQTT settings: broker configuration is now handled "
+                "by the OctoPrint-MQTT plugin"
+            )
 
     def _get_appearance_name(self) -> Optional[str]:
         """Get the printer's appearance name from OctoPrint settings.
@@ -2010,6 +2056,7 @@ class TempETAPlugin(
         was_enabled = bool(self._settings.get_boolean(["enabled"]))
         old_debug = bool(getattr(self, "_debug_logging_enabled", False))
         old_history_maxlen = self._read_history_maxlen_setting()
+        old_mqtt_identity = self._read_mqtt_identity()
         saved = octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
         is_enabled = bool(self._settings.get_boolean(["enabled"]))
 
@@ -2028,10 +2075,42 @@ class TempETAPlugin(
         if was_enabled and not is_enabled:
             self._clear_all_heaters_frontend()
 
-        # Reconfigure MQTT client with new settings
-        self._configure_mqtt_client()
+        # Reconfigure the MQTT publisher with new settings
+        self._configure_mqtt_publisher()
+        self._sync_mqtt_discovery(old_mqtt_identity)
 
         return saved if isinstance(saved, dict) else {}
+
+    def _read_mqtt_identity(self) -> tuple[Any, ...]:
+        """Read the settings that define the MQTT topic/discovery identity."""
+        return (
+            bool(self._settings.get_boolean(["mqtt_enabled"])),
+            bool(self._settings.get_boolean(["mqtt_discovery_enabled"])),
+            self._settings.get(["mqtt_base_topic"]),
+            bool(self._settings.get_boolean(["mqtt_use_appearance_name"])),
+            self._settings.get(["mqtt_custom_identifier"]),
+            self._settings.get(["mqtt_discovery_prefix"]),
+        )
+
+    def _sync_mqtt_discovery(self, old_identity: tuple[Any, ...]) -> None:
+        """Clear/republish Home Assistant discovery configs after a save.
+
+        Retained discovery configs are cleared when MQTT/discovery was
+        disabled or the topic identity changed, then republished under the
+        new identity when still enabled.
+        """
+        publisher = self._mqtt_publisher
+        if publisher is None:
+            return
+
+        new_identity = self._read_mqtt_identity()
+        was_active = bool(old_identity[0] and old_identity[1])
+        is_active = bool(new_identity[0] and new_identity[1])
+
+        if was_active and (not is_active or old_identity != new_identity):
+            publisher.clear_retained_topics()
+        if is_active:
+            publisher.publish_discovery(self._get_discovery_heaters())
 
     def _sanitize_settings_payload(self, data: dict[str, Any]) -> None:
         """Sanitize posted settings values in-place.
@@ -2108,7 +2187,6 @@ class TempETAPlugin(
         _clamp_int("cooldown_fit_window_seconds", 10, 1800)
 
         # MQTT (mirror the min/max constraints of the settings UI)
-        _clamp_int("mqtt_broker_port", 1, 65535, default=1883)
         _clamp_int("mqtt_qos", 0, 2)
         _clamp_float("mqtt_publish_interval", 0.1, 60.0, default=1.0)
 
@@ -2221,22 +2299,18 @@ class TempETAPlugin(
     def on_api_get(self, _request: Any):  # type: ignore[override]
         """Return plugin status for the Simple API GET endpoint.
 
-        Currently exposes whether the MQTT integration is enabled and
-        connected to a broker so the settings UI can show a live status.
+        Exposes whether the OctoPrint-MQTT plugin (the delegation target for
+        all MQTT publishing) is available and whether MQTT publishing is
+        enabled, so the settings UI can warn when the MQTT plugin is missing.
+        The broker connection itself is owned by the OctoPrint-MQTT plugin.
         """
-        mqtt_client = self._mqtt_client
-        mqtt_enabled = bool(self._settings.get_boolean(["mqtt_enabled"]))
-        # Only report "connected" when MQTT is actually enabled: a client may
-        # still be mid-disconnect right after the feature is switched off, and
-        # the UI should reflect the configured state, not a lingering socket.
-        mqtt_connected = bool(
-            mqtt_enabled and mqtt_client is not None and mqtt_client.is_connected()
-        )
+        publisher = self._mqtt_publisher
         return jsonify(
             {
-                "mqtt_available": MQTTClientWrapper is not None,
-                "mqtt_enabled": mqtt_enabled,
-                "mqtt_connected": mqtt_connected,
+                "mqtt_available": bool(
+                    publisher is not None and publisher.is_mqtt_plugin_available()
+                ),
+                "mqtt_enabled": bool(self._settings.get_boolean(["mqtt_enabled"])),
             }
         )
 

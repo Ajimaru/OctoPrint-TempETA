@@ -122,7 +122,7 @@ OctoPrint-TempETA/
 ├── octoprint_temp_eta/          # Main plugin code
 │   ├── __init__.py              # Plugin entry point
 │   ├── calculator.py            # ETA calculation algorithms
-│   ├── mqtt_client.py           # MQTT integration
+│   ├── mqtt_publisher.py        # MQTT publishing via OctoPrint-MQTT plugin
 │   ├── static/                  # Frontend assets
 │   │   └── js/
 │   │       └── temp_eta.js      # Frontend JavaScript

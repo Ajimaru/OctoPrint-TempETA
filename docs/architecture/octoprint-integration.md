@@ -47,14 +47,15 @@ def on_after_startup(self):
     # Load persisted history for the active printer profile.
     self._switch_active_profile_if_needed(force=True)
 
-    # Initialize MQTT client
-    if MQTTClientWrapper is not None:
-        self._mqtt_client = MQTTClientWrapper(self._logger, self._identifier)
-        self._configure_mqtt_client()
+    # Initialize MQTT publishing via the OctoPrint-MQTT plugin helper
+    self._mqtt_publisher = MqttPublisher(self._logger, plugin_version=...)
+    self._mqtt_publisher.initialize(self._plugin_manager)
+    self._configure_mqtt_publisher()
+    self._mqtt_publisher.publish_discovery(self._get_discovery_heaters())
 ```
 
-There is no `on_shutdown` handler; MQTT is disconnected from the `Shutdown`
-event instead (see EventHandlerPlugin below).
+There is no `on_shutdown` handler; the broker connection is owned by the
+OctoPrint-MQTT plugin, so there is nothing to disconnect.
 
 ### TemplatePlugin
 
@@ -144,8 +145,6 @@ def on_event(self, event, _payload):
         # Persist what we have, then clear histories and frontend ETAs
         self._persist_current_profile_history()
         ...
-        if event == "Shutdown" and mqtt_client is not None:
-            mqtt_client.disconnect()
 
     if event in ("PrintStarted", "PrintResumed", "PrintDone",
                  "PrintFailed", "PrintCancelled"):
@@ -219,9 +218,9 @@ __plugin_hooks__ = {
 }
 ```
 
-Optional imports (OctoPrint itself, Flask, Flask-Babel, paho-mqtt) are
-guarded with fallback stubs so the module can be imported in CI and static
-analysis environments where OctoPrint is not installed.
+Optional imports (OctoPrint itself, Flask, Flask-Babel) are guarded with
+fallback stubs so the module can be imported in CI and static analysis
+environments where OctoPrint is not installed.
 
 ## WebSocket Communication
 
@@ -265,14 +264,14 @@ self.onDataUpdaterPluginMessage = (plugin, data) => {
 ```toml
 # pyproject.toml
 [project]
-dependencies = [
-    "paho-mqtt>=2.0.0,<3.0.0"
-]
+dependencies = []
 ```
 
 OctoPrint itself is the runtime environment, not a pip dependency of the
-plugin. The MQTT wrapper degrades gracefully when paho-mqtt is missing.
-There are **no** numpy/scipy dependencies — all ETA math is pure Python.
+plugin. MQTT publishing is delegated to the OctoPrint-MQTT plugin (a soft
+requirement acquired via plugin helpers at runtime); the publisher degrades
+gracefully when that plugin is missing. There are **no** numpy/scipy
+dependencies — all ETA math is pure Python.
 
 ## Plugin Hooks
 

@@ -22,9 +22,9 @@ Auto-generated Python API documentation for OctoPrint-TempETA.
             filters:
                 - "!^_"
 
-## MQTT Client Module
+## MQTT Publisher Module
 
-::: octoprint_temp_eta.mqtt_client.MQTTClientWrapper
+::: octoprint_temp_eta.mqtt_publisher.MqttPublisher
         handler: python
         options:
             members_order: source
@@ -58,34 +58,38 @@ eta_exp = calculate_exponential_eta(history, target)
 print(f"Exponential ETA: {eta_exp}")
 ```
 
-### Using the MQTT Client
+### Using the MQTT Publisher
+
+The publisher does not open its own broker connection — it delegates every
+publish to the OctoPrint-MQTT plugin's `mqtt_publish` helper:
 
 ```python
-from octoprint_temp_eta.mqtt_client import MQTTClientWrapper
+from octoprint_temp_eta.mqtt_publisher import MqttPublisher
 import logging
 
 # Create logger
 logger = logging.getLogger(__name__)
 
-# Instantiate wrapper (note: the wrapper expects a logger and plugin identifier)
-mqtt_client = MQTTClientWrapper(logger, "temp_eta")
+# Instantiate publisher (logger plus plugin version for HA discovery info)
+publisher = MqttPublisher(logger, plugin_version="1.0.0")
 
-# Configure client via settings-like dict
-mqtt_client.configure({
+# Acquire the mqtt_publish helper from the OctoPrint-MQTT plugin
+# (inside a plugin this is self._plugin_manager, in on_after_startup)
+publisher.initialize(plugin_manager)
+
+# Configure via settings-like dict
+publisher.configure({
     "mqtt_enabled": True,
-    "mqtt_broker_host": "localhost",
-    "mqtt_broker_port": 1883,
-    "mqtt_username": "",
-    "mqtt_password": "",
-    "mqtt_use_tls": False,
     "mqtt_base_topic": "octoprint/temp_eta",
     "mqtt_qos": 0,
     "mqtt_retain": False,
     "mqtt_publish_interval": 1.0,
+    "mqtt_discovery_enabled": False,
+    "mqtt_discovery_prefix": "homeassistant",
 })
 
 # Publish a sample ETA update (heater name, eta seconds, eta kind, target, actual)
-mqtt_client.publish_eta_update(
+publisher.publish_eta_update(
     heater="tool0",
     eta=120.0,
     eta_kind="heating",
@@ -93,8 +97,9 @@ mqtt_client.publish_eta_update(
     actual=50.0,
 )
 
-# Disconnect when done
-mqtt_client.disconnect()
+# Optional: publish/clear retained Home Assistant discovery configs
+publisher.publish_discovery(["tool0", "bed"])
+publisher.clear_retained_topics()
 ```
 
 ### Consuming ETA data from another plugin or client
@@ -109,7 +114,8 @@ through one of its public channels instead:
   `{active_topic}/{heater}/eta` and `{active_topic}/{heater}/state_change`
   (see the README for payload formats).
 - **Simple API**: `GET /api/plugin/temp_eta` returns the MQTT integration
-  status; `POST` supports the `reset_profile_history` and
+  status (`mqtt_available` = OctoPrint-MQTT plugin present, `mqtt_enabled`);
+  `POST` supports the `reset_profile_history` and
   `reset_settings_defaults` commands (admin only).
 
 ## Threading Considerations
@@ -118,7 +124,7 @@ The calculator functions are **pure and stateless** — they read the history
 they are given and share no module state, so they are safe to call from any
 thread as long as the caller does not mutate the passed history concurrently.
 The plugin itself guards its history deques with an internal lock, and
-`MQTTClientWrapper` serializes all its state behind its own lock.
+`MqttPublisher` serializes all its state behind its own lock.
 
 ## Error Handling
 

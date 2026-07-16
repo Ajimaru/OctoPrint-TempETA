@@ -79,20 +79,16 @@ plugins:
     cooldown_hysteresis_c: 1.0
     cooldown_fit_window_seconds: 120
 
-    # === MQTT ===
+    # === MQTT (publishing via the OctoPrint-MQTT plugin) ===
     mqtt_enabled: false
-    mqtt_broker_host: ""
-    mqtt_broker_port: 1883
-    mqtt_username: ""
-    mqtt_password: ""
-    mqtt_use_tls: false
-    mqtt_tls_insecure: false
     mqtt_base_topic: octoprint/temp_eta
     mqtt_use_appearance_name: true
     mqtt_custom_identifier: ""
     mqtt_qos: 0
     mqtt_retain: false
     mqtt_publish_interval: 1.0
+    mqtt_discovery_enabled: false
+    mqtt_discovery_prefix: homeassistant
 
     # === Persistence (advanced, config.yaml only) ===
     persist_backoff_reset_s: 30.0
@@ -311,32 +307,21 @@ Time window of cooldown samples used for the fit.
 
 See the README for topic layout and payload formats.
 
+All MQTT publishing is delegated to the
+[OctoPrint-MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/): install
+and configure it (broker host, credentials, TLS) to use these features.
+Without it the MQTT settings stay inert and the settings UI shows a warning.
+Messages are not queued while the broker is disconnected — stale ETA values
+would mislead consumers, so they are dropped instead.
+
+Older plugin versions managed their own broker connection; the obsolete
+broker keys (`mqtt_broker_host`, `mqtt_broker_port`, `mqtt_username`,
+`mqtt_password`, `mqtt_use_tls`, `mqtt_tls_insecure`) are removed from
+`config.yaml` automatically on first start after the upgrade.
+
 ### mqtt_enabled
 
 - **Type**: Boolean — **Default**: `false`
-
-### mqtt_broker_host
-
-Hostname or IP of the broker. MQTT stays disconnected while empty.
-
-- **Type**: String — **Default**: `""`
-
-### mqtt_broker_port
-
-- **Type**: Integer — **Default**: `1883` — **Range**: `1` – `65535`
-
-### mqtt_username / mqtt_password
-
-Optional authentication. Leave empty for anonymous access.
-
-- **Type**: String — **Default**: `""` (each)
-
-### mqtt_use_tls / mqtt_tls_insecure
-
-Enable TLS; `mqtt_tls_insecure` skips certificate verification (self-signed
-certificates — not recommended for production).
-
-- **Type**: Boolean — **Default**: `false` (each)
 
 ### mqtt_base_topic
 
@@ -372,6 +357,21 @@ the edges are stripped.
 Minimum seconds between publishes, tracked per heater.
 
 - **Type**: Float — **Default**: `1.0` — **Range**: `0.1` – `60.0`
+
+### mqtt_discovery_enabled
+
+Publish retained Home Assistant autodiscovery configs so the per-heater ETA
+sensors appear automatically as a device in Home Assistant. Configs are
+republished on settings save and cleared (empty retained payloads) when MQTT
+or discovery is disabled or the topic identity changes.
+
+- **Type**: Boolean — **Default**: `false`
+
+### mqtt_discovery_prefix
+
+Home Assistant discovery topic prefix.
+
+- **Type**: String — **Default**: `"homeassistant"`
 
 ## Persistence (advanced)
 

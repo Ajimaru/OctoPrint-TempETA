@@ -265,7 +265,7 @@ $(() => {
 			return "";
 		};
 		// Sanitize a user-supplied topic segment the same way as the backend
-		// (mqtt_client.py:_sanitize_topic_segment) so the preview matches what
+		// (mqtt_publisher.py:_sanitize_topic_segment) so the preview matches what
 		// will actually be published: MQTT PUBLISH topics must not contain the
 		// wildcard characters '+'/'#', and leading/trailing slashes are stripped.
 		self.sanitizeTopicSegment = (segment) => {
@@ -743,36 +743,10 @@ $(() => {
 		self._audioContext = null;
 		self._soundLastPlayedByKey = {};
 
-		// MQTT connection status (polled while the settings dialog is open)
-		self.mqttStatus = ko.observable(null);
-		self._mqttStatusTimer = null;
-
-		self.mqttStatusText = ko.pureComputed(() => {
-			var status = self.mqttStatus();
-			if (!status) {
-				return _gettext("Unknown");
-			}
-			if (!status.mqtt_available) {
-				return _gettext("Unavailable (paho-mqtt not installed)");
-			}
-			if (!status.mqtt_enabled) {
-				return _gettext("Disabled");
-			}
-			return status.mqtt_connected
-				? _gettext("Connected")
-				: _gettext("Not connected");
-		});
-
-		self.mqttStatusLabelClass = ko.pureComputed(() => {
-			var status = self.mqttStatus();
-			if (!status || !status.mqtt_available) {
-				return "";
-			}
-			if (!status.mqtt_enabled) {
-				return "";
-			}
-			return status.mqtt_connected ? "label-success" : "label-important";
-		});
+		// Availability of the OctoPrint-MQTT plugin (delegation target for
+		// all MQTT publishing). Defaults to true to avoid a warning-banner
+		// flash before the API response arrives.
+		self.mqttPluginAvailable = ko.observable(true);
 
 		self._refreshMqttStatus = () => {
 			if (!window.OctoPrint || !OctoPrint.simpleApiGet) {
@@ -780,27 +754,11 @@ $(() => {
 			}
 			OctoPrint.simpleApiGet("temp_eta")
 				.done((response) => {
-					self.mqttStatus(response || null);
+					self.mqttPluginAvailable(Boolean(response?.mqtt_available));
 				})
 				.fail(() => {
-					self.mqttStatus(null);
+					self.mqttPluginAvailable(true);
 				});
-		};
-
-		self._startMqttStatusPolling = () => {
-			self._stopMqttStatusPolling();
-			self._refreshMqttStatus();
-			self._mqttStatusTimer = window.setInterval(
-				self._refreshMqttStatus,
-				5000,
-			);
-		};
-
-		self._stopMqttStatusPolling = () => {
-			if (self._mqttStatusTimer !== null) {
-				window.clearInterval(self._mqttStatusTimer);
-				self._mqttStatusTimer = null;
-			}
 		};
 
 		self._getColorMode = () => {
@@ -2521,12 +2479,11 @@ $(() => {
 
 		self.onSettingsShown = () => {
 			self._bindSettingsWithRetry();
-			self._startMqttStatusPolling();
+			self._refreshMqttStatus();
 		};
 
 		self.onSettingsHidden = () => {
 			self._unbindSettingsIfBound();
-			self._stopMqttStatusPolling();
 		};
 	}
 

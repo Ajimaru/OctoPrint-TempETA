@@ -21,7 +21,8 @@ post-save refresh:
       • _refresh_debug_logging_flag()
       • _refresh_runtime_caches()          ← hot-path value cache
       • _set_history_maxlen(...)           ← resize history deques
-      • _configure_mqtt_client()           ← reconnect/disconnect broker
+      • _configure_mqtt_publisher()        ← apply MQTT publish settings
+      • _sync_mqtt_discovery(...)          ← clear/republish HA discovery
       • clear frontend if plugin was just disabled
 ```
 

@@ -81,7 +81,7 @@
 - 🎨 **Status colors**: Optional color bands for heating/cooling/idle states
 - 🔔 **Sound alerts**: Play a sound when target is reached or cool-down finishes
 - 🖥️ **Browser toast notifications**: Small top-right notifications for key events (default off)
-- 📡 **MQTT integration**: Publish ETA data and state changes to an MQTT broker for home automation
+- 📡 **MQTT integration**: Publish ETA data and state changes via the [OctoPrint-MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/), with optional Home Assistant autodiscovery
 - 🔁 **Reset history**: One-click reset deletes persisted history files for all printer profiles
 - 🧰 **Multiple heaters**: Supports tools, bed and chamber (as reported by OctoPrint/printer)
 - 🌍 **Internationalization**: English and German included, easily extensible
@@ -200,12 +200,9 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 <details>
 <summary><strong>MQTT Settings</strong> (click to expand)</summary>
 
-- **Enable MQTT**: Master switch for MQTT integration (publishes ETA data to external broker)
-- **Broker Host**: MQTT broker hostname or IP address (e.g., `localhost`, `192.168.1.100`)
-- **Broker Port**: MQTT broker port (default: `1883`, TLS typically uses `8883`)
-- **Username/Password**: Optional authentication credentials for the MQTT broker
-- **Use TLS/SSL**: Enable encrypted connection to the broker
-- **Skip TLS certificate verification**: For self-signed certificates (not recommended for production)
+> **Requires the [OctoPrint-MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/).** All MQTT publishing is delegated to it; the broker connection (host, port, credentials, TLS) is configured there. Older TempETA broker settings are removed automatically on upgrade.
+
+- **Enable MQTT**: Master switch for MQTT publishing via the OctoPrint-MQTT plugin
 - **Base topic**: Root MQTT topic (default: `octoprint/temp_eta`)
   - **Append OctoPrint instance name (Appearance → Title)**: Checkbox to append the printer's appearance name to the topic, avoiding conflicts when running multiple OctoPrint instances (default: enabled). When active, the topic is built automatically and the base topic / identifier fields are disabled.
   - **Instance identifier** (optional): Only shown when the checkbox is off or no appearance name is configured — a free-text suffix appended to the base topic as a manual fallback.
@@ -215,6 +212,10 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 - **QoS**: MQTT Quality of Service level (0=At most once, 1=At least once, 2=Exactly once)
 - **Retain Messages**: Enable MQTT retain flag (new subscribers receive the last message)
 - **Publish Interval**: Minimum seconds between MQTT publishes, tracked per heater (default: `1.0`)
+- **Home Assistant autodiscovery**: Publish retained discovery configs so the per-heater ETA sensors appear automatically as a device in Home Assistant
+- **Discovery prefix**: Home Assistant discovery topic prefix (default: `homeassistant`)
+
+Note: messages are not queued while the OctoPrint-MQTT plugin is disconnected from the broker — stale ETA values would mislead consumers, so they are dropped instead.
 
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -309,18 +310,14 @@ The following defaults apply to the user-editable plugin settings:
 <tr><td>Notification timeout</td><td><code>notification_timeout_s</code></td><td><code>6.0 s</code></td></tr>
 <tr><td>Notification min interval</td><td><code>notification_min_interval_s</code></td><td><code>10.0 s</code></td></tr>
 <tr><td>Enable MQTT</td><td><code>mqtt_enabled</code></td><td><code>false</code></td></tr>
-<tr><td>MQTT broker host</td><td><code>mqtt_broker_host</code></td><td><code>""</code></td></tr>
-<tr><td>MQTT broker port</td><td><code>mqtt_broker_port</code></td><td><code>1883</code></td></tr>
-<tr><td>MQTT username</td><td><code>mqtt_username</code></td><td><code>""</code></td></tr>
-<tr><td>MQTT password</td><td><code>mqtt_password</code></td><td><code>""</code></td></tr>
-<tr><td>MQTT use TLS</td><td><code>mqtt_use_tls</code></td><td><code>false</code></td></tr>
-<tr><td>MQTT TLS insecure</td><td><code>mqtt_tls_insecure</code></td><td><code>false</code></td></tr>
 <tr><td>MQTT base topic</td><td><code>mqtt_base_topic</code></td><td><code>octoprint/temp_eta</code></td></tr>
 <tr><td>MQTT use appearance name</td><td><code>mqtt_use_appearance_name</code></td><td><code>true</code></td></tr>
 <tr><td>MQTT custom identifier</td><td><code>mqtt_custom_identifier</code></td><td><code>""</code></td></tr>
 <tr><td>MQTT QoS</td><td><code>mqtt_qos</code></td><td><code>0</code></td></tr>
 <tr><td>MQTT retain</td><td><code>mqtt_retain</code></td><td><code>false</code></td></tr>
 <tr><td>MQTT publish interval</td><td><code>mqtt_publish_interval</code></td><td><code>1.0 s</code></td></tr>
+<tr><td>MQTT HA autodiscovery</td><td><code>mqtt_discovery_enabled</code></td><td><code>false</code></td></tr>
+<tr><td>MQTT HA discovery prefix</td><td><code>mqtt_discovery_prefix</code></td><td><code>homeassistant</code></td></tr>
 </tbody>
 </table>
 

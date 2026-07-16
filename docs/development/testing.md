@@ -61,7 +61,7 @@ tests/
 ├── __init__.py
 ├── test_print_temp_eta.py    # Main plugin tests
 ├── test_calculator.py         # Calculator tests
-└── test_mqtt_client.py        # MQTT client tests
+└── test_mqtt_publisher.py     # MQTT publisher tests
 ```
 
 ## Writing Tests
@@ -125,17 +125,19 @@ def test_callback_records_history(monkeypatch, temp_eta_plugin) -> None:
     )
 ```
 
-### Mocking paho-mqtt
+### Faking the OctoPrint-MQTT helper
 
-`tests/test_mqtt_client.py` subclasses the wrapper with a test harness that
-exposes internals, and patches the `mqtt` module where it is used:
+`tests/test_mqtt_publisher.py` subclasses the publisher with a test harness
+that exposes internals and injects a fake `mqtt_publish` helper instead of a
+broker connection:
 
 ```python
-@patch("octoprint_temp_eta.mqtt_client.mqtt")
-def test_mqtt_configure_enabled_with_host(mock_mqtt, wrapper) -> None:
-    mock_mqtt.Client.return_value = MagicMock()
-    wrapper.configure({"mqtt_enabled": True, "mqtt_broker_host": "test-broker"})
-    assert wrapper.get_internal_state("enabled")
+def test_publish_delegates_to_helper(publisher) -> None:
+    fake_publish = Mock(return_value=True)
+    publisher.set_internal_state(mqtt_publish=fake_publish)
+    publisher.configure({"mqtt_enabled": True})
+    publisher.publish_eta_update("bed", 42.0, "heating", 60.0, 30.0)
+    assert fake_publish.called
 ```
 
 ### Testing "no estimate" paths
