@@ -61,7 +61,7 @@ msgstr ""
 msgid "Base topic"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2265
+#: octoprint_temp_eta/static/js/temp_eta.js:2269
 msgid "Bed"
 msgstr ""
 
@@ -86,7 +86,7 @@ msgstr ""
 msgid "Celsius + Fahrenheit (°C/°F)"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2266
+#: octoprint_temp_eta/static/js/temp_eta.js:2270
 msgid "Chamber"
 msgstr ""
 
@@ -145,7 +145,7 @@ msgstr ""
 msgid "Cooldown finished"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2282
+#: octoprint_temp_eta/static/js/temp_eta.js:2286
 msgid "Cooling"
 msgstr ""
 
@@ -324,7 +324,7 @@ msgid ""
 "CPU)"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:2284
+#: octoprint_temp_eta/static/js/temp_eta.js:2288
 msgid "Idle"
 msgstr ""
 
@@ -387,7 +387,7 @@ msgstr ""
 msgid "Maintenance"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1606
+#: octoprint_temp_eta/static/js/temp_eta.js:1610
 msgid "Measured temperature"
 msgstr ""
 
@@ -655,7 +655,7 @@ msgstr ""
 msgid "Target reached"
 msgstr ""
 
-#: octoprint_temp_eta/static/js/temp_eta.js:1616
+#: octoprint_temp_eta/static/js/temp_eta.js:1620
 msgid "Target temperature"
 msgstr ""
 

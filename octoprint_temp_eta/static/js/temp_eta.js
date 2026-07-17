@@ -671,7 +671,11 @@ $(() => {
 
 		self._ensureSidebarBound = () => {
 			// Sidebar DOM can be injected after the initial viewmodel binding;
-			// bind it lazily and only once.
+			// bind it lazily and only once. Bind the OctoPrint-generated wrapper
+			// (id="sidebar_plugin_temp_eta") — our inner content div
+			// (id="sidebar_plugin_temp_eta_content") lives inside that binding
+			// context via foreach and must NOT be bound separately, or its
+			// bindings freeze (duplicate-id / nested applyBindings conflict).
 			self._bindElementOnce(
 				"#sidebar_plugin_temp_eta",
 				"tempEtaKoBoundSidebar",
