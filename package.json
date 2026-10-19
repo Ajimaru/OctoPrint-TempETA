@@ -5,10 +5,14 @@
   "private": true,
   "devDependencies": {
     "jsdoc": "^4.0.0",
-    "jsdoc-to-markdown": "^9.1.3"
+    "jsdoc-to-markdown": "^8.0.3"
   },
   "scripts": {
     "docs:js": "./scripts/generate-jsdocs.sh",
     "docs": "npm run docs:js"
+  },
+  "overrides": {
+    "handlebars": "^4.7.10",
+    "underscore": "^1.13.8"
   }
 }
