@@ -1,0 +1,57 @@
+name: Bandit SARIF
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    name: Bandit security scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Load tool versions
+        run: |
+          if [ -f .development/versions.env ]; then
+            grep -vE '^\s*(#|$)' .development/versions.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Install bandit with SARIF support
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "bandit[sarif]${BANDIT_VERSION:+==$BANDIT_VERSION}"
+
+      - name: Run Bandit
+        # Reporting only: findings land in the Security tab rather than
+        # blocking the run. The pre-commit bandit hook is the gate that
+        # actually fails a change.
+        run: |
+          bandit -r octoprint_temp_eta/ -f sarif -o bandit.sarif || true
+
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        with:
+          sarif_file: bandit.sarif
+          category: bandit
