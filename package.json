@@ -10,5 +10,9 @@
   "scripts": {
     "docs:js": "./scripts/generate-jsdocs.sh",
     "docs": "npm run docs:js"
+  },
+  "overrides": {
+    "handlebars": "^4.7.10",
+    "underscore": "^1.13.8"
   }
 }
