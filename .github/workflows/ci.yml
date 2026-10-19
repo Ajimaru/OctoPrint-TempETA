@@ -48,6 +48,13 @@ jobs:
           git fetch origin ${{ github.base_ref }} --depth=1
 
       - name: Run pre-commit
+        # .pre-commit-config.yaml and the .githooks/ entry scripts it calls are
+        # gitignored (local-dev only), so this normally finds no config and
+        # skips. check-translations and shellcheck are skipped explicitly for
+        # the case where a config *is* present, since their entry scripts live
+        # in the untracked .githooks/; the i18n workflow covers catalog sync.
+        env:
+          SKIP: check-translations,shellcheck
         run: |
           if [ ! -f ".pre-commit-config.yaml" ]; then
             echo "No .pre-commit-config.yaml found. Skipping pre-commit run."
