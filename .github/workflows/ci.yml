@@ -131,6 +131,10 @@ jobs:
 
       - name: Upload coverage to Codacy
         if: ${{ matrix.run-coverage && github.repository == 'Ajimaru/OctoPrint-TempETA' && github.actor != 'dependabot[bot]' }}
+        # Reporting to an external service must not fail the test job: an
+        # expired or under-privileged CODACY_API_TOKEN would otherwise turn a
+        # fully passing test run red. Mirrors fail_ci_if_error on Codecov above.
+        continue-on-error: true
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699 # v1.3.0
         env:
           CODACY_ORGANIZATION_PROVIDER: ${{ vars.CODACY_ORGANIZATION_PROVIDER }}
