@@ -79,11 +79,11 @@
                         <select class="input-xlarge"
                                 id="temp_eta_algorithm"
                                 data-bind="value: settings.plugins.temp_eta.algorithm, enable: settings.plugins.temp_eta.enabled && settings.plugins.temp_eta.enable_heating_eta">
-                            <option value="linear">{{ _("Linear (default)") }}</option>
-                            <option value="exponential">{{ _("Exponential") }}</option>
+                            <option value="exponential">{{ _("Exponential (default)") }}</option>
+                            <option value="linear">{{ _("Linear") }}</option>
                         </select>
                         <p class="help-block">
-                            {{ _("Linear: Assumes constant heating rate, simple and fast. Exponential: Accounts for thermal asymptotic behavior, more accurate.") }}
+                            {{ _("Exponential: Accounts for thermal asymptotic behavior, more accurate near the target. Linear: Assumes constant heating rate, simple and fast.") }}
                         </p>
                     </div>
                 </div>
@@ -728,10 +728,10 @@
                         </ul>
                         <h5>{{ _("Algorithms") }}</h5>
                         <p>
-                            <strong>{{ _("Linear") }}</strong>: {{ _("Assumes a roughly constant heating rate over the recent samples. Best for quick, stable estimates and slower/steady heaters.") }}
+                            <strong>{{ _("Exponential") }}</strong>: {{ _("Models the typical slow-down as the heater approaches the target temperature. This is the default and is usually the better choice, especially for heated beds, which taper off noticeably near the target.") }}
                         </p>
                         <p>
-                            <strong>{{ _("Exponential") }}</strong>: {{ _("Models the typical slow-down as the heater approaches the target temperature. Best when your heater ramps fast initially but tapers off near the target.") }}
+                            <strong>{{ _("Linear") }}</strong>: {{ _("Assumes a roughly constant heating rate over the recent samples. Simpler and faster, but it can hold a stale estimate while a heater's rate tapers off.") }}
                         </p>
                         <h5>{{ _("FAQ") }}</h5>
                         <p>

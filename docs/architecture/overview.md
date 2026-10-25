@@ -84,21 +84,24 @@ See [Data Flow](data-flow.md) for detailed information on how data moves through
 
 The plugin uses two ETA calculation methods:
 
-### Linear Algorithm (Default)
+### Exponential Algorithm (Default)
 
-Simple and fast, assumes constant heating/cooling rate:
+Models thermal dynamics, including the slow-down as a heater approaches its
+target. The asymptote `T_inf` is fitted from the samples rather than assumed
+to be the target:
 
 ```text
-rate = ΔT / Δt
-ETA = (target - current) / rate
+T(t) = T_inf - (T_inf - T_0) * e^(-t/tau)
 ```
 
-### Exponential Algorithm (Advanced)
+### Linear Algorithm
 
-Models thermal dynamics more accurately:
+Simple and fast, assumes a constant heating/cooling rate fitted by
+least-squares regression over the window:
 
 ```text
-T(t) = T_final - (T_final - T_0) * e^(-t/tau)
+rate = least-squares slope of T over t
+ETA = (target - current) / rate
 ```
 
 See [Algorithms](algorithms.md) for implementation details.

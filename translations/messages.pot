@@ -51,10 +51,11 @@ msgstr ""
 msgid "Append OctoPrint instance name (Appearance → Title)"
 msgstr ""
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:731
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:734
 msgid ""
-"Assumes a roughly constant heating rate over the recent samples. Best for"
-" quick, stable estimates and slower/steady heaters."
+"Assumes a roughly constant heating rate over the recent samples. Simpler "
+"and faster, but it can hold a stale estimate while a heater's rate tapers"
+" off."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:564
@@ -153,7 +154,7 @@ msgstr ""
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2352
+#: octoprint_temp_eta/__init__.py:2379
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:690
 msgid "Defaults restored."
 msgstr ""
@@ -232,9 +233,18 @@ msgstr ""
 msgid "Experimental"
 msgstr ""
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:83
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:734
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:731
 msgid "Exponential"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:82
+msgid "Exponential (default)"
+msgstr ""
+
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:86
+msgid ""
+"Exponential: Accounts for thermal asymptotic behavior, more accurate near"
+" the target. Linear: Assumes constant heating rate, simple and fast."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:736
@@ -361,18 +371,9 @@ msgid ""
 "will be converted automatically."
 msgstr ""
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:731
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:83
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:734
 msgid "Linear"
-msgstr ""
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:82
-msgid "Linear (default)"
-msgstr ""
-
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:86
-msgid ""
-"Linear: Assumes constant heating rate, simple and fast. Exponential: "
-"Accounts for thermal asymptotic behavior, more accurate."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:24
@@ -400,11 +401,11 @@ msgstr ""
 msgid "Minimum interval between MQTT publishes (default: 1.0 seconds)"
 msgstr ""
 
-#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:734
+#: octoprint_temp_eta/templates/temp_eta_settings.jinja2:731
 msgid ""
 "Models the typical slow-down as the heater approaches the target "
-"temperature. Best when your heater ramps fast initially but tapers off "
-"near the target."
+"temperature. This is the default and is usually the better choice, "
+"especially for heated beds, which taper off noticeably near the target."
 msgstr ""
 
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:707
@@ -671,7 +672,7 @@ msgstr ""
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2033
+#: octoprint_temp_eta/__init__.py:2060
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:663
