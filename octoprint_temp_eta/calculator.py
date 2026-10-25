@@ -173,9 +173,8 @@ def _fit_asymptote(recent, target: float):
     A heater driven to *target* does not asymptote at *target*: the controller
     overshoots, so the true asymptote sits above it. Fitting log(target - temp)
     therefore inflates tau as the temperature closes in on the target, which in
-    turn inflates the ETA. Pick the asymptote that best linearises the decay of
-    (asymptote - temp) instead, scanning a few plausible margins above target
-    and keeping the one with the best least-squares fit.
+    turn inflates the ETA. Scan a few plausible margins above target and keep
+    the fit whose reconstructed temperatures best match the original samples.
 
     Returns (asymptote, slope), or None when nothing fits.
     """
@@ -188,12 +187,14 @@ def _fit_asymptote(recent, target: float):
         asymptote = target + max(ASYMPTOTE_MIN_MARGIN_C, target * margin_frac)
         xs = []
         ys = []
+        retained_temps = []
         for x, temp in zip(xs_all, temps):
             delta = asymptote - temp
             if delta <= 0 or x < 0:
                 continue
             xs.append(x)
             ys.append(math.log(delta))
+            retained_temps.append(temp)
         if len(xs) < 6:
             continue
         result = _linear_regression(xs, ys)
@@ -202,9 +203,12 @@ def _fit_asymptote(recent, target: float):
         slope, intercept = result
         if slope >= -1e-4:
             continue
-        # Residual sum of squares in log space; lower is a straighter decay and
-        # therefore a better estimate of the real asymptote.
-        rss = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys))
+        # Compare errors in temperature space: log-space errors shrink as the
+        # candidate asymptote increases, biasing selection toward larger margins.
+        rss = sum(
+            (temp - (asymptote - math.exp(slope * x + intercept))) ** 2
+            for x, temp in zip(xs, retained_temps)
+        )
         if best is None or rss < best[0]:
             best = (rss, asymptote, slope)
 

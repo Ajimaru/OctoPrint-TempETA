@@ -2,6 +2,7 @@
 # pylint: disable=line-too-long
 """Unit tests for the calculator module."""
 
+import math
 import time
 from collections import deque
 from unittest import TestCase
@@ -175,6 +176,42 @@ class TestCalculateExponentialETA(TestCase):
         self.assertIsNotNone(result)
         assert result is not None
         self.assertGreater(result, 0.0)
+
+    def test_constant_rate_heating(self):
+        """A 1 C/s ramp preserves the selected exponential ETA."""
+        history = deque((float(i), 20.0 + i, 60.0) for i in range(30))
+
+        result = calculator.calculate_exponential_eta(history, 60.0)
+
+        self.assertIsNotNone(result)
+        # 11 C remain; the fitted slowdown predicts about 23.6 seconds,
+        # rather than falling back to the smoothed linear estimate of 12 s.
+        self.assertAlmostEqual(result, 23.59, delta=0.01)
+
+    def test_noisy_exponential_heating(self):
+        """Temperature residuals preserve the ETA of a known heating curve."""
+        target, asymptote, tau = 50.0, 55.0, 30.0
+        history = deque(
+            (
+                float(i),
+                asymptote - 35.0 * math.exp(-i / tau) + (0.3 if i % 2 else -0.3),
+                target,
+            )
+            for i in range(30)
+        )
+        expected = tau * math.log((asymptote - history[-1][1]) / (asymptote - target))
+
+        for spike in (None, 65.0):
+            with self.subTest(spike=spike):
+                samples = history.copy()
+                if spike is not None:
+                    # An interior sample above all candidates must be skipped
+                    # without shifting the remaining temperature/time pairs.
+                    samples[8] = (8.0, spike, target)
+                result = calculator.calculate_exponential_eta(samples, target)
+
+                self.assertIsNotNone(result)
+                self.assertAlmostEqual(result, expected, delta=1.0)
 
 
 class TestCalculateCooldownLinearETA(TestCase):

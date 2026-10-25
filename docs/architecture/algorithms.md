@@ -94,8 +94,9 @@ closes in, which inflated the ETA — most visibly on heated beds.
 4. Estimates the asymptote (`_fit_asymptote`): for each of several candidate
    margins above the target it fits a line to `ln(T_inf - T)` over time via
    least squares (`_linear_regression`) and keeps the candidate with the
-   lowest residual sum of squares, i.e. the straightest decay. The slope `b`
-   maps to the time constant `tau = -1/b`.
+   lowest residual sum of squares between reconstructed temperatures and the
+   retained original samples. The slope `b` maps to the time constant
+   `tau = -1/b`.
 5. Sanity-checks the fit — all of these fall back to the linear estimate:
    - fewer than 6 samples, or a time span under 5 s
    - no candidate asymptote yields a converging fit (`b >= -1e-4`)
