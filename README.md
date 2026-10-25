@@ -71,7 +71,7 @@
 ## Features
 
 - ⏱️ **Real-time ETA countdown** for bed, hotend and chamber heating or cooling
-- 🌡️ **Smart calculation algorithms**: Linear (default) and exponential models
+- 🌡️ **Smart calculation algorithms**: Exponential (default) and linear models
 - 📊 **Flexible display**: Show ETA in navbar, sidebar, and/or a dedicated tab
 - 📈 **Progress bars**: Show progress to target in the sidebar and tab views
 - 📉 **Historical temperature graphs**: A dedicated history view in the tab with a configurable time window
@@ -172,7 +172,7 @@ Note: Numeric settings inputs are validated (min/max/range) and saving is blocke
 
 - **Enable heating ETA**: Controls whether heating ETAs are shown/calculated
 - **Heating threshold** + **Threshold unit**: Start ETA when within a configured delta to the target
-- **Calculation algorithm**: Linear (default) or exponential
+- **Calculation algorithm**: Exponential (default) or linear
 
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -243,13 +243,17 @@ The plugin estimates how long it will take for each heater (bed, hotend, chamber
 
 #### Algorithms Used
 
-- **Linear ETA (default):**
-  Calculates the rate of temperature change (°C/s) using the last 10 seconds of data. ETA is the remaining temperature difference divided by this rate.
-  This method is fast and stable for most printers.
+- **Exponential ETA (default):**
+  Models the heater's approach to its target as an exponential curve, fitting the
+  steady-state temperature the heater is actually heading for rather than assuming
+  it is the target itself. This tracks the slow-down near the target, which matters
+  most for heated beds.
 
-- **Exponential ETA (advanced):**
-  Models heating/cooling as an exponential curve, which can be more accurate for some hardware.
-  This option can be enabled in the settings.
+- **Linear ETA:**
+  Fits the rate of temperature change (°C/s) by least-squares regression over the
+  last 10 seconds of data. ETA is the remaining temperature difference divided by
+  this rate. Simpler and fast, but while a heater's rate tapers off it can hold a
+  stale estimate instead of counting down.
 
 #### Key Points
 
@@ -289,7 +293,7 @@ The following defaults apply to the user-editable plugin settings:
 <tr><td>Temperature display</td><td><code>temp_display</code></td><td><code>octoprint</code></td></tr>
 <tr><td>Heating threshold</td><td><code>threshold_start</code></td><td><code>5.0 °C</code></td></tr>
 <tr><td>Threshold unit</td><td><code>threshold_unit</code></td><td><code>octoprint</code></td></tr>
-<tr><td>Algorithm</td><td><code>algorithm</code></td><td><code>linear</code></td></tr>
+<tr><td>Algorithm</td><td><code>algorithm</code></td><td><code>exponential</code></td></tr>
 <tr><td>Update Interval</td><td><code>update_interval</code></td><td><code>1.0 s</code></td></tr>
 <tr><td>History Size</td><td><code>history_size</code></td><td><code>60</code></td></tr>
 <tr><td>Enable cool-down ETA</td><td><code>enable_cooldown_eta</code></td><td><code>true</code></td></tr>

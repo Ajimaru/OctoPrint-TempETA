@@ -2,6 +2,7 @@
 # pylint: disable=line-too-long
 """Unit tests for the calculator module."""
 
+import math
 import time
 from collections import deque
 from unittest import TestCase
@@ -176,6 +177,42 @@ class TestCalculateExponentialETA(TestCase):
         assert result is not None
         self.assertGreater(result, 0.0)
 
+    def test_constant_rate_heating(self):
+        """A 1 C/s ramp preserves the selected exponential ETA."""
+        history = deque((float(i), 20.0 + i, 60.0) for i in range(30))
+
+        result = calculator.calculate_exponential_eta(history, 60.0)
+
+        self.assertIsNotNone(result)
+        # 11 C remain; the fitted slowdown predicts about 23.6 seconds,
+        # rather than falling back to the smoothed linear estimate of 12 s.
+        self.assertAlmostEqual(result, 23.59, delta=0.01)
+
+    def test_noisy_exponential_heating(self):
+        """Temperature residuals preserve the ETA of a known heating curve."""
+        target, asymptote, tau = 50.0, 55.0, 30.0
+        history = deque(
+            (
+                float(i),
+                asymptote - 35.0 * math.exp(-i / tau) + (0.3 if i % 2 else -0.3),
+                target,
+            )
+            for i in range(30)
+        )
+        expected = tau * math.log((asymptote - history[-1][1]) / (asymptote - target))
+
+        for spike in (None, 65.0):
+            with self.subTest(spike=spike):
+                samples = history.copy()
+                if spike is not None:
+                    # An interior sample above all candidates must be skipped
+                    # without shifting the remaining temperature/time pairs.
+                    samples[8] = (8.0, spike, target)
+                result = calculator.calculate_exponential_eta(samples, target)
+
+                self.assertIsNotNone(result)
+                self.assertAlmostEqual(result, expected, delta=1.0)
+
 
 class TestCalculateCooldownLinearETA(TestCase):
     """Test cases for calculate_cooldown_linear_eta function."""
@@ -331,6 +368,142 @@ class TestCalculateCooldownExponentialETA(TestCase):
         self.assertIsNotNone(result)
         assert result is not None
         self.assertGreater(result, 0.0)
+
+
+class TestRealPrinterSamples(TestCase):
+    """Regression tests built from samples captured on real printers.
+
+    These runs exposed three defects: an exponential fit anchored on the
+    target instead of the heater's steady state, a sanity guard loose enough
+    that bad estimates pinned just under it, and a two-point slope that made
+    the countdown jump between updates.
+    """
+
+    # Heated bed, 27.6C -> 44.9C against a 50C target, ~2s sampling.
+    # Measured rate over the final samples puts the true remaining time near
+    # 19s; the target-anchored fit used to report 62-149s here.
+    HEATED_BED_TARGET = 50.0
+    HEATED_BED_SAMPLES = [
+        (0.0, 27.56),
+        (0.01, 27.56),
+        (1.6, 27.49),
+        (3.6, 28.66),
+        (5.6, 30.03),
+        (7.6, 31.37),
+        (9.6, 32.53),
+        (11.6, 34.03),
+        (13.6, 34.9),
+        (15.62, 35.86),
+        (17.6, 36.54),
+        (19.6, 37.2),
+        (21.6, 38.04),
+        (23.6, 38.66),
+        (25.6, 39.34),
+        (27.6, 40.2),
+        (29.0, 40.2),
+        (29.03, 40.78),
+        (29.59, 41.09),
+        (30.02, 41.09),
+        (31.02, 41.37),
+        (31.6, 41.53),
+        (32.02, 41.63),
+        (33.02, 42.08),
+        (33.6, 42.13),
+        (34.02, 42.38),
+        (35.02, 42.78),
+        (35.6, 42.84),
+        (36.02, 43.0),
+        (37.02, 43.16),
+        (37.6, 43.3),
+        (38.02, 43.59),
+        (39.02, 43.89),
+        (39.59, 43.94),
+        (40.01, 44.27),
+        (41.02, 44.2),
+        (41.6, 44.6),
+        (42.03, 44.59),
+        (43.02, 44.84),
+        (43.6, 44.88),
+    ]
+
+    def _history(self, upto=None):
+        rows = self.HEATED_BED_SAMPLES[:upto]
+        now = time.time()
+        base = self.HEATED_BED_SAMPLES[0][0]
+        return deque(
+            (
+                (
+                    now - (self.HEATED_BED_SAMPLES[-1][0] - (t - base)),
+                    temp,
+                    self.HEATED_BED_TARGET,
+                )
+                for t, temp in rows
+            ),
+            maxlen=60,
+        )
+
+    def test_exponential_not_inflated_on_slow_bed(self):
+        """Exponential ETA must stay near the measured remaining time."""
+        history = self._history()
+        result = calculator.calculate_exponential_eta(history, self.HEATED_BED_TARGET)
+        self.assertIsNotNone(result)
+        assert result is not None
+        # True remaining ~19s. Anything past 40s is the old inflated fit.
+        self.assertLess(result, 40.0)
+        self.assertGreater(result, 5.0)
+
+    def test_exponential_stays_close_to_linear(self):
+        """The two estimates must agree within the sanity bounds."""
+        for upto in range(8, len(self.HEATED_BED_SAMPLES) + 1):
+            history = self._history(upto)
+            exp = calculator.calculate_exponential_eta(history, self.HEATED_BED_TARGET)
+            lin = calculator.calculate_linear_eta(history, self.HEATED_BED_TARGET)
+            if exp is None or lin is None:
+                continue
+            if abs(exp - lin) <= calculator.EXP_SANITY_SLACK_S:
+                continue
+            self.assertLessEqual(
+                exp,
+                lin * calculator.EXP_SANITY_MAX_RATIO,
+                msg=f"exponential {exp:.1f}s diverged from linear {lin:.1f}s at n={upto}",
+            )
+
+    def test_eta_decreases_as_bed_approaches_target(self):
+        """ETA must trend downward, not swing between updates."""
+        etas = []
+        for upto in range(10, len(self.HEATED_BED_SAMPLES) + 1):
+            result = calculator.calculate_exponential_eta(
+                self._history(upto), self.HEATED_BED_TARGET
+            )
+            if result is not None:
+                etas.append(result)
+        self.assertGreater(len(etas), 10)
+        self.assertLess(etas[-1], etas[0])
+        # No single update may more than double the countdown.
+        for prev, cur in zip(etas, etas[1:]):
+            self.assertLess(cur, max(prev * 2.0, prev + 10.0))
+
+    def test_linear_eta_is_stable_between_updates(self):
+        """Consecutive linear estimates must not swing.
+
+        Measured on this run, the previous two-point slope moved the countdown
+        by 2.1s on average between updates; the least-squares fit holds it
+        under 1.5s. This is the property users actually see, so it is asserted
+        on the unmodified samples rather than against injected noise.
+        """
+        etas = []
+        for upto in range(10, len(self.HEATED_BED_SAMPLES) + 1):
+            result = calculator.calculate_linear_eta(
+                self._history(upto), self.HEATED_BED_TARGET
+            )
+            if result is not None:
+                etas.append(result)
+
+        self.assertGreater(len(etas), 20)
+        jumps = [abs(b - a) for a, b in zip(etas, etas[1:])]
+        mean_jump = sum(jumps) / len(jumps)
+        self.assertLess(mean_jump, 1.5, msg=f"mean jump {mean_jump:.2f}s too large")
+        self.assertLess(max(jumps), 6.0)
 
 
 if __name__ == "__main__":

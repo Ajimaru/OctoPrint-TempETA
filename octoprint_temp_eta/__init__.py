@@ -1534,6 +1534,18 @@ class TempETAPlugin(
                             if cooldown_eta is not None:
                                 eta = cooldown_eta
                                 eta_kind = "cooling"
+                                if self._debug_logging_enabled:
+                                    ch = self._cooldown_history.get(heater)
+                                    self._debug_log(
+                                        "Cooldown ETA calc heater=%s mode=%s actual=%.2f "
+                                        "goal=%.2f samples=%d eta=%.1fs",
+                                        str(heater),
+                                        str(cooldown_mode),
+                                        float(actual),
+                                        float(cooldown_target),
+                                        len(ch) if ch else 0,
+                                        float(cooldown_eta),
+                                    )
                             else:
                                 hist_len = 0
                                 try:
@@ -1561,6 +1573,21 @@ class TempETAPlugin(
                         eta = self._calculate_exponential_eta(heater, target)
                     else:
                         eta = self._calculate_linear_eta(heater, target)
+
+                    # Log the computed value: without it the only way to audit a
+                    # prediction after the fact is to replay the saved samples.
+                    if self._debug_logging_enabled:
+                        hist = self._temp_history.get(heater)
+                        self._debug_log(
+                            "ETA calc heater=%s algorithm=%s target=%.2f actual=%.2f "
+                            "samples=%d eta=%s",
+                            str(heater),
+                            str(algorithm),
+                            float(target),
+                            float(actual),
+                            len(hist) if hist else 0,
+                            "None" if eta is None else f"{float(eta):.1f}s",
+                        )
 
                     if eta is not None and eta < 1:
                         eta = None
@@ -1911,7 +1938,7 @@ class TempETAPlugin(
             "threshold_unit": "octoprint",
             "debug_logging": False,
             "threshold_start": 5.0,
-            "algorithm": "linear",
+            "algorithm": "exponential",
             "update_interval": 1.0,
             "history_size": 60,
             # Persistence (advanced; protects SD cards on long-running phases)

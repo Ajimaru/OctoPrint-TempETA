@@ -44,7 +44,7 @@ plugins:
     temp_display: octoprint # octoprint | c | cf
     threshold_unit: octoprint # octoprint | c | f
     threshold_start: 5.0 # delta in °C
-    algorithm: linear # linear | exponential
+    algorithm: exponential # exponential | linear
     update_interval: 1.0
     history_size: 60
     debug_logging: false
@@ -172,7 +172,7 @@ ramp data, which stabilizes the estimate.
 
 Heating ETA algorithm; see [Algorithms](../architecture/algorithms.md).
 
-- **Type**: String — **Default**: `"linear"` — **Options**: `"linear"`, `"exponential"`
+- **Type**: String — **Default**: `"exponential"` — **Options**: `"exponential"`, `"linear"`
 
 ### update_interval
 
