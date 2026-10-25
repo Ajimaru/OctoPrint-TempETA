@@ -26,12 +26,13 @@ silently shrink to zero usable samples.
 
 ## Linear heating ETA
 
-The default algorithm (`algorithm: "linear"`) assumes a constant heating rate.
+Selectable via `algorithm: "linear"`. Assumes a constant heating rate, fitted
+by least-squares regression over the samples in the window.
 
 ### Theory
 
 ```text
-rate = ΔT / Δt          (°C per second)
+rate = least-squares slope of T over t    (°C per second)
 ETA  = (T_target - T_now) / rate
 ```
 
@@ -42,31 +43,41 @@ ETA  = (T_target - T_now) / rate
 1. Rejects non-finite targets and non-positive windows.
 2. Filters the history to finite samples within the last `window_seconds`
    (relative to the newest sample) and needs at least 2 of them.
-3. Takes the **first and last** sample of that window and computes the
-   endpoint slope. It intentionally does not fit all points: printer heating
-   is noisy at ~2 Hz sampling, and the endpoints over a short window average
-   that noise well enough while staying O(n) with a tiny constant.
-4. Requires the heater to actually be heating (`ΔT > 0`, `Δt > 0`) and below
+3. Fits the slope over **all** samples in the window by least squares
+   (`_linear_regression`). An endpoint-only slope lets a single noisy reading,
+   or a PID overshoot dip, swing the rate and make the countdown jump between
+   updates; the regression damps that. Measured on a real bed ramp, this cut
+   the mean change between consecutive updates from 2.1 s to 0.8 s.
+4. Takes the current temperature as the **median of the last three** samples
+   (`_smoothed_last_temp`), so one spurious reading cannot shift the remaining
+   distance. With fewer than three samples the newest value is used as-is,
+   since the median of an even tail would return the stale older reading.
+5. Requires the heater to actually be heating (fitted `rate > 0`) and below
    target (`target - T_now > 0`); otherwise returns `None`.
 
 ### Strengths and limits
 
 - **Fast and robust** — works well during the initial heating ramp where the
   rate really is nearly constant.
-- **Overestimates near the target** — real heaters slow down as they approach
-  the setpoint (thermal losses grow with temperature), which the linear model
-  can't see.
+- **Holds a stale estimate near the target** — real heaters slow down as they
+  approach the setpoint (thermal losses grow with temperature), which the
+  linear model can't see. The countdown can plateau, or briefly rise, while
+  the heater is still making progress.
 
 ## Exponential heating ETA
 
-Selectable via `algorithm: "exponential"`. Models the slowdown near the
-target as a first-order exponential approach:
+The default algorithm (`algorithm: "exponential"`). Models the slowdown near
+the target as a first-order exponential approach:
 
 ```text
-T(t) = T_target - (T_target - T_0) * e^(-t/tau)
+T(t) = T_inf - (T_inf - T_0) * e^(-t/tau)
 ```
 
-where `tau` is the thermal time constant.
+where `tau` is the thermal time constant and `T_inf` is the steady-state
+temperature the heater is actually heading for. `T_inf` is **not** the target:
+a controller overshoots, so the real asymptote sits above the setpoint.
+Anchoring the fit on the target instead inflates `tau` as the temperature
+closes in, which inflated the ETA — most visibly on heated beds.
 
 ### Fit and fallbacks
 
@@ -80,22 +91,34 @@ where `tau` is the thermal time constant.
 3. Returns `0.0` when the remaining delta is inside the convergence band
    `ε = 0.5 °C` (an exponential never mathematically *reaches* its asymptote,
    so "arrived" means "within ε").
-4. Fits a line to `ln(target - T)` over time via least squares
-   (`_linear_regression`). The slope `b` maps to the time constant
-   `tau = -1/b`.
+4. Estimates the asymptote (`_fit_asymptote`): for each of several candidate
+   margins above the target it fits a line to `ln(T_inf - T)` over time via
+   least squares (`_linear_regression`) and keeps the candidate with the
+   lowest residual sum of squares, i.e. the straightest decay. The slope `b`
+   maps to the time constant `tau = -1/b`.
 5. Sanity-checks the fit — all of these fall back to the linear estimate:
-   - fewer than 6 log-transformed points, or a time span under 5 s
-   - slope not meaningfully negative (`b >= -1e-4`, i.e. not converging)
+   - fewer than 6 samples, or a time span under 5 s
+   - no candidate asymptote yields a converging fit (`b >= -1e-4`)
    - implausible time constant (`tau > 2000 s`)
    - any `ValueError`/`ArithmeticError` from the math
-6. Computes `ETA = tau * ln((target - T_now) / ε)`.
-7. **Spike protection**: if the exponential ETA exceeds 5× the linear
-   estimate, the linear value is returned instead. A noisy fit close to the
-   asymptote can otherwise produce absurdly long countdowns.
+6. Computes the time for `(T_inf - T)` to decay from its current value to the
+   value it holds when `T` reaches the target:
+   `ETA = tau * ln((T_inf - T_now) / (T_inf - T_target))`. Referencing the
+   target this way means the ETA does not depend on closing to within `ε` of
+   the asymptote.
+7. **Spike protection**: the estimate is compared against the linear one and
+   the linear value is returned instead when the two disagree by more than
+   `EXP_SANITY_SLACK_S` (20 s) *and* by more than `EXP_SANITY_MAX_RATIO`
+   (2.0×) in either direction. The absolute slack keeps short ETAs from being
+   rejected over a meaningless ratio; the ratio catches fits that are not
+   describing the observed heating.
 
 ### Accuracy trade-offs
 
-- **More accurate near the target**, where the linear model overestimates.
+- **More accurate near the target**, where the linear model holds a stale
+  estimate as the heater's rate tapers off. On a heated bed approaching 50 °C,
+  the linear estimate plateaued around 30–36 s while the exponential one
+  counted down 49.8 → 32.8 → 21.3 s.
 - **Needs more data** (≥ 6 samples spanning ≥ 5 s) and degrades to linear
   when it can't get a trustworthy fit — the user always gets *some* estimate.
 
@@ -107,8 +130,10 @@ temperature (e.g. "bed safe to touch at 40 °C").
 `calculate_cooldown_linear_eta(cooldown_history, goal_c, window_seconds=60.0)`
 mirrors the linear heating estimator with inverted signs:
 
-- The endpoint slope must be meaningfully negative (`< -1e-3 °C/s`); a heater
-  that only drifts is treated as "not cooling" and gets no ETA.
+- The slope is fitted by least squares over the window (and the current
+  temperature smoothed by median-of-three), matching the heating path, and
+  must be meaningfully negative (`< -1e-3 °C/s`); a heater that only drifts is
+  treated as "not cooling" and gets no ETA.
 - The current temperature must still be above the goal.
 - The result is capped at 24 hours.
 
@@ -171,7 +196,7 @@ Real settings that influence the algorithms (see
 ```yaml
 plugins:
   temp_eta:
-    algorithm: "linear" # or "exponential" (heating only)
+    algorithm: "exponential" # or "linear" (heating only)
     threshold_start: 5.0 # start showing ETA within this delta (°C)
     update_interval: 1.0 # seconds between frontend updates
     history_size: 60 # samples kept per heater

@@ -15,6 +15,18 @@ from typing import Optional
 
 _LOG = logging.getLogger("octoprint_temp_eta")
 
+# Smallest assumed gap between the target and the heater's steady state, used
+# when scanning candidate asymptotes for the exponential fit.
+ASYMPTOTE_MIN_MARGIN_C = 1.0
+
+# Sanity bounds for an exponential estimate measured against the linear one.
+# The previous guard only rejected estimates above 5x linear, which was loose
+# enough that bad values simply pinned just under the limit instead of being
+# caught. Divergence beyond this ratio, once it also exceeds the absolute
+# slack, means the fit is not describing the observed heating.
+EXP_SANITY_MAX_RATIO = 2.0
+EXP_SANITY_SLACK_S = 20.0
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -71,6 +83,22 @@ def _linear_regression(xs, ys):
     return slope, y_mean - slope * x_mean
 
 
+def _smoothed_last_temp(recent) -> float:
+    """
+    Current temperature as the median of the last few samples.
+
+    A single spurious reading at the end of the window would otherwise shift
+    the remaining distance and visibly jump the countdown. The median of three
+    rejects such a spike while still tracking a genuine stall or dip.
+    """
+    # Only smooth with a full three samples: with two, the median of an even
+    # tail returns the upper value, which on a monotonic ramp is the stale
+    # older reading rather than the current temperature.
+    if len(recent) < 3:
+        return recent[-1][1]
+    return sorted(row[1] for row in recent[-3:])[1]
+
+
 def _validate_scalar(value: float) -> bool:
     return math.isfinite(value)
 
@@ -90,8 +118,8 @@ def calculate_linear_eta(
     """
     Calculate ETA assuming constant heating rate.
 
-    Estimates the heating rate from the first and last sample within the
-    recent time window and extrapolates linearly to the target.
+    Estimates the heating rate by least-squares regression over all samples
+    within the recent time window and extrapolates linearly to the target.
 
     Args:
         history: Deque of (timestamp, actual_temp, target_temp) tuples
@@ -115,61 +143,111 @@ def calculate_linear_eta(
     if len(recent) < 2:
         return None
 
-    t0, temp0 = recent[0][0], recent[0][1]
-    t1, temp1 = recent[-1][0], recent[-1][1]
-    time_diff = t1 - t0
-    temp_diff = temp1 - temp0
-    if time_diff <= 0 or temp_diff <= 0:
+    t0 = recent[0][0]
+    temp_now = _smoothed_last_temp(recent)
+
+    # Least-squares slope over the whole window rather than just the first and
+    # last sample: a single noisy reading (or a PID overshoot dip) would
+    # otherwise swing the rate and make the countdown jump between updates.
+    fit = _linear_regression(
+        [row[0] - t0 for row in recent], [row[1] for row in recent]
+    )
+    if fit is None:
         return None
 
-    remaining = target - temp1
+    rate = fit[0]
+    if rate <= 0:
+        return None
+
+    remaining = target - temp_now
     if remaining <= 0:
         return None
 
-    return max(0.0, remaining / (temp_diff / time_diff))
+    return max(0.0, remaining / rate)
 
 
-def _exponential_fit(recent, target: float, epsilon_c: float):
+def _fit_asymptote(recent, target: float):
+    """
+    Estimate the heater's steady-state temperature from *recent* samples.
+
+    A heater driven to *target* does not asymptote at *target*: the controller
+    overshoots, so the true asymptote sits above it. Fitting log(target - temp)
+    therefore inflates tau as the temperature closes in on the target, which in
+    turn inflates the ETA. Pick the asymptote that best linearises the decay of
+    (asymptote - temp) instead, scanning a few plausible margins above target
+    and keeping the one with the best least-squares fit.
+
+    Returns (asymptote, slope), or None when nothing fits.
+    """
+    t0 = recent[0][0]
+    xs_all = [row[0] - t0 for row in recent]
+    temps = [row[1] for row in recent]
+
+    best = None
+    for margin_frac in (0.0, 0.02, 0.05, 0.10, 0.20):
+        asymptote = target + max(ASYMPTOTE_MIN_MARGIN_C, target * margin_frac)
+        xs = []
+        ys = []
+        for x, temp in zip(xs_all, temps):
+            delta = asymptote - temp
+            if delta <= 0 or x < 0:
+                continue
+            xs.append(x)
+            ys.append(math.log(delta))
+        if len(xs) < 6:
+            continue
+        result = _linear_regression(xs, ys)
+        if result is None:
+            continue
+        slope, intercept = result
+        if slope >= -1e-4:
+            continue
+        # Residual sum of squares in log space; lower is a straighter decay and
+        # therefore a better estimate of the real asymptote.
+        rss = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys))
+        if best is None or rss < best[0]:
+            best = (rss, asymptote, slope)
+
+    if best is None:
+        return None
+    return best[1], best[2]
+
+
+def _exponential_fit(recent, target: float):
     """
     Fit an exponential heating model to *recent* samples.
 
     Returns estimated eta in seconds, or None to signal fallback to linear.
     May propagate exceptions from math.log (e.g. ValueError) to the caller.
     """
-    t0 = recent[0][0]
-    xs = []
-    ys = []
-    for ts, temp, *_ in recent:
-        delta = target - temp
-        if delta <= epsilon_c:
-            continue
-        x = ts - t0
-        if x < 0:
-            continue
-        xs.append(x)
-        ys.append(math.log(delta))
-
-    if len(xs) < 6 or (xs[-1] - xs[0]) < 5:
+    xs_span = recent[-1][0] - recent[0][0]
+    if len(recent) < 6 or xs_span < 5:
         return None  # not enough span → fallback
 
     if (recent[-1][1] - recent[0][1]) <= 0.2:
         return None  # not heating → fallback
 
-    result = _linear_regression(xs, ys)
-    if result is None:
-        return None
+    fit = _fit_asymptote(recent, target)
+    if fit is None:
+        return None  # no plausible asymptote → fallback
 
-    slope, _ = result
-    if slope >= -1e-4:
-        return None  # not heating towards target → fallback
+    asymptote, slope = fit
 
     tau = -1.0 / slope
     if tau > 2000:
         return None  # implausibly slow time constant → fallback
 
-    remaining_now = target - recent[-1][1]
+    temp_now = recent[-1][1]
+    remaining_now = asymptote - temp_now
+    remaining_at_target = asymptote - target
+    if remaining_now <= 0 or remaining_at_target <= 0:
+        return None
+
+    # Time for (asymptote - T) to decay from its current value to the value it
+    # holds when T reaches the target. Referencing the target this way means the
+    # ETA no longer depends on closing to within epsilon of the asymptote.
     # ValueError propagates to calculate_exponential_eta for fallback handling
-    eta = tau * math.log(remaining_now / epsilon_c)
+    eta = tau * math.log(remaining_now / remaining_at_target)
     return max(0.0, eta)
 
 
@@ -217,7 +295,7 @@ def calculate_exponential_eta(
         return 0.0
 
     try:
-        eta = _exponential_fit(recent, target, epsilon_c)
+        eta = _exponential_fit(recent, target)
     except (ValueError, ArithmeticError) as exc:
         _LOG.debug("Exponential ETA math error: %s", exc)
         return calculate_linear_eta(history, target)
@@ -226,8 +304,18 @@ def calculate_exponential_eta(
         return calculate_linear_eta(history, target)
 
     linear_eta = calculate_linear_eta(history, target)
-    if linear_eta is not None and eta > linear_eta * 5:
-        return linear_eta
+    if linear_eta is not None:
+        # Absolute slack keeps short ETAs (where a few seconds is a large
+        # ratio) from being rejected for no reason; the ratio catches the
+        # sustained over-estimates that a ratio-only guard let through.
+        if abs(eta - linear_eta) > EXP_SANITY_SLACK_S and (
+            eta > linear_eta * EXP_SANITY_MAX_RATIO
+            or eta * EXP_SANITY_MAX_RATIO < linear_eta
+        ):
+            _LOG.debug(
+                "Exponential ETA %.1fs rejected against linear %.1fs", eta, linear_eta
+            )
+            return linear_eta
 
     return eta
 
@@ -238,9 +326,9 @@ def calculate_cooldown_linear_eta(
     """
     Linear cooldown ETA from recent slope.
 
-    Estimates the cooling rate from the first and last sample within the
-    recent time window and extrapolates linearly to the goal. The result
-    is capped at 24 hours.
+    Estimates the cooling rate by least-squares regression over all samples
+    within the recent time window and extrapolates linearly to the goal. The
+    result is capped at 24 hours.
 
     Args:
         cooldown_history: Deque of (timestamp, temp) tuples
@@ -264,17 +352,22 @@ def calculate_cooldown_linear_eta(
     if len(recent) < 2:
         return None
 
-    t0, temp0 = recent[0]
-    t1, temp1 = recent[-1]
-    dt = t1 - t0
-    if dt <= 0:
+    t0 = recent[0][0]
+    temp_now = _smoothed_last_temp(recent)
+
+    # Least-squares over the window, matching the heating path: a single noisy
+    # reading should not swing the cooldown countdown between updates.
+    fit = _linear_regression(
+        [row[0] - t0 for row in recent], [row[1] for row in recent]
+    )
+    if fit is None:
         return None
 
-    slope = (temp1 - temp0) / dt
+    slope = fit[0]
     if slope >= -1e-3:
         return None
 
-    remaining = temp1 - goal_c
+    remaining = temp_now - goal_c
     if remaining <= 0:
         return None
 

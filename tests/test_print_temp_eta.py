@@ -4261,3 +4261,45 @@ def test_on_api_get_unavailable_when_publisher_missing(
 
     assert resp["mqtt_available"] is False
     assert resp["mqtt_enabled"] is True
+
+
+def test_broadcast_eta_debug_logging_does_not_raise(
+    monkeypatch: pytest.MonkeyPatch, temp_eta_plugin: Any
+) -> None:
+    """The ETA debug log must not reference out-of-scope names.
+
+    Regression test: the heating-branch debug log once used a loop variable
+    from a different method, raising NameError on every temperature callback
+    whenever debug logging was enabled. Every other test exercises this path
+    with debug logging off, so the break only showed up on a live printer.
+    """
+    _set_time(monkeypatch, 100.0)
+
+    _set_attr(temp_eta_plugin, _member("debug_logging_enabled"), True)
+
+    _get_attr(temp_eta_plugin, _member("temp_history"))["tool0"] = deque(
+        [(90.0, 10.0, 50.0), (100.0, 20.0, 50.0)], maxlen=60
+    )
+    _get_attr(temp_eta_plugin, _member("temp_history"))["bed"] = deque(
+        [(90.0, 20.0, 60.0), (100.0, 30.0, 60.0)], maxlen=60
+    )
+
+    logged: list[str] = []
+
+    def _record(message: str, *args: Any) -> None:
+        logged.append(message % args if args else message)
+
+    _set_attr(temp_eta_plugin, _member("debug_log"), _record)
+
+    data = {
+        "tool0": {"actual": 20.0, "target": 50.0},
+        "bed": {"actual": 30.0, "target": 60.0},
+    }
+
+    # Must not raise NameError (or anything else).
+    _call_attr(temp_eta_plugin, _member("calculate_and_broadcast_eta"), data)
+
+    eta_lines = [line for line in logged if "ETA calc" in line]
+    assert eta_lines, f"no ETA calc line logged; got {logged}"
+    assert any("heater=tool0" in line for line in eta_lines)
+    assert any("samples=" in line for line in eta_lines)
