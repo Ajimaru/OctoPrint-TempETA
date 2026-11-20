@@ -72,6 +72,11 @@ except ModuleNotFoundError:  # pragma: no cover
     octoprint = _OctoPrintStubs()  # type: ignore
 
 try:
+    # OctoPrint 2.0.x: octoprint.printer has a circular import with
+    # octoprint.filemanager when it is the first of the two imported (only
+    # hit outside a running server, e.g. in tests). Importing filemanager
+    # first breaks the cycle; harmless on 1.x.
+    import octoprint.filemanager  # type: ignore # noqa: F401
     import octoprint.printer as octoprint_printer  # type: ignore
 except ModuleNotFoundError:  # pragma: no cover
 
