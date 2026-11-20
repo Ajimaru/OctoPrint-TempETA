@@ -154,7 +154,7 @@ msgstr ""
 msgid "Cooling color"
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2379
+#: octoprint_temp_eta/__init__.py:2384
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:690
 msgid "Defaults restored."
 msgstr ""
@@ -672,7 +672,7 @@ msgstr ""
 msgid "Target temperature for tool0 when using threshold mode."
 msgstr ""
 
-#: octoprint_temp_eta/__init__.py:2060
+#: octoprint_temp_eta/__init__.py:2065
 #: octoprint_temp_eta/templates/temp_eta_navbar.jinja2:23
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:5
 #: octoprint_temp_eta/templates/temp_eta_settings.jinja2:663
