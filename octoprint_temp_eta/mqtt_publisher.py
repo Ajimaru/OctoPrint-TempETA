@@ -18,6 +18,13 @@ import threading
 import time
 from typing import Any, Callable, Optional
 
+# A heater counts as "at_target" within this many degrees of its target ...
+AT_TARGET_ENTER_DELTA = 1.0
+# ... and keeps that state until it drifts further than this. Without the gap
+# a bed swinging around its target (bang-bang/PID, e.g. 49-51 °C at 50 °C)
+# toggles at_target on and off every few seconds.
+AT_TARGET_HOLD_DELTA = 3.0
+
 
 class MqttPublisher:
     """Thread-safe MQTT publisher backed by the OctoPrint-MQTT plugin helper.
@@ -99,6 +106,7 @@ class MqttPublisher:
         # permanently starve the others.
         self._last_published_time: dict[str, float] = {}
         self._last_heater_state: dict[str, Optional[str]] = {}
+        self._last_heater_target: dict[str, Optional[float]] = {}
 
         # Identity of the last published discovery configs, so retained
         # topics can be cleared even after the identity changed:
@@ -329,14 +337,31 @@ class MqttPublisher:
             elif eta_kind == "cooling" and eta is not None:
                 current_state = "cooling"
             elif target is not None and actual is not None:
-                if abs(target - actual) <= 1.0:
+                if abs(target - actual) <= AT_TARGET_ENTER_DELTA:
                     current_state = "at_target"
                 elif cooldown_target is not None and actual is not None:
-                    if abs(cooldown_target - actual) <= 1.0:
+                    if abs(cooldown_target - actual) <= AT_TARGET_ENTER_DELTA:
                         current_state = "cooled_down"
 
-            # Detect state transitions
             last_state = self._last_heater_state.get(heater)
+            target_unchanged = target == self._last_heater_target.get(heater)
+            self._last_heater_target[heater] = target
+
+            # No state could be derived from this sample - e.g. the last few
+            # degrees before the target, where no ETA is shown any more, or a
+            # bed swinging just outside the at_target band. While the target
+            # stays the same, keep the last state instead of dropping to "no
+            # state"; otherwise the state sensor flaps and every return to the
+            # same state publishes another state_change.
+            if current_state is None and last_state is not None and target_unchanged:
+                if last_state != "at_target" or (
+                    target is not None
+                    and actual is not None
+                    and abs(target - actual) <= AT_TARGET_HOLD_DELTA
+                ):
+                    current_state = last_state
+
+            # Detect state transitions
             state_changed = last_state != current_state
             self._last_heater_state[heater] = current_state
 
@@ -372,7 +397,7 @@ class MqttPublisher:
                 self._logger.info(
                     "MQTT: %s state changed from %s to %s",
                     heater,
-                    last_state or "unknown",
+                    last_state or "idle",
                     current_state,
                 )
 

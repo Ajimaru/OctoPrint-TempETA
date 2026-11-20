@@ -416,6 +416,83 @@ def test_publish_no_state_event_when_unchanged(
     assert topics.count("octoprint/temp_eta/bed/state_change") == 1
 
 
+def _state_events(fake_publish: Mock, heater: str = "bed") -> list[dict]:
+    """Return the payloads of all state_change events for a heater."""
+    topic = f"octoprint/temp_eta/{heater}/state_change"
+    return [
+        call.args[1] for call in fake_publish.call_args_list if call.args[0] == topic
+    ]
+
+
+def test_state_holds_heating_until_target_is_reached(
+    publisher: MqttPublisherHarness, fake_publish: Mock
+) -> None:
+    """The last degrees before the target (no ETA any more) stay "heating"."""
+    _connect(publisher, fake_publish)
+
+    publisher.publish_eta_update("tool0", 20.0, "heating", 150.0, 100.0)
+    publisher.publish_eta_update("tool0", None, None, 150.0, 146.0)
+    assert publisher.get_heater_state("tool0") == "heating"
+    publisher.publish_eta_update("tool0", None, None, 150.0, 149.5)
+
+    events = _state_events(fake_publish, "tool0")
+    assert [e["state"] for e in events] == ["heating", "at_target"]
+    assert events[-1]["previous_state"] == "heating"
+    eta_payload = fake_publish.call_args_list[-2].args[1]
+    assert eta_payload["state"] == "at_target"
+
+
+def test_state_at_target_survives_swing_around_target(
+    publisher: MqttPublisherHarness, fake_publish: Mock
+) -> None:
+    """A bed swinging 49-51 °C around 50 °C publishes at_target only once."""
+    _connect(publisher, fake_publish)
+
+    for actual in (49.6, 51.2, 50.1, 48.9, 50.97, 51.4, 50.2):
+        publisher.publish_eta_update("bed", None, None, 50.0, actual)
+        assert publisher.get_heater_state("bed") == "at_target"
+
+    events = _state_events(fake_publish)
+    assert [e["state"] for e in events] == ["at_target"]
+    eta_states = [
+        call.args[1]["state"]
+        for call in fake_publish.call_args_list
+        if call.args[0] == "octoprint/temp_eta/bed/eta"
+    ]
+    assert set(eta_states) == {"at_target"}
+
+
+def test_state_at_target_drops_beyond_hold_band(
+    publisher: MqttPublisherHarness, fake_publish: Mock
+) -> None:
+    """A real drop away from the target ends at_target."""
+    _connect(publisher, fake_publish)
+
+    publisher.publish_eta_update("bed", None, None, 50.0, 50.0)
+    publisher.publish_eta_update("bed", None, None, 50.0, 45.0)
+    assert publisher.get_heater_state("bed") is None
+    publisher.publish_eta_update("bed", None, None, 50.0, 49.8)
+
+    events = _state_events(fake_publish)
+    assert [e["state"] for e in events] == ["at_target", "at_target"]
+    assert events[-1]["previous_state"] is None
+
+
+def test_state_resets_when_target_changes(
+    publisher: MqttPublisherHarness, fake_publish: Mock
+) -> None:
+    """Turning the heater off (target changes) without cooldown ETA is idle."""
+    _connect(publisher, fake_publish)
+
+    publisher.publish_eta_update("tool0", None, None, 210.0, 210.0)
+    publisher.publish_eta_update("tool0", None, None, 0.0, 208.0)
+    assert publisher.get_heater_state("tool0") is None
+
+    eta_payload = fake_publish.call_args_list[-1].args[1]
+    assert eta_payload["state"] is None
+    assert len(_state_events(fake_publish, "tool0")) == 1
+
+
 def test_publish_cooled_down_state(
     publisher: MqttPublisherHarness, fake_publish: Mock
 ) -> None:
